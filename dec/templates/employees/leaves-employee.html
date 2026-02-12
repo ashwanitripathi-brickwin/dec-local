@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+{% load date_filters %}
+{% block content %}
+{% load static %}
+<div class="content container-fluid">
+
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Leave</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Leave (Employee)</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                <a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_leave"><i class="fa-solid fa-plus"></i> Add Leave</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stats-info">
+                <h6>Total Leave</h6>
+                <h4>{{annual_leaves}}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-info">
+                <h6>Medical Leave</h6>
+                <h4>{{medical_leave}}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-info">
+                <h6>Allocated/Booked Leave</h6>
+                <h4>{{other_leave_count}}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-info">
+                <h6>Remaining Leave</h6>
+                <h4>{{remaining}}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive">
+                <table class="table table-striped custom-table leave-employee-table mb-0 datatable1">
+                    <thead>
+                        <tr>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>No of Days</th>
+                            <th>Reason</th>
+                            <th class="text-center">Status</th>
+                            <th>Approved by</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    
+                    {% for leave_detail in dict_results %}
+                        <tr>
+                            <td>{{leave_detail.name}}</td>
+                            <td>{{leave_detail.start_date}}</td>
+                            <td>
+                                {% if leave_detail.end_date %}
+                                    {{leave_detail.end_date}}
+                                {% endif %}
+                            </td>
+                            {% if leave_detail.day_type == 1 %}
+                            <td>{{ leave_detail.end_date|calculate_days:leave_detail.start_date }} days</td>
+                            {% elif leave_detail.start_date.weekday < 4 %}
+                            <td> 0.5 days</td>
+                            {% else %}
+                            <td> 0 days</td>
+                            {% endif %}
+                             <td>{{leave_detail.reason}}</td>
+                             <td class="text-center">
+                                <div class="dropdown action-label">
+                                    <a class="btn btn-white btn-sm btn-rounded" href="javascript:void(0);">
+                                        {% if leave_detail.status|lower == 'approved' %}
+                                        <i class="fa-regular fa-circle-dot text-success"></i> Approved
+                                        {% elif leave_detail.status|lower == 'declined' %}
+                                        <i class="fa-regular fa-circle-dot text-danger"></i> Declined
+                                        {% else %}
+                                        <i class="fa-regular fa-circle-dot text-info"></i> Pending
+                                        <!-- <i class="fa-regular fa-circle-dot text-purple"></i> New -->
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </td>
+                            <td>
+                                {% if leave_detail.status|lower == 'approved' %}
+                                <h2 class="table-avatar">
+                                    <a href="{% url 'profile' leave_detail.emp_id %}" class="avatar" data-bs-toggle="tooltip" title="{{ leave_detail.first_name }} {{ leave_detail.last_name }}">
+                                        {% if leave_detail.image_url %}
+                                        <img src="{{ leave_detail.image_url }}" alt="User Image"></a>
+                                     {% else %}
+                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                     {% endif %}
+                                    </a>
+                                    {% if leave_detail.first_name and leave_detail.last_name %}
+                                    <a href="{% url 'profile' leave_detail.emp_id %}">{{ leave_detail.first_name }} {{ leave_detail.last_name }}</a>
+                                    {% else %}
+                                    <a href="{% url 'profile' leave_detail.emp_id %}">{{ leave_detail.user_name }}</a>
+                                    {% endif %}
+                                </h2>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if leave_detail.status|lower == 'approved' %}
+                                    {% if leave_detail.start_date > current_date %}
+                                    <div class="dropdown dropdown-action">
+                                        <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a class="dropdown-item" href="javascript:void(0)" onclick="editLeave({{ leave_detail.id }})"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                            <a class="dropdown-item delete-leave" href="javascript:void(0)" onclick="deleteLeave({{ leave_detail.id }})"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                <div class="dropdown dropdown-action">
+                                    <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="javascript:void(0)" onclick="editLeave({{ leave_detail.id }})"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                        <a class="dropdown-item delete-leave" href="javascript:void(0)" onclick="deleteLeave({{ leave_detail.id }})"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="add_leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add-leave' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="employee_id" value="{{employee_detail.id}}">
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="select" name="leave_type">
+                            <option value="">Select Leave Type</option>
+                            {% for ltype in leave_type %}
+                                <option value="{{ ltype.id }}">{{ ltype.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Day Type <span class="text-danger">*</span></label>
+                        <div class="col-md-10">
+                            <div class="radio">
+                                <label class="col-form-label">
+                                    <input type="radio" name="day_type" value="1" checked> &nbsp;Full Day
+                                </label>
+                            
+                                <label class="col-form-label" style="margin-left: 15px;">
+                                    <input type="radio" name="day_type" value="2"> &nbsp;First Half
+                                </label>
+                            
+                                <label class="col-form-label" style="margin-left: 15px;">
+                                    <input type="radio" name="day_type" value="3"> &nbsp;Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">From <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" type="text" name="from_date" >
+                        </div>
+                    </div>
+                    <div class="input-block mb-3" id="to_date_div">
+                        <label class="col-form-label">To <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" type="text" name="to_date">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Number of days <span class="text-danger">*</span></label>
+                        <input class="form-control numDays" id="numDays" readonly type="text">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Remaining Leave <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly value="{{remaining_leave}}" type="text" id="remaining_leave">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Reason <span class="text-danger"></span></label>
+                        <textarea rows="4" class="form-control" name="reason"></textarea>
+                    </div>
+                    
+                    <div class="submit-section">
+                        <input type="hidden" name="request_for" value="add_leave">
+                        <input type="hidden" name="next" value="{% url 'leave_employee' %}">
+                        <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="edit_leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add-leave' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="select" name="leave_type" id="edit_leave_type">
+                            <option value="">Select Leave Type</option>
+                            {% for ltype in leave_type %}
+                                <option value="{{ ltype.id }}">{{ ltype.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Day Type <span class="text-danger">*</span></label>
+                        <div class="col-md-10">
+                            <div class="radio">
+                                <label class="col-form-label">
+                                    <input type="radio" name="day_type" value="1" checked> &nbsp;Full Day
+                                </label>
+                            
+                                <label class="col-form-label" style="margin-left: 15px;">
+                                    <input type="radio" name="day_type" value="2"> &nbsp;First Half
+                                </label>
+                            
+                                <label class="col-form-label" style="margin-left: 15px;">
+                                    <input type="radio" name="day_type" value="3"> &nbsp;Second Half
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">From <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker2" value="" type="text" name="edit_from_date" id="edit_from_date">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3" id="edit_to_date_div">
+                        <label class="col-form-label">To <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker2" value="" type="text" name="edit_to_date" id="edit_to_date">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Number of days <span class="text-danger">*</span></label>
+                        <input class="form-control numDays" readonly type="text" value="" id="edit_day">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Remaining Leave <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly value="{{remaining_leave}}" id="edit_remaining_leave" type="text">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Reason <span class="text-danger"></span></label>
+                        <textarea rows="4" class="form-control" name="reason" id="edit_reason">Going to hospital</textarea>
+                    </div>
+                    <div class="submit-section">
+                        <input type="hidden" name="leave_id" id="edit_leave_id">
+                        <input type="hidden" name="request_for" value="edit_leave">
+                        <input type="hidden" name="next" value="{% url 'leave_employee' %}">
+                        <button class="btn btn-primary submit-btn" type="submit" id="edit_leave_btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal custom-modal fade" id="delete_approve" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Delete Leave</h3>
+                    <p>Are you sure want to delete this leave?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="hidden" name="delete_leave_id" id="delete_leave_id" value="">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn" id="confirmDelete">Delete</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.datetimepicker').datetimepicker({
+            format: 'YYYY-MM-DD', // Adjust format as needed
+            icons: {
+                up: "fa fa-angle-up",
+                down: "fa-solid fa-angle-down",
+                next: 'fa-solid fa-angle-right',
+                previous: 'fa-solid fa-angle-left'
+            }
+        }).on('dp.change', function(e) {
+            var fromDate = $('input[name="from_date"]').val();
+            var toDate = $('input[name="to_date"]').val();
+            /*if(fromDate && toDate) {
+                var diff = moment(toDate).diff(moment(fromDate), 'days');
+                if(diff >= 0) {
+                    $('#numDays').val(diff + 1);
+                } else {
+                    $('#numDays').val('');
+                }
+                var total_remaining_leave = "{{remaining_leave}}";
+                var remaining_leave = total_remaining_leave - (diff + 1);
+                $('#remaining_leave').val(remaining_leave);
+            }*/
+            if(fromDate && toDate) {
+                var start = moment(fromDate);
+                var end = moment(toDate);
+                var diffDays = 0;
+
+                while (start <= end) {
+                    // days() returns the day of the week (0 is Sunday and 6 is Saturday)
+                    if (start.day() !== 0 && start.day() !== 6 && start.day() !== 5) {
+                        diffDays++;
+                    }
+                    start = start.add(1, 'days');
+                }
+
+                $('.numDays').val(diffDays);
+                var total_remaining_leave = "{{remaining_leave}}";
+                var remaining_leave = total_remaining_leave - diffDays;
+                $('#remaining_leave').val(remaining_leave);
+            } else {
+                        var selectedValue = $('input[type=radio][name=day_type]:checked').val();
+
+                        // Set the value of .numDays based on the selected radio button
+                        if (selectedValue == 1) {
+                            $('.numDays').val('');
+                        } else {
+                            $('.numDays').val(0.5);
+                        }
+            }
+        });
+
+        $('.datetimepicker2').datetimepicker({
+            format: 'YYYY-MM-DD', // Adjust format as needed
+            icons: {
+                up: "fa fa-angle-up",
+                down: "fa-solid fa-angle-down",
+                next: 'fa-solid fa-angle-right',
+                previous: 'fa-solid fa-angle-left'
+            }
+        }).on('dp.change', function(e) {
+            var fromDate = $('input[name="edit_from_date"]').val();
+            var toDate = $('input[name="edit_to_date"]').val();
+            /*if(fromDate && toDate) {
+                var diff = moment(toDate).diff(moment(fromDate), 'days');
+                if(diff >= 0) {
+                    $('.numDays').val(diff + 1);
+                } else {
+                    $('.numDays').val('');
+                }
+            }*/
+
+            if(fromDate && toDate) {
+                var start = moment(fromDate);
+                var end = moment(toDate);
+                var diffDays = 0;
+
+                while (start <= end) {
+                    // days() returns the day of the week (0 is Sunday and 6 is Saturday)
+                    if (start.day() !== 0 && start.day() !== 6 && start.day() !== 5) {
+                        diffDays++;
+                    }
+                    start = start.add(1, 'days');
+                }
+
+                $('.numDays').val(diffDays);
+            } else {
+                var selectedValue = $('input[type=radio][name=day_type]:checked').val();
+
+                // Set the value of .numDays based on the selected radio button
+                if (selectedValue == 1) {
+                    $('.numDays').val('');
+                } else {
+                    $('.numDays').val(0.5);
+                }
+            }
+        });
+    });
+    $(document).ready(function(){
+        $(".confirmChk").click(function(){
+            $("#leave_id").val($(this).parent().attr('id'));
+            $("#leave_status").val($(this).attr('data-arg'));
+            $("#approve_leave").modal('show');
+        });
+
+        // Confirm button action
+        $("#confirmBtn").click(function(){
+            var leave_id = $("#leave_id").val();
+            var leave_status = $("#leave_status").val();
+            // return false;
+            if(leave_id !='' && leave_status !=''){
+                $.ajax({
+                    // type: "POST",
+                    url: '{% url "update_leave_status" %}',
+                    data: {leave_id:leave_id,leave_status:leave_status},
+                    success: function(response) {
+                        if (response.status==1) {
+                            if(leave_status == 'approved'){
+                                $('#'+leave_id).parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-success"></i> '+leave_status);
+                            }else if(leave_status == 'declined'){
+                                $('#'+leave_id).parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-danger"></i> '+leave_status);
+                            }else{
+                                $('#'+leave_id).parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-info"></i> '+leave_status);
+                            }
+                            $('#'+leave_id).parent('div').find('a').css('text-transform','capitalize');
+                            $("#approve_leave").modal('hide');
+                        }else{
+                            $("#approve_leave").modal('hide');
+                            alert('error');
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }
+        });
+
+        $("#confirmDelete").click(function(){
+            var leave_id = $("#delete_leave_id").val();
+            $.ajax({
+                // type: "POST",
+                url: '{% url "delete_leave" %}',
+                data: {leave_id:leave_id},
+                success: function(response) {
+                    if (response.status==1) {
+                        window.location.reload();
+                    }else{
+                        alert('error');
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log('Error: ' + errmsg);
+                }
+            });
+        });
+
+        $('input[type=radio][name=day_type]').change(function() {
+            if(this.value == 1) {
+                $('#to_date_div').show();
+                $('#edit_to_date_div').show();
+                var total_remaining_leave = "{{remaining_leave}}";
+                $('.numDays').val('');
+                $('#remaining_leave').val(total_remaining_leave);
+            }else{
+                $('#to_date_div').hide();
+                $('#edit_to_date_div').hide();
+                $('input[name=to_date]').val('');
+                $('.numDays').val(0.5);
+                var total_remaining_leave = "{{remaining_leave}}";
+                var remaining_leave = total_remaining_leave - 0.5;
+                $('#remaining_leave').val(remaining_leave);
+            }
+        });
+    });
+    function editLeave(leave_id){
+        $.ajax({
+            // type: "POST",
+            url: '{% url "get_leave_by_id" %}',
+            data: {leave_id:leave_id},
+            success: function(response) {
+                if (response.status==1) {
+                    console.log(response.leave_detail);
+                    // $("#edit_employee_id").val(response.leave_detail.employee_id);
+                    $("#edit_from_date").val(response.leave_detail.start_date);
+                    $("#edit_to_date").val(response.leave_detail.end_date);
+                    $("#edit_reason").val(response.leave_detail.reason);
+                    $("#edit_leave_type").val(response.leave_detail.leave_type_id);
+                    $("#edit_leave_id").val(response.leave_detail.id);
+                    $(".select").change();
+                    var fromDate = response.leave_detail.start_date;
+                    var toDate = response.leave_detail.end_date;
+                    if(fromDate && toDate) {
+                        /*var diff = moment(toDate).diff(moment(fromDate), 'days');
+                        if(diff >= 0) {
+                            $('.numDays').val(diff + 1);
+                        } else {
+                            $('.numDays').val('');
+                        }*/
+                        var start = moment(fromDate);
+                        var end = moment(toDate);
+                        var diffDays = 0;
+
+                        while (start <= end) {
+                            // days() returns the day of the week (0 is Sunday and 6 is Saturday)
+                            if (start.day() !== 0 && start.day() !== 6 && start.day() !== 5) {
+                                diffDays++;
+                            }
+                            start = start.add(1, 'days');
+                        }
+
+                        $('.numDays').val(diffDays);
+                    }
+                    $("#edit_leave").modal('show');
+                }else{
+                    alert('error');
+                }
+            },
+            error: function(xhr, errmsg, err) {
+                console.log('Error: ' + errmsg);
+            }
+        });
+    }
+
+    function deleteLeave(leave_id){
+        $("#delete_leave_id").val(leave_id);
+        $("#delete_approve").modal('show');
+    }
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('.datatable1').DataTable({
+            paging: true,       // Enable pagination
+            ordering: true,     // Enable column sorting
+            order: [],
+            info: true,         // Show table info
+            search: true,       // Enable search box
+            pageLength: 10,       // Number of rows per page
+            columnDefs: [
+                {
+                    targets: [1,2],
+                    type: 'date',
+                },
+                {
+                    targets: [7],
+                    orderable: false
+                }
+            ]
+        });
+    });
+</script>
+
+<style>
+    /* Make Add Leave button text white */
+.add-btn {
+    color: #ffffff !important;
+}
+
+.add-btn:hover,
+.add-btn:focus {
+    color: #ffffff !important;
+}
+
+</style>
+{% endblock %}

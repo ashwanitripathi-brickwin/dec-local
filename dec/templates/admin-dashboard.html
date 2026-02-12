@@ -1,0 +1,1184 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<style type="text/css">
+	.custom-table td {
+	    padding: 10px 10px !important;
+	}
+</style>
+<div class="content container-fluid">
+
+	<div class="page-header">
+		<div class="row">
+			<div class="col-sm-8">
+				<h3 class="page-title">Welcome {{ request.session.first_name }},</h3>
+				<ul class="breadcrumb">
+					<li class="breadcrumb-item active">Dashboard</li>
+				</ul>
+			</div>
+
+			<div class="col-sm-4">
+				<form action="#" class="row" id="month_data">
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3 form-focus">
+								<select class="select floating" id="monthList" name="month">
+								    <option value="">Select</option>
+								    <option value="1" {% if current_month == 1 %}selected{% endif %}>January</option>
+								    <option value="2" {% if current_month == 2 %}selected{% endif %}>February</option>
+								    <option value="3" {% if current_month == 3 %}selected{% endif %}>March</option>
+								    <option value="4" {% if current_month == 4 %}selected{% endif %}>April</option>
+								    <option value="5" {% if current_month == 5 %}selected{% endif %}>May</option>
+								    <option value="6" {% if current_month == 6 %}selected{% endif %}>June</option>
+								    <option value="7" {% if current_month == 7 %}selected{% endif %}>July</option>
+								    <option value="8" {% if current_month == 8 %}selected{% endif %}>August</option>
+								    <option value="9" {% if current_month == 9 %}selected{% endif %}>September</option>
+								    <option value="10" {% if current_month == 10 %}selected{% endif %}>October</option>
+								    <option value="11" {% if current_month == 11 %}selected{% endif %}>November</option>
+								    <option value="12" {% if current_month == 12 %}selected{% endif %}>December</option>
+								</select>
+			                    <label class="focus-label">Date</label>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="input-block mb-3 form-focus">
+								<select class="select floating" id="yearList" name="year">
+									<option value="2024" {% if current_year == 2024 %}selected{% endif %}>2024</option>
+									<option value="2025" {% if current_year == 2025 %}selected{% endif %}>2025</option>
+									<option value="2026" {% if current_year == 2026 %}selected{% endif %}>2026</option>
+								</select>
+								<label class="focus-label">Year</label>
+							</div>
+						</div>
+	                    <div class="col-sm-3">
+	                    	<button class="btn btn-success" type="button" id="update_month" style="font-weight: 600;font-size: 18px;padding: 8px 20px;">Search</button>
+	                    </div>
+					</div>
+                </form>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'current_clients' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-users"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ client_count }}</h3>
+						<span>Total Clients</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'profile' logged_in_employee_id %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-users"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ logged_in_employee_client_count }}</h3>
+						<span>My Clients</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'projects' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-file"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ project_count }}</h3>
+						<span>Total Projects</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<!-- <div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'employees' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-user"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ employee_count }}</h3>
+						<span>Employees</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div> -->
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'calender' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-clock"></i></span>
+					<div class="dash-widget-info">
+						<!-- <h3>{{ project_count }}</h3> -->
+						<!-- <h3>{{ total_hours_month }}</h3>
+						<span>Total Hours This Month</span> -->
+						<h3>{{ total_working_hours }}</h3>
+						<span>Contracted Hrs/Week</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+	</div>
+	<style type="text/css">
+		.dash-widget .card-body .dash-widget-info h3{
+			font-size: 23px !important;
+		}
+		.dash-widget .card-body .dash-widget-info span{
+			font-size: 14px !important;
+		}
+	</style>
+	<!-- <div class="row">
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'calender' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-clock"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ total_hours_today }}/8</h3>
+						<span>Total Hours Today</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'calender' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-clock"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ total_hours_week }}/32</h3>
+						<span>Total Hours Week</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'calender' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-clock"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ total_hours_month }}/144</h3>
+						<span>Total Hours Month</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<a href="{% url 'leave_employee' %}" style="color: var(--bs-body-color);">
+				<div class="card-body">
+					<span class="dash-widget-icon"><i class="fa-solid fa-user"></i></span>
+					<div class="dash-widget-info">
+						<h3>{{ leave_summary }}</h3>
+						<span>Leave</span>
+					</div>
+				</div>
+				</a>
+			</div>
+		</div>
+	</div> -->
+	<!-- <div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-6 text-center">
+					<div class="card">
+						<div class="card-body">
+							<h3 class="card-title">Total Revenue</h3>
+							<div id="bar-charts"></div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6 text-center">
+					<div class="card">
+						<div class="card-body">
+							<h3 class="card-title">Sales Overview</h3>
+							<div id="line-charts"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card-group m-b-30">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between mb-3">
+							<div>
+								<span class="d-block">Total Employees</span>
+							</div>
+							<div>
+								<span class="text-success"></span>
+							</div>
+						</div>
+						<h3 class="mb-3">{{ employee_count }}</h3>
+						<div class="progress height-five mb-2">
+							<div class="progress-bar bg-primary w-70" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<p class="mb-0">Overall Employees </p>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between mb-3">
+							<div>
+								<span class="d-block">Earnings</span>
+							</div>
+							<div>
+								{% if earning > 0 %}
+									<span class="text-success">+{{ earning }}%</span>
+								  {% elif earning < 0 %}
+									<span class="text-danger">{{ earning }}%</span>
+								  {% else %}
+									{{ earning }}%
+								{% endif %}
+							</div>
+						</div>
+						<h3 class="mb-3">${{client_cost_current}}</h3>
+						<div class="progress height-five mb-2">
+							<div class="progress-bar bg-primary w-70" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<p class="mb-0">Previous Month <span class="text-muted">${{client_cost_previous}}</span></p>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between mb-3">
+							<div>
+								<span class="d-block">Profit</span>
+							</div>
+							<div>
+								{% if profit > 0 %}
+									<span class="text-success">+{{ profit }}%</span>
+								  {% elif profit < 0 %}
+									<span class="text-danger">{{ profit }}%</span>
+								  {% else %}
+									{{ profit }}%
+								  {% endif %}
+							</div>
+						</div>
+						<h3 class="mb-3">${{profit_current}}</h3>
+						<div class="progress height-five mb-2">
+							<div class="progress-bar bg-primary w-70" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<p class="mb-0">Previous Month <span class="text-muted">${{profit_previous}}</span></p>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex justify-content-between mb-3">
+							<div>
+								<span class="d-block">Contracted Profit</span>
+							</div>
+							<div>
+								{% if contracted_profit > 0 %}
+									<span class="text-success">+{{ contracted_profit }}%</span>
+								  {% elif contracted_profit < 0 %}
+									<span class="text-danger">{{ contracted_profit }}%</span>
+								  {% else %}
+									{{ contracted_profit }}%
+								  {% endif %}
+							</div>
+						</div>
+						<h3 class="mb-3">${{contracted_profit_current}}</h3>
+						<div class="progress height-five mb-2">
+							<div class="progress-bar bg-primary w-70" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<p class="mb-0">Previous Month <span class="text-muted">${{contracted_profit_previous}}</span></p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+
+	<div class="row">
+		<!-- <div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Employees</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Employee Name</th>
+									<th>Working Hours</th>
+								</tr>
+							</thead>
+							<tbody>
+						        {% for entry in total_working_time_per_employee %}
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="javascript:void(0);" class="avatar">
+												{% if entry.image_url %}
+			                                        <img src="{{ entry.image_url }}" alt="User Image"></a>
+			                                    {% else %}
+			                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+			                                    {% endif %}
+											</a>
+											<a href="javascript:void(0);">{{ entry.employee_name }}</a>
+										</h2>
+									</td>
+									<td>{{ entry.total_time_formatted }}/32Hrs</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div> -->
+		<!-- <div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card flex-fill">
+				<div class="card-header pb-2 d-flex align-items-center justify-content-between flex-wrap">
+					<h4 class="card-title">Birthdays</h4>
+				</div>
+				<div class="card-body pb-1">
+					{% if birthdays_today %}
+					<h6 class="mb-2">Today</h6>
+					{% for employee in birthdays_today %}
+			            <div class="bg-light p-2 border border-dashed rounded-top mb-3">
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="d-flex align-items-center">
+									<a href="javascript:void(0);" class="avatar">
+										{% if employee.image_url|length > 0 %}
+		                                    <img src="{{ employee.image_url }}" alt="User Image">
+		                                {% else %}
+		                                    <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+		                                {% endif %}
+									</a>
+									<div class="ms-2 overflow-hidden">
+										<h6 class="fs-medium ">{{ employee.first_name }} {{ employee.last_name }}</h6>
+									</div>
+								</div>
+								<a href="javascript:void(0);" class="btn btn-secondary btn-xs"><i class="ti ti-cake me-1"></i>Send</a>
+							</div>
+
+						</div>
+			        {% endfor %}
+			        {% endif %}
+			        {% if birthdays_tomorrow %}
+					<h6 class="mb-2">Tomorow</h6>
+					{% for employee in birthdays_tomorrow %}
+			            <div class="bg-light p-2 border border-dashed rounded-top mb-3">
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="d-flex align-items-center">
+									<a href="javascript:void(0);" class="avatar">
+										{% if employee.image_url|length > 0 %}
+		                                    <img src="{{ employee.image_url }}" alt="User Image">
+		                                {% else %}
+		                                    <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+		                                {% endif %}
+									</a>
+									<div class="ms-2 overflow-hidden">
+										<h6 class="fs-medium"><a href="javascript:void(0);">{{ employee.first_name }} {{ employee.last_name }}</a></h6>
+									</div>
+								</div>
+								<a href="javascript:void(0);" class="btn btn-secondary btn-xs"><i class="ti ti-cake me-1"></i>Send</a>
+							</div>
+						</div>
+			        {% endfor %}
+			        {% endif %}
+					
+			        {% for employee in future_birthdays %}
+						<h6 class="mb-2">{{ employee.date_of_birth|date:"d M" }}</h6>
+			        	<div class="bg-light p-2 border border-dashed rounded-top mb-3">
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="d-flex align-items-center">
+									<span class="avatar">
+										{% if employee.image_url|length > 0 %}
+		                                    <img src="{{ employee.image_url }}" alt="User Image">
+		                                {% else %}
+		                                    <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+		                                {% endif %}
+									</span>
+									<div class="ms-2 overflow-hidden">
+										<h6 class="fs-medium ">{{ employee.first_name }} {{ employee.last_name }}</h6>
+									</div>
+								</div>
+								<a href="javascript:void(0);" class="btn btn-secondary btn-xs"><i class="ti ti-cake me-1"></i>Send</a>
+							</div>
+						</div>
+			        {% endfor %}
+					
+				</div>
+			</div>
+		</div> -->
+		<div class="col-md-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Projects</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Leader</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for project_data in project_data_with_employees %}
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="{% url 'projects' %}" class="avatar">
+												{% if project_data.project.uploaded_file %}
+			                                        <!-- <img src="{{ project_data.project.uploaded_file }}" alt="User Image"> -->
+			                                        <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+			                                    {% else %}
+			                                        <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+			                                    {% endif %}
+											</a>
+											<a href="{% url 'projects' %}">{{ project_data.project.project_name }}</a>
+										</h2>
+									</td>
+									<td>
+										{% for employee in project_data.employee_details_by_role.L %}
+										    {{ employee.name }}{% if not forloop.last %}, {% endif %}
+										{% endfor %}
+									</td>
+									<td>
+										<div class="dropdown action-label">
+											{% if project_data.project.status == 'in_progress' %}
+												<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-success"></i> 
+													InProgress
+												</a>
+											{% elif project_data.project.status == 'completed' %}
+										    	<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-danger"></i> 
+													Completed
+												</a>
+											{% elif project_data.project.status == 'onboarding' %}
+												<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-warning"></i> 
+													Onboarding
+												</a>
+											{% else %}
+										        <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-success"></i> 
+													InProgress
+												</a>
+										    {% endif %}
+											<div class="dropdown-menu dropdown-menu-right" data-id="{{project_data.project.id}}">
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="in_progress"><i class="fa-regular fa-circle-dot text-success"></i> InProgress</a>
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="onboarding"><i class="fa-regular fa-circle-dot text-warning"></i> Onboarding</a>
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="completed"><i class="fa-regular fa-circle-dot text-danger"></i> Completed</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								{% endfor %}								
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Clients</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Company</th>
+								</tr>
+							</thead>
+							<tbody>
+						        {% for entry in logged_in_employee_clients|slice:":5" %}
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="{% url 'client-profile' entry.client.id %}" class="avatar">
+												{% if entry.client.image_url %}
+			                                        <img src="{{ entry.client.image_url }}" alt="User Image">
+			                                    {% else %}
+			                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+			                                    {% endif %}
+											</a>
+											<a href="{% url 'client-profile' entry.client.id %}">{{ entry.client.client_name }}</a>
+										</h2>
+									</td>
+									<td>{{ entry.client.company_name }}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<!-- <div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card flex-fill">
+				<div class="card-body">
+					<h4 class="card-title">This Week Leaves</h4>
+					{% for leave_detail in leaves_with_employees %}
+						<div class="leave-info-box">
+							<div class="media d-flex align-items-center">
+								<a href="{% url 'leave_employee' %}" class="avatar">
+									{% if leave_detail.image_url %}
+                                        <img src="{{ leave_detail.image_url }}" alt="User Image"></a>
+                                    {% else %}
+                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                    {% endif %}
+								</a>
+								<div class="media-body flex-grow-1">
+									<div class="text-sm my-0">{{leave_detail.employee_name}}</div>
+								</div>
+							</div>
+							<div class="row align-items-center mt-3">
+								<div class="col-6">
+									<h6 class="mb-0">
+										{% if leave_detail.start_date == leave_detail.end_date %}
+											{{leave_detail.start_date}}
+										{% else %}
+											{{leave_detail.start_date}} to {{leave_detail.end_date}}
+										{% endif %}
+									</h6>
+								</div>
+								<div class="col-6 text-end">
+									<span class="badge {% if leave_detail.status == 'approved' %}bg-inverse-success{% else %}bg-inverse-danger{% endif %}">
+									{{leave_detail.status|capfirst}}</span>
+								</div>
+							</div>
+						</div>
+
+					{% endfor %}
+				</div>
+			</div>
+		</div> -->
+		<div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card flex-fill">
+				<div class="card-body">
+					<h4 class="card-title">My Upcoming Leave</h4>
+					{% for leave_detail in leaves_with_employees|slice:":3" %}
+						<div class="leave-info-box">
+							<div class="media d-flex align-items-center">
+								<a href="{% url 'leave_employee' %}" class="avatar">
+									{% if leave_detail.image_url %}
+                                        <img src="{{ leave_detail.image_url }}" alt="User Image"></a>
+                                    {% else %}
+                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                    {% endif %}
+								</a>
+								<div class="media-body flex-grow-1">
+									<div class="text-sm my-0">{{leave_detail.employee_name}}</div>
+								</div>
+							</div>
+							<div class="row align-items-center mt-3">
+								<div class="col-6">
+									<h6 class="mb-0">
+										{% if leave_detail.start_date == leave_detail.end_date %}
+											{{leave_detail.start_date}}
+										{% else %}
+											{{leave_detail.start_date}} to {{leave_detail.end_date}}
+										{% endif %}
+									</h6>
+								</div>
+								<div class="col-6 text-end">
+									<span class="badge {% if leave_detail.status == 'approved' %}bg-inverse-success{% else %}bg-inverse-danger{% endif %}">
+									{{leave_detail.status|capfirst}}</span>
+								</div>
+							</div>
+						</div>
+
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 col-lg-6 col-xl-6 d-flex">
+			<div class="card flex-fill">
+				<div class="card-body">
+					<h4 class="card-title">Leave <span class="badge bg-inverse-danger ms-2">{{ month_leaves_with_employees|length }}</span></h4>
+					{% for leave_detail in month_leaves_with_employees|slice:":3" %}
+						<div class="leave-info-box">
+							<div class="media d-flex align-items-center">
+								<a href="{% url 'leave_employee' %}" class="avatar">
+									{% if leave_detail.image_url %}
+                                        <img src="{{ leave_detail.image_url }}" alt="User Image"></a>
+                                    {% else %}
+                                        <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                    {% endif %}
+								</a>
+								<div class="media-body flex-grow-1">
+									<div class="text-sm my-0">{{leave_detail.employee_name}}</div>
+								</div>
+							</div>
+							<div class="row align-items-center mt-3">
+								<div class="col-6">
+									<h6 class="mb-0">
+										{% if leave_detail.start_date == leave_detail.end_date %}
+											{{leave_detail.start_date}}
+										{% else %}
+											{{leave_detail.start_date}} to {{leave_detail.end_date}}
+										{% endif %}
+									</h6>
+								</div>
+								<div class="col-6 text-end">
+									<span class="badge {% if leave_detail.status == 'approved' %}bg-inverse-success{% else %}bg-inverse-danger{% endif %}">
+									{{leave_detail.status|capfirst}}</span>
+								</div>
+							</div>
+						</div>
+
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+	
+
+	<!-- <div class="row">
+		<div class="col-md-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Invoices</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table table-nowrap custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Invoice ID</th>
+									<th>Client</th>
+									<th>Due Date</th>
+									<th>Total</th>
+									<th>Status</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><a href="#">#INV-0001</a></td>
+									<td>
+										<h2><a href="#">Global Technologies</a></h2>
+									</td>
+									<td>11 Mar 2019</td>
+									<td>$380</td>
+									<td>
+										<span class="badge bg-inverse-warning">Partially Paid</span>
+									</td>
+								</tr>
+								<tr>
+									<td><a href="#">#INV-0002</a></td>
+									<td>
+										<h2><a href="#">Delta Infotech</a></h2>
+									</td>
+									<td>8 Feb 2019</td>
+									<td>$500</td>
+									<td>
+										<span class="badge bg-inverse-success">Paid</span>
+									</td>
+								</tr>
+								<tr>
+									<td><a href="#">#INV-0003</a></td>
+									<td>
+										<h2><a href="#">Cream Inc</a></h2>
+									</td>
+									<td>23 Jan 2019</td>
+									<td>$60</td>
+									<td>
+										<span class="badge bg-inverse-danger">Unpaid</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-footer">
+					<a href="#">View all invoices</a>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Payments</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table table-nowrap mb-0">
+							<thead>
+								<tr>
+							16		<th>Invoice ID</th>
+									<th>Client</th>
+									<th>Payment Type</th>
+									<th>Paid Date</th>
+									<th>Paid Amount</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><a href="#">#INV-0001</a></td>
+									<td>
+										<h2><a href="#">Global Technologies</a></h2>
+									</td>
+									<td>Paypal</td>
+									<td>11 Mar 2019</td>
+									<td>$380</td>
+								</tr>
+								<tr>
+									<td><a href="#">#INV-0002</a></td>
+									<td>
+										<h2><a href="#">Delta Infotech</a></h2>
+									</td>
+									<td>Paypal</td>
+									<td>8 Feb 2019</td>
+									<td>$500</td>
+								</tr>
+								<tr>
+									<td><a href="#">#INV-0003</a></td>
+									<td>
+										<h2><a href="#">Cream Inc</a></h2>
+									</td>
+									<td>Paypal</td>
+									<td>23 Jan 2019</td>
+									<td>$60</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-footer">
+					<a href="#">View all payments</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Clients</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Email</th>
+									<th>Status</th>
+									<th class="text-end">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="#" class="avatar"><img src="{% static 'assets/img/profiles/avatar-19.jpg' %}" alt="User Image"></a>
+											<a href="#">Barry Cuda <span>CEO</span></a>
+										</h2>
+									</td>
+									<td><a href="https://smarthr.dreamguystech.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bad8dbc8c8c3d9cfdedbfadfc2dbd7cad6df94d9d5d7">[email&#160;protected]</a></td>
+									<td>
+										<div class="dropdown action-label">
+											<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="fa-regular fa-circle-dot text-success"></i> Active
+											</a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-success"></i> Active</a>
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Inactive</a>
+											</div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="#" class="avatar"><img src="{% static 'assets/img/profiles/avatar-19.jpg' %}" alt="User Image"></a>
+											<a href="#">Tressa Wexler <span>Manager</span></a>
+										</h2>
+									</td>
+									<td><a href="https://smarthr.dreamguystech.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b7c3c5d2c4c4d6c0d2cfdbd2c5f7d2cfd6dac7dbd299d4d8da">[email&#160;protected]</a></td>
+									<td>
+										<div class="dropdown action-label">
+											<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="fa-regular fa-circle-dot text-danger"></i> Inactive
+											</a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-success"></i> Active</a>
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Inactive</a>
+											</div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="#" class="avatar"><img src="{% static 'assets/img/profiles/avatar-07.jpg' %}" alt="User Image"></a>
+											<a href="#">Ruby Bartlett <span>CEO</span></a>
+										</h2>
+									</td>
+									<td><a href="https://smarthr.dreamguystech.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="057770677c676477716960717145607d64687569602b666a68">[email&#160;protected]</a></td>
+									<td>
+										<div class="dropdown action-label">
+											<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="fa-regular fa-circle-dot text-danger"></i> Inactive
+											</a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-success"></i> Active</a>
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Inactive</a>
+											</div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="#" class="avatar"><img src="{% static 'assets/img/profiles/avatar-06.jpg' %}" alt="User Image"></a>
+											<a href="#"> Misty Tison <span>CEO</span></a>
+										</h2>
+									</td>
+									<td><a href="https://smarthr.dreamguystech.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e984809a9d909d809a8687a98c91888499858cc78a8684">[email&#160;protected]</a></td>
+									<td>
+										<div class="dropdown action-label">
+											<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="fa-regular fa-circle-dot text-success"></i> Active
+											</a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-success"></i> Active</a>
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Inactive</a>
+											</div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="#" class="avatar"><img src="{% static 'assets/img/profiles/avatar-14.jpg' %}" alt="User Image"></a>
+											<a href="#"> Daniel Deacon <span>CEO</span></a>
+										</h2>
+									</td>
+									<td><a href="https://smarthr.dreamguystech.com/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b4d0d5daddd1d8d0d1d5d7dbdaf4d1ccd5d9c4d8d19ad7dbd9">[email&#160;protected]</a></td>
+									<td>
+										<div class="dropdown action-label">
+											<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+												<i class="fa-regular fa-circle-dot text-danger"></i> Inactive
+											</a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-success"></i> Active</a>
+												<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Inactive</a>
+											</div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-footer">
+					<a href="#">View all clients</a>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 d-flex">
+			<div class="card card-table flex-fill">
+				<div class="card-header">
+					<h3 class="card-title mb-0">Recent Projects</h3>
+				</div>
+				<div class="card-body">
+					<div class="table-responsive">
+						<table class="table custom-table mb-0">
+							<thead>
+								<tr>
+									<th>Project Name </th>
+									<th>Progress</th>
+									<th class="text-end">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<h2><a href="#">Office Management</a></h2>
+										<small class="block text-ellipsis">
+											<span>1</span> <span class="text-muted">open tasks, </span>
+											<span>9</span> <span class="text-muted">tasks completed</span>
+										</small>
+									</td>
+									<td>
+										<div class="progress progress-xs progress-striped">
+											<div class="progress-bar w-65" role="progressbar" data-bs-toggle="tooltip" title="65%"></div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2><a href="#">Project Management</a></h2>
+										<small class="block text-ellipsis">
+											<span>2</span> <span class="text-muted">open tasks, </span>
+											<span>5</span> <span class="text-muted">tasks completed</span>
+										</small>
+									</td>
+									<td>
+										<div class="progress progress-xs progress-striped">
+											<div class="progress-bar w-15" role="progressbar" data-bs-toggle="tooltip" title="15%"></div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2><a href="#">Video Calling App</a></h2>
+										<small class="block text-ellipsis">
+											<span>3</span> <span class="text-muted">open tasks, </span>
+											<span>3</span> <span class="text-muted">tasks completed</span>
+										</small>
+									</td>
+									<td>
+										<div class="progress progress-xs progress-striped">
+											<div class="progress-bar w-50" role="progressbar" data-bs-toggle="tooltip" title="50%"></div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2><a href="#">Hospital Administration</a></h2>
+										<small class="block text-ellipsis">
+											<span>12</span> <span class="text-muted">open tasks, </span>
+											<span>4</span> <span class="text-muted">tasks completed</span>
+										</small>
+									</td>
+									<td>
+										<div class="progress progress-xs progress-striped">
+											<div class="progress-bar w-88" role="progressbar" data-bs-toggle="tooltip" title="88%"></div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<h2><a href="#">Digital Marketplace</a></h2>
+										<small class="block text-ellipsis">
+											<span>7</span> <span class="text-muted">open tasks, </span>
+											<span>14</span> <span class="text-muted">tasks completed</span>
+										</small>
+									</td>
+									<td>
+										<div class="progress progress-xs progress-striped">
+											<div class="progress-bar w-100" role="progressbar" data-bs-toggle="tooltip" title="100%"></div>
+										</div>
+									</td>
+									<td class="text-end">
+										<div class="dropdown dropdown-action">
+											<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+											<div class="dropdown-menu dropdown-menu-right">
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+												<a class="dropdown-item" href="javascript:void(0)"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="card-footer">
+					<a href="#">View all projects</a>
+				</div>
+			</div>
+		</div>
+	</div> -->
+</div>
+
+<div class="modal custom-modal fade" id="change_project_status" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Change Status</h3>
+                    <p>Are you sure want to change status?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="hidden" name="project_id" id="project_id" value="">
+                            <input type="hidden" name="project_status" id="project_status" value="">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn" id="confirmBtn">Confirm</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Decline</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('#update_month').click(function() {
+            var year = $("#yearList").val();
+            var month = $("#monthList").val();
+            if(month !=''){
+                $.ajax({
+                    // type: "POST",
+                    url: '{% url "update_month" %}',
+                    data: {'month': month, 'year': year},
+                    success: function(response) {
+                        window.location.reload();
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }else{
+                alert("Please select category");
+            }
+        });
+    });
+
+    $(document).ready(function(){
+        $(".confirmChk").click(function(){
+            $("#project_id").val($(this).parent().attr('data-id'));
+        	$("#project_status").val($(this).attr('data-status'));
+        	$("#change_project_status").modal('show');
+        });
+
+        // Confirm button action
+        $("#confirmBtn").click(function(){
+            var project_id = $("#project_id").val();
+            var project_status = $("#project_status").val();
+            // alert('project_id '+project_id +' project_status '+project_status);
+            // return false;
+            if(project_id !='' && project_status !=''){
+                $.ajax({
+                    // type: "POST",
+                    url: '{% url "update_project_status" %}',
+                    data: {project_id:project_id,project_status:project_status},
+                    success: function(response) {
+                        if (response.status==1) {
+                            if(project_status == 'onboarding'){
+                                $('div[data-id="'+ project_id +'"]').parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-warning"></i> Onboarding');
+                            }else if(project_status == 'completed'){
+                                $('div[data-id="'+ project_id +'"]').parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-danger"></i> Completed');
+                            }else{
+                                $('div[data-id="'+ project_id +'"]').parent('div').find('a:first').html('<i class="fa-regular fa-circle-dot text-success"></i> InProgress');
+                            }
+                            // $('div[data-id="'+ project_id +'"]').parent('div').find('a').css('text-transform','capitalize');
+                            $("#change_project_status").modal('hide');
+                        }else{
+                            $("#change_project_status").modal('hide');
+                            alert('error');
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

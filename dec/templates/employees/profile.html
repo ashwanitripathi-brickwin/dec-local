@@ -1,0 +1,2395 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* Styling for the clickable and hoverable elements */
+    .clickable {
+        cursor: pointer;
+
+    }
+    .container {
+    margin-top: -60px; /* Adjust this value as needed */
+}
+
+
+</style>
+
+<div class="content container-fluid">
+
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Profile</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profile</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                <form method="post" action="{% url 'profile' employee.id %}" id="employeeForm">
+                    {% csrf_token %}
+                    <div class="filter-filelds" id="filter_inputs">
+                        <div class="row filter-row">
+                            <div class="col-xl-12">
+                                <div class="input-block mb-3 form-focus focused">
+                                    <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange2">
+                                    <label class="focus-label">From - To Date</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-auto float-end ms-auto" style="margin-top: -15px;">
+                <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#upload_document"><i class="fa-solid fa-plus"></i> Upload Document</button>
+            </div>
+            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                <div class="col-auto float-end ms-auto"  style="margin-top: -15px;">
+                    <form action="{% url 'export_employee_data' %}" method="post" target="_blank" style="width: 100%">
+                        <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                        <input type="hidden" name="from_to_date" class="form-control date-range bookingrange2">
+                        <button type="submit" class="btn add-btn">Export Data</button>
+                    </form>                    
+                </div>
+            {% endif %}
+            
+        </div>
+    </div>
+
+    <!-- <div class="page-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="page-title">Profile</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profile</li>
+                </ul>
+            </div>
+
+
+            <div class="container">
+                <div class="row justify-content-end">
+                    <div class="col-md-3">
+                        <form method="post" action="{% url 'profile' employee.id %}" id="employeeForm">
+                            {% csrf_token %}
+                            <div class="filter-filelds" id="filter_inputs">
+                                <div class="row filter-row">
+                                    <div class="col-xl-8 offset-xl-4">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange2">
+                                            <label class="focus-label">From - To Date</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-2">
+                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            <form action="{% url 'export_employee_data' %}" method="post" target="_blank" style="width: 100%">
+                                <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                                <input type="hidden" name="from_to_date" class="form-control date-range bookingrange2">
+                                <button type="submit" class="btn add-btn">Export Data</button>
+                            </form>
+                            
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="card mb-0">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="profile-view">
+                        <div class="profile-img-wrap">
+                            <div class="profile-img">
+                                {% if employee.image_url|length > 0 %}
+                                    <a href="#"><img src="{{ employee.image_url }}" alt="User Image"></a>
+                                {% else %}
+                                    <a href="#"><img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="User Image"></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="profile-basic">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="profile-info-left">
+                                        <h3 class="user-name m-t-0 mb-0">
+                                            {% if employee.first_name|length > 0 %}
+                                                {{ employee.first_name }} {{ employee.last_name }}
+                                            {% else %}
+                                                {{ employee.user_name }}
+                                            {% endif %}
+                                        </h3>
+                                        <div class="staff-id">Designation : {{ employee.designation }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <ul class="personal-info">
+                                        <li>
+                                            <div class="title">Phone:</div>
+                                            <div class="text"><a href>{{ employee.phone }}</a></div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Email:</div>
+                                            <div class="text"><a href><span class="__cf_email__" data-cfemail="43292c2b2d272c2603263b222e332f266d202c2e">{{ employee.email}}</span></a></div>
+                                        </li>
+                                        <li>
+                                            <div class="title">Birthday:</div>
+                                            <div class="text">
+                                                    {{ employee.date_of_birth }}
+                                            </div>
+                                        </li>
+                                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                                        <li>
+                                            <form action="{% url 'generate_csv' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                                                <input type="hidden" name="submit_type" value="client revenue">
+                                                <input type="hidden" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange2">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Client Revenue: </span><span class="text">{{ sum_of_rates }}</span>
+                                                </button>
+                                            </form>
+                                            <!-- <div class="clickable title client">Client Revenue:</div>
+                                            <div class="clickable text client">{{ sum_of_rates }}</div> -->
+                                        </li>
+                                        <li>
+                                            <form action="{% url 'generate_csv' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                                                <input type="hidden" name="submit_type" value="employee cost">
+                                                <input type="hidden" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange2">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Actual Employee Cost: </span><span class="text">{{ sum_of_rates_employee }}</span>
+                                                </button>
+                                            </form>
+                                            <!-- <div class="clickable title a_employee_cost">Employee Cost:</div>
+                                            <div class="clickable text actual">{{ sum_of_rates_employee }}</div> -->
+                                        </li>
+                                        <li>
+                                            <form action="{% url 'generate_csv' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                                                <input type="hidden" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange2">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Contracted Employee Cost: </span><span class="text">{{contracted_sum_of_rates_employee}}</span>
+                                                </button>
+                                            </form>
+                                            <style type="text/css">
+                                                .borderless {
+                                                    border: none;
+                                                    background: none;
+                                                    padding: 0;
+                                                    margin: 0;
+                                                    cursor: pointer;
+                                                    text-align: left;
+                                                }
+                                            </style>
+                                            <!-- <div class="clickable title c_employee_cost">Contracted Employee Cost:</div>
+                                            <div class="clickable text contracted">{{contracted_sum_of_rates_employee}}</div> -->
+                                        </li>
+                                        {% endif %}
+                                        <li>
+                                            <div class="title">Joining Date:</div>
+                                            <div class="text">{{ employee.joining_date|date:"F, Y" }}</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pro-edit" hidden><a data-bs-target="#profile_info" data-bs-toggle="modal" class="edit-icon" href="#"><i class="fa-solid fa-pencil"></i></a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="modal fade" id="contractedClientModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="contractedClientModal">Client Revenue</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="contractedClientModal"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="actualemployeecostModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="actualemployeecostModal">Actual Employee Cost</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="actualemployeecostModal"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="contractedemployeecostModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="contractedemployeecostModal">Contracted Employee Cost</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="contractedemployeecostModal"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="card tab-box">
+        <div class="row user-tabs">
+            <div class="col-lg-12 col-md-12 col-sm-12 line-tabs">
+                <ul class="nav nav-tabs nav-tabs-bottom">
+                    {% if my_profile_tab == '3' %}
+                        <li class="nav-item"><a href="#emp_clients" data-bs-toggle="tab" class="nav-link">Clients</a></li>
+                        <li class="nav-item"><a href="#emp_projects" data-bs-toggle="tab" class="nav-link">Work Category</a></li>
+                        {% if request.user.id == 6 or employee.user_id == request.user.id %}
+                            <li class="nav-item"><a href="#emp_profile" data-bs-toggle="tab" class="nav-link active">Profile</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="nav-item"><a href="#emp_clients" data-bs-toggle="tab" class="nav-link active">Clients</a></li>
+                        <li class="nav-item"><a href="#emp_projects" data-bs-toggle="tab" class="nav-link">Work Category</a></li>
+                        {% if request.user.id == 6 or employee.user_id == request.user.id %}
+                            <li class="nav-item"><a href="#emp_profile" data-bs-toggle="tab" class="nav-link">Profile</a></li>
+                        {% endif %}
+                        
+                    {% endif %}
+                   <li class="nav-item"><a href="#projects" data-bs-toggle="tab" class="nav-link">Projects</a></li>
+                   <li class="nav-item"><a href="#fileManager" data-bs-toggle="tab" class="nav-link">File Manager</a></li>
+
+
+
+                    <!-- <li class="nav-item"><a href="#bank_statutory" data-bs-toggle="tab" class="nav-link">Bank & Statutory <small class="text-danger">(Admin Only)</small></a></li>
+                    <li class="nav-item"><a href="#emp_assets" data-bs-toggle="tab" class="nav-link">Assets</a></li> -->
+                </ul>
+
+            </div>
+        </div>
+    </div>
+    <div class="tab-content">
+
+        <div id="emp_profile" class="tab-pane fade">
+            <div class="row">
+                <div class="col-md-6 d-flex">
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body">
+                            <h3 class="card-title">Google Calendar </h3>
+                            <!-- <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#personal_info_modal"><i class="fa-solid fa-pencil"></i></a> -->
+                            <ul class="personal-info">
+                                
+                                <li>
+                                <a href="/get_authenticated_service">
+                                <div class="calendar-box" style="border: 1px solid #ccc;padding: 10px 20px;">
+                                  <img src="{% static 'assets/img/Google_Calendar_icon.png' %}" style="height:20px;" alt="Layout Image">
+                                  <span style="margin:10px;">Google Calendar</span>
+                                </div>
+                                    </a>
+                                </li>
+                                <li>
+                                <div class="calendar-box" style="padding: 10px 20px;">
+                                  
+                                  <!-- <span style="margin:10px;">Google Calendar</span> -->
+                                    {% if employee.auth_gmail %}
+                                    <img src="{% static 'assets/img/Google_Calendar_icon.png' %}" style="height:20px;" alt="Layout Image">
+                                  <span style="margin:10px;" id="authorize_email">{{employee.auth_gmail}}</span>
+
+                                    <a href="/remove">Remove</a>
+                                    {% endif %}
+                                </div>
+                                </li>
+                                <li style="margin-left:30px;" id="togBtn1">
+                                    <label class="switch">
+                                        <input type="checkbox" id="togBtn">
+                                        <div class="slider round"></div>
+                                    </label>
+                                </li>
+                            
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex">
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body">
+                            <!-- <h3 class="card-title">Emergency Contact </h3>
+                            
+                            <ul class="personal-info">
+                                <li>
+                                    <div class="title">Name:</div>
+                                    <div class="text">{{employee_salary.name}}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Relationship:</div>
+                                    <div class="text">{{employee_salary.relationship}}</div>
+                                </li>
+                                <li>
+                                    <div class="title">Phone:</div>
+                                    <div class="text">{{employee_salary.emergency_contact}}</div>
+                                </li>
+                            </ul> -->
+
+                            <h3 class="card-title">Timezone Detection & Manual Selection</h3>
+
+                            <div class="mt-2">
+                                <!-- Radio buttons for timezone selection -->
+                                <div class="radio-group">
+                                    {% if employee.auth_gmail %}
+                                        <input type="radio" id="googleTimezone" name="timezoneOption" {% if employee.timezone and employee.manual_timezone %}checked{% endif %}>
+                                        <label for="googleTimezone" style="padding-right:20px;">Google Calendar Timezone</label>
+                                    {% endif %}
+
+                                    <input type="radio" id="manualTimezone" name="timezoneOption" {% if employee.manual_timezone and not employee.timezone %}checked{% endif %}>
+                                    <label for="manualTimezone">Select Manual Timezone</label>
+                                </div>
+
+                                <!-- Timezone display -->
+                                <div class="timezone-display mt-2">
+                                    <strong>Current Timezone:</strong>
+                                    <span id="timezoneDisplay">
+                                        {{ employee.manual_timezone|default:employee.timezone|default:country_timezone }}
+                                    </span>
+                                </div>
+
+                                <!-- Timezone selection dropdown -->
+                                <label class="mt-2" for="timezoneSelect">Select Your Timezone:</label>
+                                <div class="timezone-selection col-md-10">
+                                    <select id="timezoneSelect" disabled>
+                                        <!-- Timezone options will be added dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 d-flex">
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body">
+                            <h3 class="card-title">Google Drive </h3>
+                            <!-- <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#education_info"><i class="fa-solid fa-pencil"></i></a> -->
+                            <div class="gd-box" >
+                                <ul class="gd-list">
+                                    <li style="max-width: 200px;">
+                                        <a href="/gd-auth">
+                                            <div class="calendar-box" style="border: 1px solid #ccc;padding: 10px 20px;">
+                                              <img src="{% static 'assets/img/google_drive_icon.png' %}" style="height:20px;" alt="Layout Image">
+                                              <span style="margin:10px;">Google Drive</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <div class="calendar-box" style="padding: 15px 20px;">
+                                          <!-- <span style="margin:10px;">Google Calendar</span> -->
+                                            {% if employee.gd_gmail %}
+                                            <img src="{% static 'assets/img/google_drive_icon.png' %}" style="height:20px;" alt="Layout Image">
+                                            <span style="margin:10px;" id="authorize_gd_email">{{employee.gd_gmail}}</span>
+                                            <a href="/gd_remove">Remove</a>
+                                            {% endif %}
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <!-- <div class="row" hidden> -->
+                <!-- <div class="col-md-6 d-flex">
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body">
+                            <h3 class="card-title">Education Informations </h3>
+                            <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#education_info"><i class="fa-solid fa-pencil"></i></a> 
+                            <div class="experience-box">
+                                <ul class="experience-list">
+                                    <li>
+                                        <div class="experience-user">
+                                            <div class="before-circle"></div>
+                                        </div>
+                                        <div class="experience-content">
+                                            <div class="timeline-content">
+                                                <a href="#/" class="name">International College of Arts and Science (UG)</a>
+                                                <div>Bsc Computer Science</div>
+                                                <span class="time">2000 - 2003</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="experience-user">
+                                            <div class="before-circle"></div>
+                                        </div>
+                                        <div class="experience-content">
+                                            <div class="timeline-content">
+                                                <a href="#/" class="name">International College of Arts and Science (PG)</a>
+                                                <div>Msc Computer Science</div>
+                                                <span class="time">2000 - 2003</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                <div class="" hidden>
+                    <div class="card profile-box flex-fill">
+                        <div class="card-body" hidden>
+                            <h3 class="card-title">Experience </h3>
+                            <!-- <a href="#" class="edit-icon" data-bs-toggle="modal" data-bs-target="#experience_info"><i class="fa-solid fa-pencil"></i></a></h3> -->
+                            <div class="experience-box">
+                                <ul class="experience-list">
+                                    <li>
+                                        <div class="experience-user">
+                                            <div class="before-circle"></div>
+                                        </div>
+                                        <div class="experience-content">
+                                            <div class="timeline-content">
+                                                <a href="#/" class="name">Web Designer at Zen Corporation</a>
+                                                <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="experience-user">
+                                            <div class="before-circle"></div>
+                                        </div>
+                                        <div class="experience-content">
+                                            <div class="timeline-content">
+                                                <a href="#/" class="name">Web Designer at Ron-tech</a>
+                                                <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="experience-user">
+                                            <div class="before-circle"></div>
+                                        </div>
+                                        <div class="experience-content">
+                                            <div class="timeline-content">
+                                                <a href="#/" class="name">Web Designer at Dalt Technology</a>
+                                                <span class="time">Jan 2013 - Present (5 years 2 months)</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="emp_projects">
+            <div class="row">
+
+                {% for key, info in client_category_dict.items %}
+
+                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="dropdown profile-action" hidden>
+                                <a aria-expanded="false" data-bs-toggle="dropdown" class="action-icon dropdown-toggle" href="#"><i class="material-icons">more_vert</i></a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" class="dropdown-item"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" class="dropdown-item"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                </div>
+                            </div>
+                            <h4 class="project-title"><a href="#">{{ info.category_name }}</a></h4>
+                            <p class="text-muted">
+                                {{ info.client_name }}
+                            </p>
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Working Time:
+                                </div>
+                                <div class="text-muted">
+                                    {{ info.total_time }}
+                                </div>
+                            </div>
+                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Employee Cost:
+                                </div>
+                                <div class="text-muted">
+                                    {{info.employee_cost}}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+            </div>
+
+
+
+            <!--new i have added-->
+
+            <div class="card tab-box" style="display: none;">
+                <div class="row user-tabs">
+                    <div class="col-lg-12 col-md-12 col-sm-12 line-tabs">
+                        <ul class="nav nav-tabs nav-tabs-bottom">
+                            <li class="nav-item col-sm-3"><a class="nav-link active" data-bs-toggle="tab" href="#myprojects1">Projects</a></li>
+                            <li class="nav-item col-sm-3"><a class="nav-link" data-bs-toggle="tab" href="#tasks1">Tasks</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="myprojects1" class="tab-pane fade show active"style="display: none;">
+              <div class="table-responsive">
+                <form action="{% url 'profile' employee.id %}" method="get" enctype="multipart/form-data">
+                  {% csrf_token %} <!-- Place it here, immediately after the <form> tag -->
+                      <label for="start_date">Start Date:</label>
+                      <input type="date" name="start_date" required id="start_date">
+                      <label for="end_date">End Date:</label>
+                      <input type="date" name="end_date" required id="end_date">
+                      <input type="hidden" name="form_type" value="form2">
+                      <input type="submit" name="action" value="Call API">
+                      <input type="button" name="action" value="Fetch from Database" id="get_projects">
+                  </form>
+
+                  <table class="table table-striped custom-table" id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Project Name</th>
+                            <th>Client Name</th>
+                            <th>User</th>
+                            <th>Duration</th>
+                            <th>Time</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detailed_record in detailed_records %}
+                        <tr>
+                            <td>{{ detailed_record.record.description }}</td>
+                            <td>{{ detailed_record.toggl_projectname }}</td>
+                            <td>{{ detailed_record.toggl_clientname}}</td>
+                            <td>{{ detailed_record.record.username }}</td>
+                            <td>{{ detailed_record.record.time_entries_seconds }}</td>
+                            <td>{{ detailed_record.record.time_entries_start_time }} - {{ detailed_record.record.time_entries_stop_time }}</td>
+                            <td>{{ detailed_record.record.time_entries_start_date }} - {{ detailed_record.record.time_entries_start_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+
+            <div id="tasks1" class="tab-pane fade" >
+                <div class="project-task">
+                    <ul class="nav nav-tabs nav-tabs-top nav-justified mb-0">
+                        <li class="nav-item"><a class="nav-link active" href="#all_tasks" data-bs-toggle="tab" aria-expanded="true">All Tasks</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#pending_tasks" data-bs-toggle="tab" aria-expanded="false">Pending Tasks</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#completed_tasks" data-bs-toggle="tab" aria-expanded="false">Completed Tasks</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="all_tasks">
+                            <div class="task-wrapper">
+                                <div class="task-list-container">
+                                    <div class="task-list-body">
+                                        <ul id="task-list">
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient appointment booking</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Appointment booking with payment gateway</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="completed task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label">Doctor available module</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient and Doctor video conferencing</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Private chat module</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient Profile add</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="task-list-footer">
+                                        <div class="new-task-wrapper">
+                                            <textarea id="new-task" placeholder="Enter new task here. . ."></textarea>
+                                            <span class="error-message hidden">You need to enter a task first</span>
+                                            <span class="add-new-task-btn btn" id="add-task">Add Task</span>
+                                            <span class="btn" id="close-task-panel">Close</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="pending_tasks"></div>
+                        <div class="tab-pane" id="completed_tasks"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!--    end of added code-->
+
+
+        </div>
+
+        <div class="pro-overview tab-pane fade show active" id="emp_clients">
+            <div class="row">
+
+                {% for client in client_data_list %}
+
+                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="dropdown profile-action" hidden>
+                                <a aria-expanded="false" data-bs-toggle="dropdown" class="action-icon dropdown-toggle" href="#"><i class="material-icons">more_vert</i></a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a data-bs-target="#edit_project" data-bs-toggle="modal" href="#" class="dropdown-item"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                    <a data-bs-target="#delete_project" data-bs-toggle="modal" href="#" class="dropdown-item"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a href="{% url 'client-profile' client.id %}" data-bs-toggle="tooltip" title="{{ client.role}}">
+                                <span class="user-img">
+                                    {% if client.img_url %}
+                                        <!-- If client.3 has an image, display it -->
+                                        <img src="{{ client.img_url }}" alt="User Image" class="img-fluid avatar">
+                                    {% else %}
+                                        <!-- If client.3 has no image, display a default image -->
+                                        <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" class="img-fluid avatar">
+                                    {% endif %}
+                                </span>
+                                <h4 class="project-title"><a href="{% url 'client-profile' client.id%}">{{ client.name }}</a></h4>
+                            </div>
+
+                            <p></p>
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Company Name:
+                                </div>
+                                <div class="text-muted">
+                                    {{client.company}}
+                                </div>
+                            </div>
+                            <p></p>
+                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Contracted Working Time:
+                                </div>
+                                <div class="text-muted">
+                                      {% for id, time in client_hours.items %}
+                                        {% if id == client.id %}
+                                            {{time.time}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Contracted Client Revenue:
+                                </div>
+                                <div class="text-muted">
+                                      {% for id, cost in client_revenue.items %}
+                                        {% if id == client.id %}
+                                            {{cost}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                              <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Contracted Employee cost:
+                                </div>
+                                <div class="text-muted">
+                                      {% for id, cost in contracted_employee_rate_per_hour.items %}
+                                        {% if id == client.id %}
+                                            {{cost}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Actual Employee Cost:
+                                </div>
+                                <div class="text-muted">
+                                      {% for id, time in client_tab_employee_cost.items %}
+                                        {% if id == client.id %}
+                                            {{time}}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Actual Working Time:
+                                </div>
+                                <div class="text-muted">
+                                    {% for id, time in client_total_time_spent_formatted.items %}
+                                    {% if id == client.id %}
+                                    {{time}}
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+
+
+            <!--new i have added-->
+
+            <div class="card tab-box"style="display: none;">
+                <div class="row user-tabs">
+                    <div class="col-lg-12 col-md-12 col-sm-12 line-tabs">
+                        <ul class="nav nav-tabs nav-tabs-bottom">
+                            <li class="nav-item col-sm-3"><a class="nav-link active" data-bs-toggle="tab" href="#myprojects1">Projects</a></li>
+                            <li class="nav-item col-sm-3"><a class="nav-link" data-bs-toggle="tab" href="#tasks1">Tasks</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="myprojects1" class="tab-pane fade show active"style="display: none;">
+                <div class="table-responsive">
+                    <form action="{% url 'profile' employee.id %}" method="get" enctype="multipart/form-data">
+                      {% csrf_token %} <!-- Place it here, immediately after the <form> tag -->
+                          <label for="start_date">Start Date:</label>
+                          <input type="date" name="start_date" required id="start_date">
+                          <label for="end_date">End Date:</label>
+                          <input type="date" name="end_date" required id="end_date">
+                          <input type="hidden" name="form_type" value="form2">
+                          <input type="submit" name="action" value="Call API">
+                          <input type="button" name="action" value="Fetch from Database" id="get_projects">
+                    </form>
+                    <table class="table table-striped custom-table" id="data-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Project Name</th>
+                                <th>Client Name</th>
+                                <th>User</th>
+                                <th>Duration</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detailed_record in detailed_records %}
+                            <tr>
+                                <td>{{ detailed_record.record.description }}</td>
+                                <td>{{ detailed_record.toggl_projectname }}</td>
+                                <td>{{ detailed_record.toggl_clientname}}</td>
+                                <td>{{ detailed_record.record.username }}</td>
+                                <td>{{ detailed_record.record.time_entries_seconds }}</td>
+                                <td>{{ detailed_record.record.time_entries_start_time }} - {{ detailed_record.record.time_entries_stop_time }}</td>
+                                <td>{{ detailed_record.record.time_entries_start_date }} - {{ detailed_record.record.time_entries_start_date }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+            <div id="tasks1" class="tab-pane fade">
+                <div class="project-task">
+                    <ul class="nav nav-tabs nav-tabs-top nav-justified mb-0">
+                        <li class="nav-item"><a class="nav-link active" href="#all_tasks" data-bs-toggle="tab" aria-expanded="true">All Tasks</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#pending_tasks" data-bs-toggle="tab" aria-expanded="false">Pending Tasks</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#completed_tasks" data-bs-toggle="tab" aria-expanded="false">Completed Tasks</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="all_tasks">
+                            <div class="task-wrapper">
+                                <div class="task-list-container">
+                                    <div class="task-list-body">
+                                        <ul id="task-list">
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient appointment booking</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Appointment booking with payment gateway</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="completed task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label">Doctor available module</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient and Doctor video conferencing</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Private chat module</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                            <li class="task">
+                                                <div class="task-container">
+                                                    <span class="task-action-btn task-check">
+                                                        <span class="action-circle large complete-btn" title="Mark Complete">
+                                                            <i class="material-icons">check</i>
+                                                        </span>
+                                                    </span>
+                                                    <span class="task-label" contenteditable="true">Patient Profile add</span>
+                                                    <span class="task-action-btn task-btn-right">
+                                                        <span class="action-circle large" title="Assign">
+                                                            <i class="material-icons">person_add</i>
+                                                        </span>
+                                                        <span class="action-circle large delete-btn" title="Delete Task">
+                                                            <i class="material-icons">delete</i>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="task-list-footer">
+                                        <div class="new-task-wrapper">
+                                            <textarea id="new-task" placeholder="Enter new task here. . ."></textarea>
+                                            <span class="error-message hidden">You need to enter a task first</span>
+                                            <span class="add-new-task-btn btn" id="add-task">Add Task</span>
+                                            <span class="btn" id="close-task-panel">Close</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="pending_tasks"></div>
+                        <div class="tab-pane" id="completed_tasks"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!--    end of added code-->
+
+
+        </div>
+        <div id="projects" class="tab-pane fade show">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive" id="leave-data">
+                        <table class="table table-striped custom-table mb-0 datatable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Project Value</th>
+                                    <th>Role</th>
+                                    <th>Start Date</th>
+                                    <!-- <th>Status</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project_data in project_data_with_employees %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'projects' %}" class="avatar">
+                                                {% if project_data.uploaded_file %}
+                                                    <!-- <img src="{{ project_data.uploaded_file }}" alt="User Image"> -->
+                                                    <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+                                                {% else %}
+                                                    <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+                                                {% endif %}
+                                            </a>
+                                            <a href="{% url 'projects' %}">{{ project_data.project_name }}</a>
+                                        </h2>
+                                    </td>
+                                    <td>{{ project_data.rate }}</td>
+                                    <td>
+                                        {{ project_data.role }}
+                                    </td>
+                                    <td>{{ project_data.start_date }}</td>
+                                </tr>
+                                {% endfor %}                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="fileManager" class="tab-pane fade show">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive" id="leave-data">
+                        <table class="table table-striped custom-table mb-0 datatable">
+                            <thead>
+                                <tr>
+                                    <th>Upload By</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Uploaded Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'profile' file.uploaded_by.id %}" class="avatar" data-bs-toggle="tooltip" title="{{file.uploaded_by.last_name}}">
+                                                {% if file.uploaded_by.image_url %}
+                                                <img src="{{ file.uploaded_by.image_url }}" alt="User Image">
+                                                {% else %}
+                                                <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                                {% endif %}
+                                            </a>
+                                        </h2>
+                                        <a href="{% url 'profile' file.uploaded_by.id %}">{{ file.uploaded_by.first_name }} {{ file.uploaded_by.last_name }}</a>
+                                    </td>
+                                    <td>{{ file.description }}</td>
+                                    <td>{{ file.file_type }}</td>
+                                    <td>{{ file.created_at|date:"F d, Y" }}</td>
+                                    <td>
+                                        <div class="table-actions d-flex">
+                                            {% if file.file %}
+                                                {% with file_extension=file.file.url|slice:"-4:" %}
+                                                    {% if file_extension == ".jpg" or file_extension == ".jpeg" or file_extension == ".png" or file_extension == ".gif" %}
+                                                        <a class="delete-table me-2" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="showImage('{{ file.file.url }}')">
+                                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="Eye Icon">
+                                                        </a>
+                                                    {% else %}
+                                                        <a class="delete-table me-2" href="{{ file.file.url }}" target="_blank">
+                                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="PDF Icon">
+                                                        </a>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endif %}
+                                            <a class="delete-table me-2" href="{{ file.file.url }}" download>
+                                                <img src="{% static 'assets/img/icons/esultdown.png' %}" alt="Download Icon">
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                {% endfor %}                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<div class="modal custom-modal fade" id="imageModal" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Preview Image" style="max-width: 100%; max-height: 80vh;">
+                <button onclick="toggleFullScreen()" class="btn btn-secondary mt-2">Full Screen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showImage(imageUrl) {
+        document.getElementById('modalImage').src = imageUrl;
+    }
+    function toggleFullScreen() {
+        var img = document.getElementById('modalImage');
+        if (img.requestFullscreen) {
+            img.requestFullscreen();
+        } else if (img.webkitRequestFullscreen) { /* Safari */
+            img.webkitRequestFullscreen();
+        } else if (img.msRequestFullscreen) { /* IE11 */
+            img.msRequestFullscreen();
+        }
+    }
+</script>
+
+
+<div id="upload_document" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'upload_document' %}" method="post" enctype="multipart/form-data" id="documentForm" data-project_name="">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="entity_type" value="employee">
+                    <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Document <span class="text-danger">*</span></label>
+                                <input class="form-control" type="file" name="uploaded_file" id="uploaded_file">
+                                <div class="invalid-feedback">Document cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="description" id="description" placeholder="" spellcheck="false"></textarea>
+                            <div class="invalid-feedback">Description cannot be blank.</div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn" id="saveBtn">Submit</button>
+                    </div>
+                </form>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="profile_info" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Profile Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'profile' employee.id %}" method="get" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="form1">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="profile-img-wrap edit-img">
+                                <img class="inline-block" src="assets/img/profiles/avatar-02.jpg" alt="User Image">
+                                <div class="fileupload btn">
+                                    <span class="btn-text">edit</span>
+                                    <input class="upload" type="file" name="profile_picture">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">First Name</label>
+                                        <input type="text" class="form-control" value="John">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Last Name</label>
+                                        <input type="text" class="form-control" value="Doe">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Birth Date</label>
+                                        <div class="cal-icon">
+                                            <input class="form-control datetimepicker" type="text" value="05/06/1985">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Gender</label>
+                                        <select class="select form-control">
+                                            <option value="male selected">Male</option>
+                                            <option value="female">Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Address</label>
+                                <input type="text" class="form-control" value="4487 Snowbird Lane">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">State</label>
+                                <input type="text" class="form-control" value="New York">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Country</label>
+                                <input type="text" class="form-control" value="United States">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Pin Code</label>
+                                <input type="text" class="form-control" value="10523">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Phone Number</label>
+                                <input type="text" class="form-control" value="631-889-3206">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Department <span class="text-danger">*</span></label>
+                                <select class="select">
+                                    <option>Select Department</option>
+                                    <option>Web Development</option>
+                                    <option>IT Management</option>
+                                    <option>Marketing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Designation <span class="text-danger">*</span></label>
+                                <select class="select">
+                                    <option>Select Designation</option>
+                                    <option>Web Designer</option>
+                                    <option>Web Developer</option>
+                                    <option>Android Developer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Reports To <span class="text-danger">*</span></label>
+                                <select class="select">
+                                    <option>-</option>
+                                    <option>Wilmer Deluna</option>
+                                    <option>Lesley Grauer</option>
+                                    <option>Jeffery Lalor</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="personal_info_modal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Personal Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Passport No</label>
+                                <input type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Passport Expiry Date</label>
+                                <div class="cal-icon">
+                                    <input class="form-control datetimepicker" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Tel</label>
+                                <input class="form-control" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Nationality <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Religion</label>
+                                <div class="cal-icon">
+                                    <input class="form-control" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Marital status <span class="text-danger">*</span></label>
+                                <select class="select form-control">
+                                    <option>-</option>
+                                    <option>Single</option>
+                                    <option>Married</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Employment of spouse</label>
+                                <input class="form-control" type="text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">No. of children </label>
+                                <input class="form-control" type="text">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="family_info_modal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Family Informations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-scroll">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Family Member <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Name <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Relationship <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Date of birth <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Phone <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Education Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Name <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Relationship <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Date of birth <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3">
+                                            <label class="col-form-label">Phone <span class="text-danger">*</span></label>
+                                            <input class="form-control" type="text">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="add-more">
+                                    <a href="javascript:void(0);"><i class="fa-solid fa-plus-circle"></i> Add More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="emergency_contact_modal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Personal Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Primary Contact</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Relationship <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Phone <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Phone 2</label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Primary Contact</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Relationship <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Phone <span class="text-danger">*</span></label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Phone 2</label>
+                                        <input class="form-control" type="text">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="education_info" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"> Education Informations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-scroll">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Education Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Oxford University" class="form-control floating">
+                                            <label class="focus-label">Institution</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Computer Science" class="form-control floating">
+                                            <label class="focus-label">Subject</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <div class="cal-icon">
+                                                <input type="text" value="01/06/2002" class="form-control floating datetimepicker">
+                                            </div>
+                                            <label class="focus-label">Starting Date</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <div class="cal-icon">
+                                                <input type="text" value="31/05/2006" class="form-control floating datetimepicker">
+                                            </div>
+                                            <label class="focus-label">Complete Date</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="BE Computer Science" class="form-control floating">
+                                            <label class="focus-label">Degree</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Grade A" class="form-control floating">
+                                            <label class="focus-label">Grade</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Education Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Oxford University" class="form-control floating">
+                                            <label class="focus-label">Institution</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Computer Science" class="form-control floating">
+                                            <label class="focus-label">Subject</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <div class="cal-icon">
+                                                <input type="text" value="01/06/2002" class="form-control floating datetimepicker">
+                                            </div>
+                                            <label class="focus-label">Starting Date</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <div class="cal-icon">
+                                                <input type="text" value="31/05/2006" class="form-control floating datetimepicker">
+                                            </div>
+                                            <label class="focus-label">Complete Date</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="BE Computer Science" class="form-control floating">
+                                            <label class="focus-label">Degree</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" value="Grade A" class="form-control floating">
+                                            <label class="focus-label">Grade</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="add-more">
+                                    <a href="javascript:void(0);"><i class="fa-solid fa-plus-circle"></i> Add More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="experience_info" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Experience Informations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-scroll">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Experience Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="Digital Devlopment Inc">
+                                            <label class="focus-label">Company Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="United States">
+                                            <label class="focus-label">Location</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="Web Developer">
+                                            <label class="focus-label">Job Position</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <div class="cal-icon">
+                                                <input type="text" class="form-control floating datetimepicker" value="01/07/2007">
+                                            </div>
+                                            <label class="focus-label">Period From</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <div class="cal-icon">
+                                                <input type="text" class="form-control floating datetimepicker" value="08/06/2018">
+                                            </div>
+                                            <label class="focus-label">Period To</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Experience Informations <a href="javascript:void(0);" class="delete-icon"><i class="fa-regular fa-trash-can"></i></a></h3>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="Digital Devlopment Inc">
+                                            <label class="focus-label">Company Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="United States">
+                                            <label class="focus-label">Location</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <input type="text" class="form-control floating" value="Web Developer">
+                                            <label class="focus-label">Job Position</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <div class="cal-icon">
+                                                <input type="text" class="form-control floating datetimepicker" value="01/07/2007">
+                                            </div>
+                                            <label class="focus-label">Period From</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-block mb-3 form-focus">
+                                            <div class="cal-icon">
+                                                <input type="text" class="form-control floating datetimepicker" value="08/06/2018">
+                                            </div>
+                                            <label class="focus-label">Period To</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="add-more">
+                                    <a href="javascript:void(0);"><i class="fa-solid fa-plus-circle"></i> Add More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<style>
+    /* The switch - the box around the slider */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 30px; /* Width of the switch */
+      height: 5px; /* Height of the switch */
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    /* The slider */
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc; /* Off state color */
+      transition: .4s;
+      border-radius: 34px; /* Circular borders */
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 15px; /* Height of the slider */
+      width: 15px; /* Width of the slider */
+      left: -11px;
+      bottom: -4px;
+      background-color: #8d59b5;
+      transition: .4s;
+      border-radius: 50%; /* Round shape */
+    }
+
+    input:checked + .slider {
+      background-color: #2196F3; /* On state color */
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px); /* Slide effect */
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 34px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+
+</style>
+
+<script>
+    $(document).ready(function(){
+        $('#get_projects').click(function() {
+            var start_date = $("#start_date").val();
+            var end_date = $("#end_date").val();
+            // alert(start_date);
+            // alert(end_date);
+            // return false;
+            if(start_date !='' && end_date !=''){
+                $.ajax({
+                    // type: "POST",
+                    url: '{% url "get_projects" employee.id %}',
+                    data: {'start_date':start_date,'end_date':end_date},
+                    success: function(response) {
+                        $('#data-table').html(response);
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }else{
+                alert("Please select category");
+            }
+        });
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.datetimepicker').datetimepicker({
+            format: 'YYYY-MM-DD', // Adjust format as needed
+            icons: {
+                up: "fa fa-angle-up",
+                down: "fa-solid fa-angle-down",
+                next: 'fa-solid fa-angle-right',
+                previous: 'fa-solid fa-angle-left'
+            }
+        });
+
+        // Function to check if both start and end dates are selected
+        function checkDates() {
+            const startDateInput = $('#start_date').val();
+            const endDateInput = $('#end_date').val();
+
+            if (startDateInput && endDateInput) {
+                // If both dates are selected, submit the form
+                console.log(startDateInput);
+                console.log(endDateInput);
+                $('#dateForm').submit();
+            }
+        }
+
+        // Event listener for date inputs
+        $('.datetimepicker').on('dp.change', checkDates);
+    });
+</script>
+
+
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost outside the click function
+
+        function openPopup2(ui_employee, client_id) {
+            var entries = ui_employee[client_id]['entries'];
+            if (entries) {
+                for (var i = 0; i < entries.length; i++) {
+                    var entry = entries[i];
+                    var client_name = entry.ui_client_name;
+                    var employee_name = entry.ui_employee_name;
+                    var ui_total_contracted_hours = parseFloat(entry.ui_total_contracted_hours);
+                    var ui_contracted_hours = parseFloat(entry.ui_contracted_hours);
+                    var weeks = parseFloat(entry.ui_weeks);
+                    var ui_cost = parseFloat(entry.ui_cost);
+
+                    var working_time = ((ui_contracted_hours / ui_total_contracted_hours) * ui_cost).toFixed(2);
+                    var totalWorkingHours = (working_time / 4.3) * weeks;
+                    var totalWorkingHours1 = totalWorkingHours.toFixed(2);
+                    var total = totalWorkingHours.toFixed(2);
+
+                    var popupContent1 = `
+                        Weekly hours contracted for ${employee_name}: ${ui_contracted_hours}<br>
+                        Total weekly hours contracted for ${client_name} : ${ui_total_contracted_hours}<br>
+                        Total no of weeks in month=4.3<br>
+                        Monthly client revenue (from sheet)=${ui_cost}<br>
+                        Client Revenue in one month: (${ui_contracted_hours}/${ui_total_contracted_hours}) * ${ui_cost}<br>
+                        Client Revenue in one month=${working_time}<br>
+                        Total no of weeks from Start date and end date: ${weeks}<br>
+                        Total Client Revenue from Start date and end date: (${working_time}/4.3) * ${weeks}<br>
+                        Client Cost: ${totalWorkingHours1}<br>
+                        <br>
+                    `;
+
+                    $('#contractedClientModal .modal-body').append(popupContent1);
+
+                    // Accumulate total for each iteration
+                    total = parseFloat(total);
+                    if (!isNaN(total)) {
+                        totalCost += total;
+                    }
+                }
+            } else {
+                console.error("Entries not found for client ID:", client_id);
+            }
+        }
+
+        $('.personal-info .title.client, .personal-info .text.client').click(function() {
+            var ui_employee = JSON.parse($('#ui_employee').text());
+            totalCost = 0; // Reset total cost before each click
+            for (var client_id in ui_employee) {
+                openPopup2(ui_employee, client_id);
+            }
+
+            // Append total after the loop ends
+            var totalContent = `<br>Total Client Revenue: ${totalCost.toFixed(2)}<br>`;
+            $('#contractedClientModal .modal-body').append(totalContent);
+
+            $('#contractedClientModal').modal('show');
+        });
+
+        $('#contractedClientModal').on('hidden.bs.modal', function() {
+            $('#contractedClientModal .modal-body').empty();
+        });
+
+        $('#contractedClientModal .btn-close').click(function() {
+            $('#contractedClientModal .modal-body').empty();
+            $('#contractedClientModal').modal('hide');
+        });
+    });
+</script>
+
+
+<!-- Add this hidden div to store the JSON data -->
+<div id="ui_employee" style="display: none;">{{ ui_employee|json_script }}</div>
+
+
+
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost outside the click function
+
+        function openPopup2(ui_employee_time, client_id) {
+            var data1 = ui_employee_time[client_id];
+            if (data1) {
+                var client_name = data1.ui_client_name;
+                var employee_name = data1.ui_employee_name;
+                var ui_employee_salary = parseFloat(data1.ui_employee_salary);
+                var ui_total_time = parseFloat(data1.ui_total_time);
+                var ui_total_time1=(ui_total_time/3600).toFixed(2);
+                var working_time = (ui_employee_salary  / (22 * 8)).toFixed(2);
+                var total = (working_time * ui_total_time1).toFixed(2);
+
+
+                var popupContent1 = `
+                    Monthly Salary of ${employee_name}: ${ui_employee_salary}<br>
+                    Total no of working days of employee: 22 * 8<br>
+                    Hourly Employee cost: ${ui_employee_salary} / (22 * 8): ${working_time}<br>
+                    Time spent from Start date and end date(in hours from timer): ${ui_total_time1}<br>
+                    Total actual cost for ${client_name}: ${working_time} * ${ui_total_time1}: ${total}<br>
+                    Actual Employee Cost: ${total}<br><br>
+                    <br>
+                `;
+
+                $('#actualemployeecostModal .modal-body').append(popupContent1);
+
+                // Accumulate total for each iteration
+                total = parseFloat(total);
+                if (!isNaN(total)) {
+                    totalCost += total;
+                }
+            } else {
+                console.error("Employee data not found for ID:", employee_id);
+            }
+        }
+
+        $('.personal-info .title.a_employee_cost,.personal-info .text.actual').click(function() {
+            var ui_employee_time = JSON.parse($('#ui_employee_time').text());
+            totalCost = 0; // Reset total cost before each click
+            for (var client_id in ui_employee_time) {
+                openPopup2(ui_employee_time, client_id);
+            }
+
+            // Append total after the loop ends
+            var totalContent = `<br>Total Actual Employee Cost: ${totalCost.toFixed(2)}<br>`;
+            $('#actualemployeecostModal .modal-body').append(totalContent);
+
+            $('#actualemployeecostModal').modal('show');
+        });
+         $('#actualemployeecostModal').on('hidden.bs.modal', function() {
+            $('#actualemployeecostModal .modal-body').empty();
+        });
+
+        $('#actualemployeecostModal .btn-close').click(function() {
+            $('#actualemployeecostModal .modal-body').empty();
+            $('#actualemployeecostModal').modal('hide');
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost outside the click function
+
+        function openPopup2(ui_employee_time1, client_id) {
+            var data2 = ui_employee_time1[client_id];
+            if (data2) {
+
+                var entries = data2.entries;
+                if (entries) {
+                    entries.forEach(function(entry) {
+                        var employee_name = entry.ui_employee_name;
+                        var client_name = entry.ui_client_name;
+                        var employee_salary = parseFloat(entry.ui_employee_salary);
+                        var ui_total_time = parseFloat(entry.ui_contracted_hours);
+                        var weeks = parseFloat(entry.ui_weeks);
+                        var working_time = (employee_salary / (22 * 8)).toFixed(2);
+                        var total = (working_time * ui_total_time * weeks).toFixed(2);
+
+                        var popupContent1 = `
+
+                            Monthly Salary of ${employee_name}: ${employee_salary}<br>
+                            Total no of working days of employee: 22 * 8<br>
+                            Hourly Employee cost: ${employee_salary} / (22 * 8): ${working_time}<br>
+                            Weekly hourly contracted for ${client_name} (from sheet): ${ui_total_time}<br>
+                            Total no of weeks from Start date and end date: ${weeks}<br>
+                            Contracted Employee Cost: ${working_time} * ${ui_total_time} * ${weeks}<br>
+                            Contracted Employee Cost: ${total}<br><br>
+                            <br>
+                        `;
+
+                        $('#contractedemployeecostModal .modal-body').append(popupContent1);
+
+                        // Accumulate total for each iteration
+                        total = parseFloat(total);
+                        if (!isNaN(total)) {
+                            totalCost += total;
+                        }
+                    });
+                }
+            } else {
+                console.error("Employee data not found for client ID:", client_id);
+            }
+        }
+
+        $('.personal-info .title.c_employee_cost, .personal-info .text.contracted').click(function() {
+            var ui_employee_time1 = JSON.parse($('#ui_employee_time1').text());
+            totalCost = 0; // Reset total cost before each click
+            for (var client_id in ui_employee_time1) {
+                openPopup2(ui_employee_time1, client_id);
+            }
+
+            // Append total after the loop ends
+            var totalContent = `<br>Total Contracted Employee Cost: ${totalCost.toFixed(2)}<br>`;
+            $('#contractedemployeecostModal .modal-body').append(totalContent);
+
+            $('#contractedemployeecostModal').modal('show');
+        });
+
+        $('#contractedemployeecostModal').on('hidden.bs.modal', function() {
+            $('#contractedemployeecostModal .modal-body').empty();
+        });
+
+        $('#contractedemployeecostModal .btn-close').click(function() {
+            $('#contractedemployeecostModal .modal-body').empty();
+            $('#contractedemployeecostModal').modal('hide');
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var empId1 = "{{ employee.calender_status }}"; // Set from Django template
+        var toggleButton = document.getElementById('togBtn');
+        var toggleButton1 = document.getElementById('togBtn1');
+        empId1 = parseInt(empId1);
+        var token = "{{ employee.token }}";
+
+        if (token.length !== 0 && token !== 'None') {
+           // alert('hello');
+            // If token is present, show the toggle button
+            toggleButton1.style.display = 'block';
+
+            // Convert empId1 to an integer
+            empId1 = parseInt(empId1);
+
+            // Set toggle button state based on empId1 value
+            if (empId1 === 1) {
+                toggleButton.checked = true;
+            } else {
+                toggleButton.checked = false;
+            }
+        } else if (token === 'None') {
+        //   alert('hell');
+            // If token is 'None', hide the toggle button
+            toggleButton1.style.display = 'none';
+        }
+        $('#togBtn').click(function() {
+            $.ajax({
+                url: '/toggle_cookie/',  // Adjust according to your URL configuration
+                type: 'GET',
+                success: function(response) {
+               //     alert(response);  // Display response from server
+                    updateButtonLabel();
+                },
+                error: function() {
+                    alert('Error processing request');
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function(){
+        var profile_tab = "{{my_profile_tab}}";
+        if (profile_tab === "3") {
+            $('#emp_profile').addClass('active show');
+            $('#emp_clients').removeClass('active');
+            $('#emp_projects').removeClass('active');
+        } else {
+            $('#emp_profile').removeClass('active');
+            $('#emp_clients').addClass('active show');
+            $('#emp_projects').removeClass('active');
+        }
+
+
+    });
+</script>
+<script>
+$(document).ready(function () {
+    const googleTimezone = $("#googleTimezone");
+    const manualTimezone = $("#manualTimezone");
+    const timezoneSelect = $("#timezoneSelect");
+    const timezoneDisplay = $("#timezoneDisplay");
+
+    function getTimezoneOffset(timezone) {
+        try {
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat('en-US', { timeZone: timezone, timeZoneName: 'longOffset' });
+            const parts = formatter.formatToParts(now);
+            return parts.find(part => part.type === 'timeZoneName').value.replace('UTC', 'GMT');
+        } catch (e) {
+            return "";
+        }
+    }
+
+    function loadTimezones() {
+        const timezones = Intl.supportedValuesOf('timeZone');
+        timezoneSelect.empty();
+        timezoneSelect.append('<option value="">Select Timezone</option>');
+
+        timezones.forEach(zone => {
+            const offset = getTimezoneOffset(zone);
+            const formattedZone = `(${offset}) ${zone}`;
+            timezoneSelect.append(new Option(formattedZone, zone));
+        });
+
+        timezoneSelect.prop("disabled", false);
+    }
+
+    function updateTimezoneDisplay(timezone) {
+        timezoneDisplay.text(`${timezone}`);
+    }
+
+    function fetchGoogleTimezone() {
+        $.ajax({
+            url: "/save_timezone/",
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                if (response.status) {
+                    updateTimezoneDisplay(response.timezone);
+                }
+            },
+            error: function () {
+                alert("Failed to fetch timezone.");
+            }
+        });
+    }
+
+    function handleTimezoneChange() {
+        if (googleTimezone.is(":checked")) {
+            fetchGoogleTimezone();
+            timezoneSelect.prop("disabled", true);
+            timezoneSelect.val("").change();
+        } else if (manualTimezone.is(":checked")) {
+            timezoneSelect.prop("disabled", false);
+        }
+    }
+
+    // Bind change events
+    googleTimezone.change(handleTimezoneChange);
+    manualTimezone.change(handleTimezoneChange);
+
+    timezoneSelect.on("change", function () {
+        const selectedTimezone = $(this).val();
+        if (selectedTimezone) {
+            $.ajax({
+                url: "/save_timezone/",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ timezone: selectedTimezone }),
+                headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                success: function (response) {
+                    if (response.status) {
+                        updateTimezoneDisplay(selectedTimezone);
+                    }
+                },
+                error: function () {
+                    alert("Failed to update timezone.");
+                }
+            });
+        }
+    });
+
+    // Load timezones
+    loadTimezones();
+
+    // Automatically fetch Google Timezone if selected on page load
+    if (googleTimezone.is(":checked")) {
+        fetchGoogleTimezone();
+    }
+
+    handleTimezoneChange();
+});
+</script>
+<script type="text/javascript">
+    $("#documentForm").submit(function(e) {
+        e.preventDefault();
+        $('#saveBtn').prop("disabled", true);
+
+        $("#uploaded_file, #description").removeClass('is-invalid');
+        var errorMessages = [];
+
+        var fileSelector = $('#uploaded_file');
+        var descriptionSelector = $('#description');
+        var fileName = fileSelector.val().trim();
+        var description = descriptionSelector.val().trim();
+
+        if (fileName === '') {
+            fileSelector.addClass('is-invalid');
+            fileSelector.siblings(".invalid-feedback").text('Client name cannot be blank.');
+            errorMessages.push("Client Name cannot be blank.");
+        }
+
+        if (description === '') {
+            descriptionSelector.addClass('is-invalid');
+            descriptionSelector.siblings(".invalid-feedback").text('Company name cannot be blank.');
+            errorMessages.push("Company Name cannot be blank.");
+        }
+
+
+        if (errorMessages.length > 0) {
+            $('#saveBtn').prop("disabled", false);
+            return false;
+        }
+
+        var subForm = this;
+
+        subForm.submit();
+    
+    });
+</script>
+    
+<!-- Add this hidden div to store the JSON data -->
+<div id="ui_employee_time1" style="display: none;">{{ ui_employee_time1|json_script }}</div>
+
+{% endblock %}

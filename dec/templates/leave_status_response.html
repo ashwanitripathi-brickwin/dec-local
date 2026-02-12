@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leave Status Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .card {
+            display: inline-block;
+            background: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        {% if status == 1 %}
+            <h2 class="success">✅ {{ message }}</h2>
+        {% else %}
+            <h2 class="error">❌ {{ message }}</h2>
+        {% endif %}
+    </div>
+</body>
+</html>

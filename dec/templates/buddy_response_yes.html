@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Response Notification</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9fb; margin: 0; padding: 0;">
+    <table role="presentation" style="width: 90%; max-width: 700px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+
+        <!-- Header with Logo & Title -->
+        <tr>
+            <td style="background: #e6f2ff; padding: 15px 25px; border-radius: 10px 10px 0 0;">
+                <table role="presentation" style="width: 100%;">
+                    <tr>
+                        <td align="left" style="vertical-align: middle;">
+                            <img src="https://dec.educatedapp.com/static/assets/img/EC_Logo_Black.png"
+                                 alt="Company Logo"
+                                 style="height: 40px;">
+                        </td>
+                        <td align="center">
+                            <h2 style="margin: 0; font-size: 20px; color: #333;">Response Notification</h2>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- Message Section -->
+        <tr>
+            <td style="color: #333; font-size: 16px; line-height: 1.8; padding: 15px 25px;">
+                <p>Hello <b>{{ leave_user_name }}</b>,</p>
+                <p>Your buddy, <b>{{ buddy_name }}</b>, has responded to your request.</p>
+
+                <p style="text-align: center;">
+                    <span style="display: inline-block; padding: 10px 20px; background-color: #d4f4dd; color: #007a3d; font-weight: bold; border-radius: 8px;">
+                        ✅ Accepted
+                    </span>
+                </p>
+
+                <p>They will be working on <b>{{ client_name }}</b> during your leave.</p>
+            </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+            <td style="color: #333; font-size: 14px; line-height: 1.8; padding: 15px 25px;">
+                <p>Thank you for your cooperation. If you have any questions, feel free to reach out.</p>
+                <p>Best regards,</p>
+                <p><b>Educated Change</b></p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="font-size: 12px; color: gray; text-align: center; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p>If you need assistance, contact us at <a href="mailto:support@yourcompany.com" style="color: #007a3d;">support@yourcompany.com</a></p>
+                <p>&copy; 2026 Educated Change. All rights reserved.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

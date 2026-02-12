@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Client Assignment Notification</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9fb; margin: 0; padding: 0;">
+    <table role="presentation" style="width: 90%; max-width: 700px; margin: 30px auto; background: #f9f8f9; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+
+        <!-- Header Section with Logo & Title -->
+        <tr>
+            <td style="background: #e6f2ff; padding: 15px 25px; border-radius: 10px 10px 0 0;">
+                <table role="presentation" style="width: 100%;">
+                    <tr>
+                        <td align="left" style="vertical-align: middle;">
+                            <img src="https://dec.educatedapp.com/static/assets/img/EC_Logo_Black.png"
+                                 alt="Company Logo"
+                                 style="height: 40px;">
+                        </td>
+                        <td align="center" style="vertical-align: middle;">
+                            <h2 style="margin: 0; font-size: 20px; color: #333;">Client Assignment {{ leave_start_date }} – {{ leave_end_date }}</h2>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- Greeting & Message -->
+        <tr>
+            <td style="color: #333; font-size: 16px; line-height: 1.8; padding: 15px 25px;">
+                <p>Dear <b>{{ buddy_name }}</b>,</p>
+                <p><b>{{ emp_on_leave }}</b> is on Leave, so you have been assigned to assist the following clients during <b>{{ leave_start_date }}</b> – <b>{{ leave_end_date }}</b>.</p>
+
+            </td>
+        </tr>
+
+        <!-- Clients List -->
+        {% for client in client_data %}
+        <tr>
+            <td style="background: #ffffff; margin: 10px; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <p><b>Client Name:</b> {{ client.client_name }}</p>
+                {% if client.advisor_name %}
+                <p><b>Manager Name:</b> {{ client.advisor_name }}</p>
+                {% endif %}
+                <p align="center">
+                    <a href="{{ client.yes_link }}"
+                       style="display: inline-block; padding: 12px 24px; background-color: #d4f4dd; color: #007a3d; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px; border: 1px solid #007a3d;">✔ Yes, I Accept</a>
+                    &nbsp;&nbsp;
+                    <a href="{{ client.no_link }}"
+                       style="display: inline-block; padding: 12px 24px; background-color: #fce3e3; color: #b00020; text-decoration: none; font-size: 16px; font-weight: bold; border-radius: 8px; border: 1px solid #b00020;">❌ No, I’m Unavailable</a>
+                </p>
+            </td>
+        </tr>
+        {% endfor %}
+
+        <!-- Additional Message -->
+        <tr>
+            <td style="color: #333; font-size: 14px; line-height: 1.8; padding: 15px 25px;">
+                <p>If you have any questions or require further details, please feel free to reach out to the HR team. We appreciate your dedication and professionalism.</p>
+                <p>Best regards,</p>
+                <p><b>Educated Change</b><br>HR Department</p>
+            </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+            <td style="font-size: 12px; color: gray; text-align: center; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p>If you need assistance, contact us at <a href="mailto:support@yourcompany.com" style="color: #007a3d;">support@yourcompany.com</a></p>
+                <p>&copy; 2026 Educated Change. All rights reserved.</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

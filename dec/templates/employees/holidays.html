@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="content container-fluid">
+
+	<div class="page-header">
+		<div class="row align-items-center">
+			<div class="col">
+				<h3 class="page-title">Holidays 2026</h3>
+				<ul class="breadcrumb">
+					<li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+					<li class="breadcrumb-item active">Holidays</li>
+				</ul>
+			</div>
+			<div class="col-sm-6 col-md-3">
+	            <div class="form-focus select-focus">
+	                <select class="select floating" id="countryList" name="category">
+	                    <option value="us-holiday">US</option>
+	                    <!-- <option value="philippines-holiday">Philippine Holiday</option> -->
+	                    <option value="uk-holiday">UK</option>
+	                    <option value="uk-us-holiday">UK and US</option>
+	                    <!-- <option value="south-holiday">South Africa Holiday</option> -->
+	                </select>
+<!--					<select class="select floating" id="countryList" name="category">-->
+<!--						{% for country_name in country_names %}-->
+<!--							<option value="{{ country_name|slugify }}-holiday">{{ country_name }} Holiday</option>-->
+<!--						{% endfor %}-->
+<!--					</select>-->
+	                <label class="focus-label">Category</label>
+	            </div>
+	        </div>
+			<div class="col-auto float-end ms-auto" hidden>
+				<!-- <a href="#" class="btn add-btn" data-bs-toggle="modal"><i class="fa-solid fa-plus"></i> Add Holiday</a> -->
+				<a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_holiday"><i class="fa-solid fa-plus"></i> Add Holiday</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="table-responsive">
+				<table class="table table-striped custom-table mb-0">
+					<thead>
+						<tr>
+							<!-- <th>#</th> -->
+							<th>Holiday/Observance </th>
+							<th>Date</th>
+							<th>Day</th>
+							<th>Location</th>
+						</tr>
+					</thead>
+					<tbody id="us-holiday">
+					{% for us in us_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ us.name }}</td>
+							<td>{{ us.date }}</td>
+							<td>{{ us.date|date:"D" }}</td>
+							<td>{{ us.country_code }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+					<tbody id="uk-us-holiday" style="display: none;">
+					{% for us in uk_us_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ us.name }}</td>
+							<td>{{ us.date }}</td>
+							<td>{{ us.date|date:"D" }}</td>
+							<td>{{ us.country_code }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+					<tbody id="philippines-holiday" style="display: none;">
+					{% for philippine in philippine_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ philippine.name }}</td>
+							<td>{{ philippine.date }}</td>
+							<td>{{ philippine.date|date:"D" }}</td>
+							<td>{{ philippine.country_code }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+					<tbody id="uk-holiday" style="display: none;">
+						{% for uk in uk_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ uk.name }}</td>
+							<td>{{ uk.date }}</td>
+							<td>{{ uk.date|date:"D" }}</td>
+							<td>{{ uk.country_code }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					<tbody id="south-holiday" style="display: none;">
+						{% for south_africa in south_africa_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ south_africa.name }}</td>
+							<td>{{ south_africa.date }}</td>
+							<td>{{ south_africa.date|date:"D" }}</td>
+							<td>{{ south_africa.country_code }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal custom-modal fade" id="add_holiday" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Add Holiday</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form method="post" action="/add_holidays">
+					{% csrf_token %}
+					<div class="input-block mb-3">
+						<label class="col-form-label">Country Name <span class="text-danger">*</span></label>
+						<select class="select floating" name="country">
+							{% for country in country_list %}
+		                    	<option value="{{ country.id }}">{{ country.name }}</option>
+		                    {% endfor %}
+		                </select>
+						<!-- <input class="form-control" type="text" name="country"> -->
+					</div>
+					<div class="input-block mb-3">
+						<label class="col-form-label">Holiday Name <span class="text-danger">*</span></label>
+						<input class="form-control" type="text" name="holiday">
+					</div>
+					<div class="input-block mb-3">
+						<label class="col-form-label">Holiday Date <span class="text-danger">*</span></label>
+						<div class="cal-icon"><input class="form-control datetimepicker" type="text" name="date"></div>
+					</div>
+					<div class="submit-section">
+						<button class="btn btn-primary submit-btn">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal custom-modal fade" id="edit_holiday" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Edit Holiday</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form>
+					<div class="input-block mb-3">
+						<label class="col-form-label">Holiday Name <span class="text-danger">*</span></label>
+						<input class="form-control" value="New Year" type="text">
+					</div>
+					<div class="input-block mb-3">
+						<label class="col-form-label">Holiday Date <span class="text-danger">*</span></label>
+						<div class="cal-icon"><input class="form-control datetimepicker" value="01-01-2024" type="text"></div>
+					</div>
+					<div class="submit-section">
+						<button class="btn btn-primary submit-btn">Save</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal custom-modal fade" id="delete_holiday" role="dialog">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-body">
+				<div class="form-header">
+					<h3>Delete Holiday</h3>
+					<p>Are you sure want to delete?</p>
+				</div>
+				<div class="modal-btn delete-action">
+					<div class="row">
+						<div class="col-6">
+							<a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+						</div>
+						<div class="col-6">
+							<a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('#countryList').change(function(){
+            var categoryID = $(this).val();
+            if(categoryID){
+            	if(categoryID == 'us-holiday'){
+            		$("#us-holiday").show();
+            		$("#uk-holiday").hide();
+            		$("#south-holiday").hide();
+            		$("#philippines-holiday").hide();
+            		$("#uk-us-holiday").hide();
+            	}else if(categoryID == 'uk-holiday'){
+            		$("#uk-holiday").show();
+            		$("#us-holiday").hide();
+            		$("#south-holiday").hide();
+            		$("#philippines-holiday").hide();
+            		$("#uk-us-holiday").hide();
+            	}else if(categoryID == 'south-holiday'){
+            		$("#south-holiday").show();
+            		$("#us-holiday").hide();
+            		$("#uk-holiday").hide();
+            		$("#philippines-holiday").hide();
+            		$("#uk-us-holiday").hide();
+            	}else if(categoryID == 'philippines-holiday'){
+            		$("#philippines-holiday").show();
+            		$("#south-holiday").hide();
+            		$("#us-holiday").hide();
+            		$("#uk-holiday").hide();
+            		$("#uk-us-holiday").hide();
+            	}else if(categoryID == 'uk-us-holiday'){
+            		$("#uk-us-holiday").show();
+            		$("#philippines-holiday").hide();
+            		$("#south-holiday").hide();
+            		$("#us-holiday").hide();
+            		$("#uk-holiday").hide();
+            	}
+            }
+        });
+    });
+</script>
+{% endblock %}

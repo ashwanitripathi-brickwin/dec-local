@@ -1,0 +1,87 @@
+{% load static %}
+{% block content %}
+
+{% for client in client_list %}
+    <div class="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
+        <div class="profile-widget w-100">
+            <div class="profile-img">
+                <a href="{% url 'client-profile' client.id %}" class="avatar">
+                    {% if client.image_url|length > 0 %}
+                        <img src="{{ client.image_url }}" alt="User Image">
+                    {% else %}
+                        <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+                    {% endif %}
+                </a>
+            </div>
+            <!-- <div class="dropdown profile-action">
+                <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_employee"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_employee"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                    {% if user.is_authenticated %}
+                        {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                            <a class="dropdown-item move_client" href="#" data-status="{{client.status}}"data-client-id="{{ client.id }}"><i class="fa-solid fa-arrow-alt-circle-right m-r-5"></i> Move</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div> -->
+            <h4 class="user-name m-t-10 mb-0 text-ellipsis"><a href="{% url 'client-profile' client.id %}">{{ client.client_name }} </a></h4>
+            <div class="small text-muted">{{ client.company_name }} </div>
+            <!-- <a href="{% url 'client-profile' client.id %}" class="btn btn-white btn-sm m-t-10">Message</a> -->
+            <a href="{% url 'client-profile' client.id %}" class="btn btn-white btn-sm m-t-10">View Profile</a>
+        </div>
+    </div>
+{% endfor %}
+
+<script>
+// jQuery code to handle the click event for the "Move" option
+$(document).ready(function() {
+    $('.move_client').click(function(event) {
+        event.preventDefault(); // Prevent the default action (e.g., following the link)
+        var clientId = $(this).data('client-id');
+        var profileWidget = $(event.target).closest('.profile-widget');
+        var statusId = $(this).data('status');
+
+        // Check if client status is 1
+        if (statusId== 1) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "update_client_status_2" %}',
+                data: { id: clientId, status: 2 },
+                success: function(response) {
+                    console.log('Client status updated to 2 successfully.');
+                    // Handle success response if needed
+                    if (profileWidget.length > 0) {
+                        profileWidget.remove();
+                    } else {
+                        console.log('Parent profile widget not found.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating client status to 2:', error);
+                }
+            });
+        } else {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "update_client_status_1" %}',
+                data: { id: clientId, status: 1 },
+                success: function(response) {
+                    console.log('Client status updated to 1 successfully.');
+                    // Handle success response if needed
+                    if (profileWidget.length > 0) {
+                        profileWidget.remove();
+                    } else {
+                        console.log('Parent profile widget not found.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating client status to 1:', error);
+                }
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

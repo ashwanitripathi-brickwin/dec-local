@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!-- DataTables CSS -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        background-color: #fff;
+        border-collapse: collapse;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        color: #333;
+    }
+
+    td {
+        color: #666;
+    }
+
+    tr.summary:hover {
+        background-color: #f9f9f9;
+    }
+
+    button.toggleDetails {
+        background-color: transparent;
+        color: #666;
+        /* grey color */
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button.toggleDetails:hover {
+        color: #fff;
+        /* white color */
+        background-color: #666;
+        /* grey color */
+    }
+    #dateRangeForm {
+        margin-left: -150px; /* Adjust the value as needed */
+    }
+
+    .details td {
+        vertical-align: top; /* Align details content to the top of the cell */
+    }
+
+    .details ul {
+        padding: 0; /* Remove default padding */
+        margin: 0; /* Remove default margin */
+    }
+
+</style>
+
+
+
+    <div class="page-header">
+    <div class="row">
+      <div class="col">
+        <h3 class="page-title">Quickbooks</h3>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+          <li class="breadcrumb-item active">Quickbook</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+    <div style="margin-top: 20px;"></div>
+
+
+     <div class="container">
+                <div class="row justify-content-start">
+                    <div class="col-md-2"> <!-- Adjust the column size as needed -->
+                        <form method="post" action="{% url 'quickbook'  %}" id="dateRangeForm">
+                            {% csrf_token %}
+                            <div class="filter-filelds" id="filter_inputs">
+                                <div class="row filter-row">
+                                    <div class="col-xl-8 offset-xl-4"> <!-- Adjust the column size and offset as needed -->
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange3">
+                                            <label class="focus-label">From - To Date</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+<div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12 d-flex align-items-center justify-content-end" style="position: relative;">
+    <button id="exportButton" class="btn btn-primary" style="position: absolute; top: -55px; right: -1150px;"> <!-- Adjusted position here -->
+        <i class="fas fa-print"></i>
+    </button>
+    <!-- Add any additional buttons/icons here -->
+</div>
+
+
+<table id="profitLossTable" class="display">
+    <thead>
+        <tr>
+            <th></th>
+            {% for item in data %}
+                <th>{{ item.date }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Earnings section -->
+        <tr class="summary">
+            <td><button class="toggleDetails" data-target="earnings">▼</button>Earnings</td>
+            {% for item in data %}
+                <td>{{ item.earning }}</td>
+            {% endfor %}
+        </tr>
+        <tr class="details earnings" style="display: none;">
+            <td></td> <!-- Empty cell for alignment -->
+            {% for item in data %}
+                {% if item.date != 'Total' %}
+                    <td>
+                        <ul>
+                            {% for client in client_data_for_current_month %}
+                                {% if client.date == item.date %}
+                                    <li>{{ client.client_name }}-{{ client.one_project_rate }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+
+        <!-- Profit section -->
+        <tr class="summary">
+            <td><button class="toggleDetails" data-target="profit">▼</button>Profit</td>
+            {% for item in data %}
+                <td>{{ item.profit }}</td>
+            {% endfor %}
+        </tr>
+        <tr class="details profit" style="display: none;">
+            <td></td> <!-- Empty cell for alignment -->
+            {% for item in data %}
+                {% if item.date != 'Total' %}
+                    <td>
+                        <ul>
+                            {% for client in client_data_for_current_month %}
+                                {% if client.date == item.date %}
+                                    <li>{{ client.client_name }}-{{ client.profit }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+
+        <!-- Contracted Profit section -->
+        <tr class="summary">
+            <td><button class="toggleDetails" data-target="contracted_profit">▼</button>Contracted Profit</td>
+            {% for item in data %}
+                <td>{{ item.contracted_profit }}</td>
+            {% endfor %}
+        </tr>
+        <tr class="details contracted_profit" style="display: none;">
+            <td></td> <!-- Empty cell for alignment -->
+            {% for item in data %}
+                {% if item.date != 'Total' %}
+                    <td>
+                        <ul>
+                            {% for client in client_data_for_current_month %}
+                                {% if client.date == item.date %}
+                                    <li>{{ client.client_name }}-{{ client.contracted_profit }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </td>
+                {% endif %}
+            {% endfor %}
+        </tr>
+
+    </tbody>
+</table>
+
+<!--<table id="profitLossTable" class="display">-->
+<!--    <thead>-->
+<!--       <tr>-->
+<!--            <th></th>-->
+<!--            {% for item in data %}-->
+<!--                <th>{{ item.date }}</th>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails" data-target="earnings">▼</button>Earnings</td>-->
+
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.earning }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+
+<!--        <tr class="details earnings" style="display: none;">-->
+<!--        <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+<!--        {% for item in data %}-->
+<!--            {% if item.date != 'Total' %}-->
+<!--                {% if forloop.first or item.date != data|last %}-->
+<!--                    <td colspan="{{ 1 }}">-->
+<!--                        <ul>-->
+<!--                {% endif %}-->
+<!--                <li>{{ item.date }}</li>-->
+<!--                <ul>-->
+<!--                    {% for client in client_data_for_current_month %}-->
+<!--                        {% if client.date == item.date %}-->
+<!--                            <li>{{ client.client_name }} {{ client.one_project_rate }}</li>-->
+<!--                        {% endif %}-->
+<!--                    {% endfor %}-->
+<!--                </ul>-->
+<!--                {% if forloop.last or item.date != data|last %}-->
+<!--                    </ul>-->
+<!--                    </td>-->
+<!--                {% endif %}-->
+<!--            {% endif %}-->
+<!--        {% endfor %}-->
+<!--    </tr>-->
+
+
+
+
+
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails" data-target="profit">▼</button>Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+<!--         <tr class="details earnings" style="display: none;">-->
+<!--        <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+<!--        {% for item in data %}-->
+<!--            {% if item.date != 'Total' %}-->
+<!--                {% if forloop.first or item.date != data|last %}-->
+<!--                    <td colspan="{{ 1 }}">-->
+<!--                        <ul>-->
+<!--                {% endif %}-->
+<!--                <li>{{ item.date }}</li>-->
+<!--                <ul>-->
+<!--                    {% for client in client_data_for_current_month %}-->
+<!--                        {% if client.date == item.date %}-->
+<!--                            <li>{{ client.client_name }} {{ client.profit }}</li>-->
+<!--                        {% endif %}-->
+<!--                    {% endfor %}-->
+<!--                </ul>-->
+<!--                {% if forloop.last or item.date != data|last %}-->
+<!--                    </ul>-->
+<!--                    </td>-->
+<!--                {% endif %}-->
+<!--            {% endif %}-->
+<!--        {% endfor %}-->
+<!--    </tr>-->
+
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails" data-target="contracted_profit">▼</button>Contracted Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.contracted_profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+<!--         <tr class="details earnings" style="display: none;">-->
+<!--        <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+<!--        {% for item in data %}-->
+<!--            {% if item.date != 'Total' %}-->
+<!--                {% if forloop.first or item.date != data|last %}-->
+<!--                    <td colspan="{{ 1 }}">-->
+<!--                        <ul>-->
+<!--                {% endif %}-->
+<!--                <li>{{ item.date }}</li>-->
+<!--                <ul>-->
+<!--                    {% for client in client_data_for_current_month %}-->
+<!--                        {% if client.date == item.date %}-->
+<!--                            <li>{{ client.client_name }} {{ client.contracted_profit }}</li>-->
+<!--                        {% endif %}-->
+<!--                    {% endfor %}-->
+<!--                </ul>-->
+<!--                {% if forloop.last or item.date != data|last %}-->
+<!--                    </ul>-->
+<!--                    </td>-->
+<!--                {% endif %}-->
+<!--            {% endif %}-->
+<!--        {% endfor %}-->
+<!--    </tr>-->
+
+<!--    </tbody>-->
+<!--</table>-->
+
+
+<!--<table id="profitLossTable" class="display">-->
+<!--    <thead>-->
+<!--        <tr>-->
+<!--            <th></th>-->
+<!--            {% for item in data %}-->
+<!--                <th>{{ item.date }}</th>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Earnings</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.earning }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--            <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+
+<!--            {% for client in client_data_for_current_month %}-->
+<!--                <td>{{ client.one_project_rate }}</td>-->
+
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--            <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+<!--            {% for client in client_data_for_current_month %}-->
+<!--                <td>{{ client.profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Contracted Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.contracted_profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--            <td></td> &lt;!&ndash; Empty cell for alignment &ndash;&gt;-->
+<!--            {% for client in client_data_for_current_month %}-->
+<!--                <td>{{ client.contracted_profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--    </tbody>-->
+<!--</table>-->
+
+
+<!--    <table id="profitLossTable" class="display">-->
+<!--        <thead>-->
+<!--            <tr>-->
+<!--                <th></th>-->
+<!--                {% for item in data %}-->
+<!--                    <th>{{ item.date }}</th>-->
+<!--                {% endfor %}-->
+<!--            </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Earnings</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.earning }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--            <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td>{{ client.client_id }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td class="salary">{{ client.one_project_rate }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--        </tr>-->
+
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--              <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td>{{ client.client_id }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td class="salary">{{ client.profit }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--        <tr class="summary">-->
+<!--            <td><button class="toggleDetails">▼</button> Contracted Profit</td>-->
+<!--            {% for item in data %}-->
+<!--                <td>{{ item.contracted_profit }}</td>-->
+<!--            {% endfor %}-->
+<!--        </tr>-->
+<!--        <tr class="details" style="display: none;">-->
+<!--            <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td>{{ client.client_id }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--                <table>-->
+<!--                    <tbody>-->
+<!--                        {% for client in client_data_for_current_month %}-->
+<!--                            <tr>-->
+<!--                                <td class="salary">{{ client.contracted_profit }}</td>-->
+<!--                            </tr>-->
+<!--                        {% endfor %}-->
+<!--                    </tbody>-->
+<!--                </table>-->
+<!--            </td>-->
+<!--        </tr>-->
+<!--    </tbody>-->
+<!--    </table>-->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Add event listener for opening and closing details
+            $('#profitLossTable tbody').on('click', 'button.toggleDetails', function () {
+                var tr = $(this).closest('tr');
+                var detailsRow = tr.next('tr.details');
+
+                if (detailsRow.is(':visible')) {
+                    // This row is already open - close it
+                    detailsRow.hide();
+                    $(this).text('▼');
+                } else {
+                    // Open this row
+                    detailsRow.show();
+                    $(this).text('▲');
+
+                    // Get the salary details for each date column
+                    var salaries = [];
+                    tr.find('td:not(:first-child)').each(function () {
+                        salaries.push($(this).text());
+                    });
+
+                    // Populate salary details dynamically
+                    detailsRow.find('td.salary').each(function (index) {
+                        $(this).text(salaries[index]);
+                    });
+                }
+            });
+        });
+    </script>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Add event listener for Export button
+        $('#exportButton').on('click', function () {
+            exportToExcel();
+        });
+
+        // Function to export data to Excel
+        function exportToExcel() {
+            // Define the data structure
+            var headers = [];
+            var data = [];
+
+            // Extract column headers
+            $('#profitLossTable thead th').each(function () {
+                headers.push($(this).text());
+            });
+
+            // Extract table data
+            $('#profitLossTable tbody tr').each(function () {
+                var row = [];
+                $(this).find('td').each(function () {
+                    row.push($(this).text());
+                });
+                data.push(row);
+            });
+
+            // Create a workbook
+            var wb = XLSX.utils.book_new();
+            var ws = XLSX.utils.aoa_to_sheet([headers].concat(data)); // Include headers
+
+            // Add the worksheet to the workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Profit_Loss_Report");
+
+            // Save the workbook as Excel file
+            var fileName = "Profit_Loss_Report.xlsx";
+            XLSX.writeFile(wb, fileName);
+        }
+    });
+</script>
+
+
+
+
+
+{% endblock %}

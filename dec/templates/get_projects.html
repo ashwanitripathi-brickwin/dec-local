@@ -1,0 +1,24 @@
+<thead>
+    <tr>
+        <th>Description</th>
+        <th>Project Name</th>
+        <th>Client Name</th>
+        <th>User</th>
+        <th>Duration</th>
+        <th>Time</th>
+        <th>Date</th>
+    </tr>
+</thead>
+<tbody>
+    {% for detailed_record in detailed_records %}
+    <tr>
+        <td>{{ detailed_record.record.description }}</td>
+        <td>{{ detailed_record.toggl_projectname }}</td>
+        <td>{{ detailed_record.toggl_clientname}}</td>
+        <td>{{ detailed_record.record.username }}</td>
+        <td>{{ detailed_record.record.time_entries_seconds }}</td>
+        <td>{{ detailed_record.record.time_entries_start_time }} - {{ detailed_record.record.time_entries_stop_time }}</td>
+        <td>{{ detailed_record.record.time_entries_start_date }} - {{ detailed_record.record.time_entries_start_date }}</td>
+    </tr>
+    {% endfor %}
+</tbody>

@@ -1,0 +1,130 @@
+{% load static %}
+{% block content %}
+
+<style type="text/css">
+    @media (min-width: 1600px) {
+        .user-name {
+            padding: 0 10%;
+        }
+    }
+</style>
+<div class="row staff-grid-row">
+    {% for employee in employee_list %}
+    <div class="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3">
+        <div class="profile-widget">
+            <div class="row filter-row">
+                <div class="col-md-7 col-sm-7 col-7 col-lg-7 col-xl-7">
+                    <div class="profile-img">
+                        <a href="{% url 'profile' employee.id %}" class="avatar">
+                            {% if employee.image_url|length > 0 %}
+                                <img src="{{ employee.image_url }}" alt="User Image">
+                            {% else %}
+                                <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-4 col-4 col-lg-4 col-xl-4" style="padding: 0px;margin-top: 10px">
+                    {% if current_month in month_list %}
+                        {% if employee.contracted_employee_info %}
+                            <div class="text-muted">
+                                S: {{ employee.contracted_employee_info.support }}<br>
+                                M: {{ employee.contracted_employee_info.account_manager }}<br>
+                                A: {{ employee.contracted_employee_info.advisor }}
+                            </div>
+                        {% else %}
+                            <div class="text-muted">
+                                S: 0<br>
+                                M: 0<br>
+                                A: 0
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if employee.contracted_employee_info %}
+                            <div class="text-muted">
+                                C: {{ employee.contracted_employee_info.account_manager }}<br>
+                                B: {{ employee.contracted_employee_info.support }}<br>
+                                A: {{ employee.contracted_employee_info.advisor }}
+                            </div>
+                        {% else %}
+                            <div class="text-muted">
+                                B: 0<br>
+                                C: 0<br>
+                                A: 0
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="dropdown profile-action" hidden>
+                <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item edit_employee" href="javascript:void(0)" id="{{ employee.id}}"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_employee"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                    {% if user.is_authenticated %}
+                                    {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                    <a class="dropdown-item move_employee" href="javascript:void(0)" id="{{ employee.id }}"><i class="fa-solid fa-arrow-alt-circle-right m-r-5"></i> Move</a>
+                              {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <h4 class="user-name m-t-10 mb-0 text-ellipsis" style="float: left;">
+                <a href="{% url 'profile' employee.id %}">
+                    {% if employee.first_name|length > 0 %}
+                        {{ employee.first_name}} {{ employee.last_name}}
+                    {% else %}
+                        {{ employee.user_name}}
+                    {% endif %}
+                </a>
+
+            </h4>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // jQuery code to handle the click event for the "Move" option
+    $(document).ready(function() {
+        $('.move_employee').click(function() {
+            var employeeId = $(this).attr('id');
+            var statusId = $(this).attr('status');
+            // Here you can make an AJAX call to update the status of the employee to 2
+            // For example:
+
+            if (statusId == 1) {
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "update_employee_status_2" %}',
+                    data: { id: employeeId, status: 2 },
+                    success: function(response) {
+                        console.log('Employee status updated to 2 successfully.');
+                        // Handle success response if needed
+                        $(this).closest('.profile-widget1').remove();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating client status to 2:', error);
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "update_employee_status_1" %}',
+                    data: { id: employeeId, status: 1 },
+                    success: function(response) {
+                        console.log('Employee status updated to 1 successfully.');
+                        // Handle success response if needed
+                        $(this).closest('.profile-widget1').remove();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error updating client status to 1:', error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+
+{% endblock %}

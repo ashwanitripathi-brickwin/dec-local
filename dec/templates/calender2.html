@@ -1,0 +1,1075 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<style>
+	.bg-danger_dark{
+	background-color:#FF6666 !important;
+	}
+	.bg-danger_light{
+	background-color:#FF9999 !important;
+	}
+    .bg-info_green{
+	background-color:#99CCFF !important;
+	}
+	.bg-light_dark{
+	background-color:#808080 !important;
+	}
+	.bg-primary{
+	background-color:#303030 !important;
+	}
+    .bg-grey{
+	background-color:#FFE5CC !important;
+	}
+
+	.declined-event {
+    text-decoration: line-through !important;;
+    opacity: 0.6 !important;; /* Make it look faded */
+}
+
+.cross-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: black; /* Cross-line color */
+    transform: rotate(-15deg); /* Diagonal line */
+    pointer-events: none; /* Allow clicks through the line */
+}
+
+
+</style>
+<div class="content container-fluid">
+
+	<div class="page-header">
+		<div class="row align-items-center">
+			<div class="col">
+				<h3 class="page-title">Timer</h3>
+				<ul class="breadcrumb">
+					<li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+					<li class="breadcrumb-item active">Timer</li>
+				</ul>
+			</div>
+<!--			<div class="col-auto float-end ms-auto">-->
+<!--				<a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_event"><i class="fa-solid fa-plus"></i> Add Event</a>-->
+<!--			</div>-->
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card mb-0">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-12">
+
+							<div id="calendar"></div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div id="add_event" class="modal custom-modal fade" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Add Event</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+                    <div class="input-block mb-3">
+                        <label class="control-label col-form-label" style="font-size: 14px; font-weight: 500;">Quick Access</label>
+                        <div style="display: flex; gap: 5px; overflow-x: auto; white-space: nowrap;
+                            scrollbar-width: thin; scrollbar-color: #ccc transparent;">
+                            {% for client_id, details in client_category_map.items %}
+                                <button type="button" class="recent-client"
+                                        data-client="{{ client_id }}"
+                                        data-category="{{ details.category_id }}"
+                                        style="background: #f6f8fb; color: #333; font-size: 14px; padding: 6px 10px;
+                                            border: none; border-radius: 6px; flex-shrink: 0;">
+                                    {{ details.client_name }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+					<div class="input-block mb-3">
+						<label class="control-label col-form-label">Client Name<span class="text-danger">*</span></label><br>
+						<select id="mySelect2" name="client_id" style="width: 100%" required>
+						<option value="" disabled selected>Select a client</option>
+							{% for client in clients %}
+									<option value="{{ client.id }}">{{ client.company_name }}, {{ client.client_name }}</option>
+							{% endfor %}
+						</select>
+                        <span id="clientError" class="text-danger" style="display: none;">Please select a client.</span>
+					</div>
+					<div class="input-block mb-3" id="projectDiv" style="display:none;">
+						<label class="control-label col-form-label">Project Name</label><br>
+						<select id="projectName" name="project_id" style="width: 100%" required>
+									<option value="" disabled selected>Select a project</option>
+						</select>
+					</div>
+						<div class="input-block mb-3">
+							<label class="control-label col-form-label">Work Category<span class="text-danger">*</span></label>
+							<select name="category_id" id="workCategory" class="select form-control" required>
+								<option value="" selected disabled>Select a work category</option>
+								{% for category in categorys %}
+									<option value="{{ category.id }}">
+										{{ category.category }}
+									</option>
+								{% endfor %}
+								
+							</select>
+                            <span id="categoryError" class="text-danger" style="display: none;">Please select a work category.</span>
+				
+						</div>
+
+						<div class="input-block mb-3" id="otherCategoryInput" style="display: none;">
+							<label class="control-label col-form-label">Other Work Category <span class="text-danger">*</span></label>
+							<input type="text" name="other_category" id="other_category_id" class="form-control" placeholder="Enter other work category">
+						</div>
+
+					<div class="input-block mb-3">
+						<label class="col-form-label">Description</label>
+						<textarea class="form-control" name="description" id ="description" placeholder=""></textarea>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">Start Time <span class="text-danger">*</span></label>
+							<div class="cal-icon">
+								<input class="form-control" name="start_time" id="modalStartTime" type="text">
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">End Time <span class="text-danger">*</span></label>
+							<div class="cal-icon">
+								<input class="form-control" name="end_time" id="modalEndTime" type="text">
+							</div>
+						</div>
+
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">Duration <span class="text-danger">*</span></label>
+							<div class="mt-2" id="timeDifference"></div>
+						</div>
+					</div>
+					<!-- <div class="input-block mb-3">
+						<label class="col-form-label">Event Date <span class="text-danger">*</span></label>
+						<div class="cal-icon">
+							<input class="form-control datetimepicker" type="text">
+						</div>
+					</div> -->
+					<!-- Hidden input field for client_id -->
+
+					<input type="hidden" name="calender_date" id="calender_date">
+					<div class="submit-section">
+						<button id="addButton" class="btn btn-primary submit-btn">Submit</button>
+					</div>
+<!--				</form>-->
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="edit_delete_event" class="modal custom-modal fade" role="dialog">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" style="margin-left: -25px;">Edit Event</h5>
+				<div style="order:-1">
+					<button id="copyButton" type="button" class="btn btn-sm btn-light ml-auto" title="Copy as Time Entry" hidden>
+						<!-- <i class="fas fa-copy"></i> -->
+						<img src="{% static 'assets/img/copy_icon.png' %}" style="width:15px;color:white;">
+					</button>
+					<button id="shareButton" type="button" class="btn btn-sm btn-light ml-auto" title="View in Google Calendar">
+						<a id="share_icon" href="#" target="_blank"><img src="{% static 'assets/img/redirect_link1.png' %}" style="width:15px;color:white;"></a>
+					</button>
+				</div>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+                    <div class="input-block mb-3" id="quick_access" style="display: none;">
+                            <label class="control-label col-form-label" style="font-size: 14px; font-weight: 500;">Quick Access</label>
+                            <div style="display: flex; gap: 5px; overflow-x: auto; white-space: nowrap;
+                scrollbar-width: thin; scrollbar-color: #ccc transparent;">
+                                {% for client_id, details in client_category_map.items %}
+                                    <button type="button" class="recent-client1"
+                                            data-client="{{ client_id }}"
+                                            data-category="{{ details.category_id }}"
+                                            style="background: #f6f8fb; color: #333; font-size: 14px; padding: 6px 10px;
+                                                border: none; border-radius: 6px; flex-shrink: 0;">
+                                        {{ details.client_name }}
+                                    </button>
+                                {% endfor %}
+                            </div>
+                    </div>
+
+					<div class="input-block mb-3">
+						<label class="control-label col-form-label">Client Name <span class="text-danger">*</span></label><br>
+						<select id="mySelect3" name="client_id1" style="width: 100%">
+
+							{% for client in clients %}
+									<option value="{{ client.id }}">{{ client.company_name }}, {{ client.client_name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+				<div class="input-block mb-3" id="projectDiv1" style="display:none;">
+						<label class="control-label col-form-label">Project Name</label><br>
+						<select id="projectName1" name="project_id1" style="width: 100%" required>
+
+						</select>
+					</div>
+
+						<div class="input-block mb-3">
+							<label class="control-label col-form-label">Work Category <span class="text-danger">*</span></label>
+							<select name="category_id1" id="workCategory1" class="select form-control">
+								<option value="" selected disabled>Select a work category</option>
+								{% for category in categorys %}
+									<option value="{{ category.id }}">
+										{{ category.category }}
+									</option>
+								{% endfor %}
+								
+							</select>
+						</div>
+
+						<div class="input-block mb-3" id="otherCategoryInput1" style="display: none;">
+							<label class="control-label col-form-label">Other Work Category</label>
+							<input type="text" name="other_category1" class="form-control" placeholder="Enter other work category">
+						</div>
+
+					<div class="input-block mb-3">
+						<label class="col-form-label">Description</label>
+						<textarea class="form-control" name="description1" placeholder=""></textarea>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">Start Time <span class="text-danger">*</span></label>
+							<div class="cal-icon">
+								<input class="form-control" name="start_time1" id="modalStartTime1" type="text">
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">End Time <span class="text-danger">*</span></label>
+							<div class="cal-icon">
+								<input class="form-control" name="end_time1" id="modalEndTime1" type="text">
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<label class="col-form-label">Duration <span class="text-danger">*</span></label>
+							<div class="mt-2" id="timeDifference1"></div>
+						</div>
+					</div>
+
+					<input type="hidden" name="calender_date1" id="calender_date1">
+					<input type="hidden" id="hiddenEventId" value="" name="hiddenEventId">
+                    <div class="submit-section" id="submitSection">
+						<button id ='editButton' class="btn btn-primary submit-btn">Submit</button>
+						<button id ='deleteButton' class="btn btn-primary submit-btn">Delete</button>
+						<button id="declineButton" class="btn btn-primary submit-btn" style="display: none;">Decline</button>
+						<button id="acceptButton" class="btn btn-primary submit-btn" style="display: none;">Accept</button>
+					</div>
+					<!-- <div class="submit-section">
+						<button id ='editButton' class="btn btn-primary submit-btn">Submit</button>
+						<button id ='deleteButton' class="btn btn-primary submit-btn">Delete</button>
+					</div> -->
+          <!-- <div style="min-width: 130px; font-size: 13px; display: flex; gap: 5px;padding:5px 65px">
+						<button id="editButton" class="btn btn-primary btn-sm edit-event-btn">Submit</button>
+						<button id="deleteButton" class="btn btn-danger btn-sm edit-event-btn" style="margin-left:30px">Delete</button>
+						<button id="declineButton" class="btn btn-warning btn-sm edit-event-btn" style="display: none;margin-left:30px">Decline</button>
+					</div> -->
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal custom-modal fade" id="event-modal">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Event</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body"></div>
+			<div class="modal-footer text-center">
+				<button type="button" class="btn btn-success submit-btn save-event">Create event</button>
+				<button type="button" class="btn btn-danger submit-btn delete-event" data-bs-dismiss="modal">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="modal custom-modal fade" id="add-category">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Add a category</h4>
+			</div>
+			<div class="modal-body p-20">
+				<form>
+					<div class="row">
+						<div class="col-md-6">
+							<label class="col-form-label">Category Name</label>
+							<input class="form-control" placeholder="Enter name" type="text" name="category-name">
+						</div>
+						<div class="col-md-6">
+							<label class="col-form-label">Choose Category Color</label>
+							<select class="form-control form-select" data-placeholder="Choose a color..." name="category-color">
+								<option value="success">Success</option>
+								<option value="danger">Danger</option>
+								<option value="info">Info</option>
+								<option value="pink">Pink</option>
+								<option value="primary">Primary</option>
+								<option value="warning">Warning</option>
+								<option value="orange">Orange</option>
+								<option value="brown">Brown</option>
+								<option value="teal">Teal</option>
+							</select>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-white" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-danger save-category" data-bs-dismiss="modal">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="token_message" tabindex="-1" role="dialog" aria-labelledby="modalCenterTitle" aria-hidden="true">
+	<div class="modal-dialog" style="position: fixed;top: 15%;right: 30%;transform: translateY(-50%);" role="document">
+	<div class="modal-content" style="background-color: #5e5e5e; color: white; font-weight: bold; height: auto; min-height: 50px; display: flex; align-items: center; justify-content: center;">
+	<div class="modal-body" style="padding: 40px;">
+	Please authenticate to Google Calendar.
+	</div>
+	</div>
+	</div>
+	</div>
+
+    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+    <button id="signout_button" onclick="handleSignoutClick()">Sign Out</button>
+
+    <pre id="content" style="white-space: pre-wrap;"></pre>
+
+<script type="text/javascript">
+      /* exported gapiLoaded */
+      /* exported gisLoaded */
+      /* exported handleAuthClick */
+      /* exported handleSignoutClick */
+
+      // TODO(developer): Set to client ID and API key from the Developer Console
+     //const CLIENT_ID = '47397665379-h5plter0ap0alh3hrcshtgpi0nn2c607.apps.googleusercontent.com';
+   //	 const API_KEY = 'AIzaSyDXAkIuNse3EaVktCCh4rH2uq3d2QTHk64';
+
+      // ASHOK API CODE
+   const CLIENT_ID = '66530821686-5is8ogo6pu4uvp678hspevl6n4e4jn62.apps.googleusercontent.com';
+    const API_KEY = 'AIzaSyA99zYpAssbRFEap7lwTnjYSfQfaRzbvio';
+
+     // MUSKAN API CODE
+      //const CLIENT_ID = '925243630591-m2vgiie02k5neor4v065bq92b2f492bj.apps.googleusercontent.com';
+     // const API_KEY = 'AIzaSyCgRb6JHaq5uw7d482MdpqG9zW0cCwdz3E';
+
+      // Discovery doc URL for APIs used by the quickstart
+      const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      const SCOPES = 'https://www.googleapis.com/auth/calendar.events.readonly';
+
+      let tokenClient;
+      let gapiInited = false;
+      let gisInited = false;
+
+      document.getElementById('authorize_button').style.visibility = 'hidden';
+      document.getElementById('signout_button').style.visibility = 'hidden';
+
+      /**
+       * Callback after api.js is loaded.
+       */
+      function gapiLoaded() {
+        gapi.load('client', initializeGapiClient);
+      }
+
+      /**
+       * Callback after the API client is loaded. Loads the
+       * discovery doc to initialize the API.
+       */
+      async function initializeGapiClient() {
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        maybeEnableButtons();
+      }
+
+      /**
+       * Callback after Google Identity Services are loaded.
+       */
+      function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: '', // defined later
+        });
+        gisInited = true;
+        maybeEnableButtons();
+      }
+	console.log('TEST1');
+      /**
+       * Enables user interaction after all libraries are loaded.
+       */
+      function maybeEnableButtons() {
+        if (gapiInited && gisInited) {
+          document.getElementById('authorize_button').style.visibility = 'visible';
+        }
+      }
+
+      /**
+       *  Sign in the user upon button click.
+       */
+      function handleAuthClick() {
+        tokenClient.callback = async (resp) => {
+          if (resp.error !== undefined) {
+            throw (resp);
+          }
+          document.getElementById('signout_button').style.visibility = 'visible';
+          document.getElementById('authorize_button').innerText = 'Refresh';
+          await listUpcomingEvents();
+          console.log('TEST2');
+        };
+console.log('TEST3');
+        if (gapi.client.getToken() === null) {
+
+          // Prompt the user to select a Google Account and ask for consent to share their data
+          // when establishing a new session.
+          tokenClient.requestAccessToken({prompt: 'consent'});
+          console.log('ASHOK1');
+        } else {
+        console.log('ASHOK2');
+          // Skip display of account chooser and consent dialog for an existing session.
+          tokenClient.requestAccessToken({prompt: ''});
+        }
+      }
+
+      /**
+       *  Sign out the user upon button click.
+       */
+       console.log('TEST4');
+      function handleSignoutClick() {
+      console.log('ASHOK3');
+        const token = gapi.client.getToken();
+        if (token !== null) {
+          google.accounts.oauth2.revoke(token.access_token);
+          gapi.client.setToken('');
+          document.getElementById('content').innerText = '';
+          document.getElementById('authorize_button').innerText = 'Authorize';
+          document.getElementById('signout_button').style.visibility = 'hidden';
+        }
+      }
+
+      /**
+       * Print the summary and start datetime/date of the next ten events in
+       * the authorized user's calendar. If no events are found an
+       * appropriate message is printed.
+       */
+       console.log('TEST5');
+      async function listUpcomingEvents() {
+      console.log('ASHOK4');
+        let response;
+        try {
+          const request = {
+            'calendarId': 'primary',
+            'timeMin': (new Date()).toISOString(),
+            'showDeleted': false,
+            'singleEvents': true,
+            'maxResults': 20,
+            'orderBy': 'startTime',
+          };
+          response = await gapi.client.calendar.events.list(request);
+        } catch (err) {
+          document.getElementById('content').innerText = err.message;
+          return;
+        }
+
+        const events = response.result.items;
+        if (!events || events.length == 0) {
+          document.getElementById('content').innerText = 'No events found.';
+          return;
+        }
+        console.log(events,'ASHOK');
+        // Flatten to string to display
+		const output = events.reduce(
+			(str, event) => `${str}${event.summary} ${event.start.dateTime || event.start.date} ${event.end.dateTime || event.end.date}, `,
+			'');
+    	document.getElementById('content').innerText = output;
+
+        $.ajax({
+            url: '/calender_events', // Replace with your URL
+            type: 'GET', // or 'PUT'
+            contentType: 'application/json',
+            data: {"google_data": output},
+            success: function(response) {
+                console.log('Success11:', response);
+                response.forEach(function(eventData) {
+                	console.log(eventData);
+					$('#calendar').fullCalendar('renderEvent', eventData, true);
+				});
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+
+
+      }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+
+    // Your existing functions (calculateTimeDifference and convertTo24Hour) go here
+    function calculateTimeDifference() {
+        // Function implementation
+    }
+
+    function convertTo24Hour(time) {
+        // Function implementation
+    }
+
+    // Existing event listeners for input fields
+    $('#modalStartTime').on('input', calculateTimeDifference);
+    $('#modalEndTime').on('input', calculateTimeDifference);
+
+</script>
+
+<script>
+    var clientSearchBox = document.getElementById('clientSearchBox');
+    var clientSelect = document.getElementById('clientSelect');
+    var clientOptions = document.querySelectorAll('.clientOption');
+
+    clientSearchBox.addEventListener('input', function() {
+        var searchQuery = this.value.toLowerCase();
+
+        clientOptions.forEach(function(option) {
+            var optionText = option.textContent.toLowerCase();
+            var isMatch = optionText.includes(searchQuery);
+            option.style.display = isMatch ? '' : 'none';
+        });
+    });
+
+    clientSelect.addEventListener('click', function(e) {
+        if (e.target.classList.contains('clientOption')) {
+            var selectedClientName = e.target.textContent;
+            clientSearchBox.value = selectedClientName;
+
+            var selectedClientId = e.target.getAttribute('data-value');
+            document.getElementById('selectedClientId').value = selectedClientId;
+
+            clientOptions.forEach(function(option) {
+                option.style.display = 'none';
+            });
+
+            // Explicitly set text-align to left with !important
+            clientSearchBox.style.textAlign = 'left !important';
+        }
+    });
+
+    // Handling form submission
+    var form = document.querySelector('form');
+
+    form.addEventListener('submit', function(e) {
+        var selectedClientId = document.getElementById('selectedClientId').value;
+
+        if (!selectedClientId) {
+            e.preventDefault(); // Prevent form submission if no client is selected
+        }
+
+    });
+</script>
+<script>
+	function toggleOtherInput() {
+        var otherCategoryInput = document.getElementById('otherCategoryInput');
+        var workCategory = document.getElementById('workCategory');
+
+        otherCategoryInput.style.display = workCategory.value === 'other' ? 'block' : 'none';
+    }
+
+</script>
+<script>
+	// Function to calculate and display time difference
+    function calculateTimeDifference() {
+    var eventStartTime = $('#modalStartTime').val().trim();
+    var eventEndTime = $('#modalEndTime').val().trim();
+    var errorMessage = $('#errorMessage');
+
+    errorMessage.text(""); // Clear previous errors
+
+    // Convert times to 24-hour format for easier calculation
+    function convertTo24Hour(time) {
+        var parts = time.match(/(\d+):(\d+) (\w+)/);
+        if (!parts) return null; // Return null for invalid formats
+
+        var hours = parseInt(parts[1], 10);
+        var minutes = parseInt(parts[2], 10);
+        var AMPM = parts[3];
+
+        if (AMPM === "PM" && hours < 12) hours += 12;
+        if (AMPM === "AM" && hours === 12) hours = 0;
+
+        return { date: new Date(1970, 0, 1, hours, minutes), hours, AMPM };
+    }
+
+    if (!eventStartTime || !eventEndTime) {
+        errorMessage.text("Both start and end times are required.");
+        return false;
+    }
+
+    var startTimeConverted = convertTo24Hour(eventStartTime);
+    var endTimeConverted = convertTo24Hour(eventEndTime);
+
+    if (!startTimeConverted || !endTimeConverted) {
+        errorMessage.text("Invalid time format. Use hh:mm AM/PM.");
+        return false;
+    }
+
+    var startDate = startTimeConverted.date;
+    var endDate = endTimeConverted.date;
+
+    // Check if start time is in PM and end time is in AM (overnight case)
+    if (startTimeConverted.AMPM === "PM" && endTimeConverted.AMPM === "AM") {
+        endDate.setDate(endDate.getDate() + 1); // Move end time to next day
+    }
+
+    // Calculate difference in milliseconds
+    var diff = endDate - startDate;
+
+    if (diff < 0) {
+        errorMessage.text("End time must be after start time.");
+        return false;
+    }
+
+    // Convert milliseconds into hours, minutes, and seconds
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+    var minutes = Math.floor(diff / (1000 * 60));
+    diff -= minutes * (1000 * 60);
+    var seconds = Math.floor(diff / 1000);
+
+    var diffFormatted =
+        (hours < 10 ? "0" + hours : hours) + ":" +
+        (minutes < 10 ? "0" + minutes : minutes) + ":" +
+        (seconds < 10 ? "0" + seconds : seconds);
+
+    $('#timeDifference').text(diffFormatted);
+    return true;
+}
+
+
+
+$(document).ready(function() {
+    $('#modalStartTime').on('change', calculateTimeDifference);
+    $('#modalEndTime').on('change', calculateTimeDifference);
+});
+
+</script>
+<script>
+	// Function to calculate and display time difference
+    function calculateTimeDifference1() {
+    var eventStartTime = $('#modalStartTime1').val().trim();
+    var eventEndTime = $('#modalEndTime1').val().trim();
+    var errorMessage = $('#errorMessage');
+
+    errorMessage.text(""); // Clear previous errors
+
+    // Convert times to 24-hour format for easier calculation
+    function convertTo24Hour(time) {
+        var parts = time.match(/(\d+):(\d+) (\w+)/);
+        if (!parts) return null; // Return null for invalid formats
+
+        var hours = parseInt(parts[1], 10);
+        var minutes = parseInt(parts[2], 10);
+        var AMPM = parts[3];
+
+        if (AMPM === "PM" && hours < 12) hours += 12;
+        if (AMPM === "AM" && hours === 12) hours = 0;
+
+        return { date: new Date(1970, 0, 1, hours, minutes), hours, AMPM };
+    }
+
+    if (!eventStartTime || !eventEndTime) {
+        errorMessage.text("Both start and end times are required.");
+        return false;
+    }
+
+    var startTimeConverted = convertTo24Hour(eventStartTime);
+    var endTimeConverted = convertTo24Hour(eventEndTime);
+
+    if (!startTimeConverted || !endTimeConverted) {
+        errorMessage.text("Invalid time format. Use hh:mm AM/PM.");
+        return false;
+    }
+
+    var startDate = startTimeConverted.date;
+    var endDate = endTimeConverted.date;
+
+    // Check if start time is in PM and end time is in AM (overnight case)
+    if (startTimeConverted.AMPM === "PM" && endTimeConverted.AMPM === "AM") {
+        endDate.setDate(endDate.getDate() + 1); // Move end time to next day
+    }
+
+    // Calculate difference in milliseconds
+    var diff = endDate - startDate;
+
+    if (diff < 0) {
+        errorMessage.text("End time must be after start time.");
+        return false;
+    }
+
+    // Convert milliseconds into hours, minutes, and seconds
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+    var minutes = Math.floor(diff / (1000 * 60));
+    diff -= minutes * (1000 * 60);
+    var seconds = Math.floor(diff / 1000);
+
+    var diffFormatted =
+        (hours < 10 ? "0" + hours : hours) + ":" +
+        (minutes < 10 ? "0" + minutes : minutes) + ":" +
+        (seconds < 10 ? "0" + seconds : seconds);
+
+    $('#timeDifference1').text(diffFormatted);
+    return true;
+}
+
+
+$(document).ready(function() {
+    $('#modalStartTime1').on('change', calculateTimeDifference1);
+    $('#modalEndTime1').on('change', calculateTimeDifference1);
+});
+
+
+</script>
+
+<script>
+function calculateTimeDifference3() {
+    var eventStartTime = $('#modalStartTime').val().trim();
+    var eventEndTime = $('#modalEndTime').val().trim();
+    var errorMessage = $('#timeDifference1');
+
+    errorMessage.text(""); // Clear previous errors
+
+    // Convert times to 24-hour format for easier calculation
+    function convertTo24Hour(time) {
+        var parts = time.match(/(\d+):(\d+) (\w+)/);
+        if (!parts) return null; // Return null for invalid formats
+
+        var hours = parseInt(parts[1], 10);
+        var minutes = parseInt(parts[2], 10);
+        var AMPM = parts[3];
+
+        if (AMPM === "PM" && hours < 12) hours += 12;
+        if (AMPM === "AM" && hours === 12) hours = 0;
+
+        return { date: new Date(1970, 0, 1, hours, minutes), hours, AMPM };
+    }
+
+    if (!eventStartTime || !eventEndTime) {
+        errorMessage.text("Both start and end times are required.");
+        return false;
+    }
+
+    var startTimeConverted = convertTo24Hour(eventStartTime);
+    var endTimeConverted = convertTo24Hour(eventEndTime);
+
+    if (!startTimeConverted || !endTimeConverted) {
+        errorMessage.text("Invalid time format. Use hh:mm AM/PM.");
+        return false;
+    }
+
+    var startDate = startTimeConverted.date;
+    var endDate = endTimeConverted.date;
+
+    // Check if start time is in PM and end time is in AM (overnight case)
+    if (startTimeConverted.AMPM === "PM" && endTimeConverted.AMPM === "AM") {
+        endDate.setDate(endDate.getDate() + 1); // Move end time to next day
+    }
+
+    // Calculate difference in milliseconds
+    var diff = endDate - startDate;
+
+    if (diff < 0) {
+        errorMessage.text("End time must be after start time.");
+        return false;
+    }
+
+    // Convert milliseconds into hours, minutes, and seconds
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+    var minutes = Math.floor(diff / (1000 * 60));
+    diff -= minutes * (1000 * 60);
+    var seconds = Math.floor(diff / 1000);
+
+    var diffFormatted =
+        (hours < 10 ? "0" + hours : hours) + ":" +
+        (minutes < 10 ? "0" + minutes : minutes) + ":" +
+        (seconds < 10 ? "0" + seconds : seconds);
+
+    $('#timeDifference').text(diffFormatted);
+    return true;
+}
+
+function calculateTimeDifference4() {
+    var eventStartTime = $('#modalStartTime1').val().trim();
+    var eventEndTime = $('#modalEndTime1').val().trim();
+    var errorMessage = $('#timeDifference1');
+
+    errorMessage.text(""); // Clear previous errors
+
+    // Convert times to 24-hour format for easier calculation
+    function convertTo24Hour(time) {
+        var parts = time.match(/(\d+):(\d+) (\w+)/);
+        if (!parts) return null; // Return null for invalid formats
+
+        var hours = parseInt(parts[1], 10);
+        var minutes = parseInt(parts[2], 10);
+        var AMPM = parts[3];
+
+        if (AMPM === "PM" && hours < 12) hours += 12;
+        if (AMPM === "AM" && hours === 12) hours = 0;
+
+        return { date: new Date(1970, 0, 1, hours, minutes), hours, AMPM };
+    }
+
+    if (!eventStartTime || !eventEndTime) {
+        errorMessage.text("Both start and end times are required.");
+        return false;
+    }
+
+    var startTimeConverted = convertTo24Hour(eventStartTime);
+    var endTimeConverted = convertTo24Hour(eventEndTime);
+
+    if (!startTimeConverted || !endTimeConverted) {
+        errorMessage.text("Invalid time format. Use hh:mm AM/PM.");
+        return false;
+    }
+
+    var startDate = startTimeConverted.date;
+    var endDate = endTimeConverted.date;
+
+    // Check if start time is in PM and end time is in AM (overnight case)
+    if (startTimeConverted.AMPM === "PM" && endTimeConverted.AMPM === "AM") {
+        endDate.setDate(endDate.getDate() + 1); // Move end time to next day
+    }
+
+    // Calculate difference in milliseconds
+    var diff = endDate - startDate;
+
+    if (diff < 0) {
+        errorMessage.text("End time must be after start time.");
+        return false;
+    }
+
+    // Convert milliseconds into hours, minutes, and seconds
+    var hours = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hours * (1000 * 60 * 60);
+    var minutes = Math.floor(diff / (1000 * 60));
+    diff -= minutes * (1000 * 60);
+    var seconds = Math.floor(diff / 1000);
+
+    var diffFormatted =
+        (hours < 10 ? "0" + hours : hours) + ":" +
+        (minutes < 10 ? "0" + minutes : minutes) + ":" +
+        (seconds < 10 ? "0" + seconds : seconds);
+	console.log('RETURN');
+    $('#timeDifference1').text(diffFormatted);
+    return true;
+}
+
+</script>
+
+
+<script>
+    $(document).ready(function () {
+		function fetchProjects(clientId) {
+					$("#projectName").empty().append('<option value="" disabled selected>Loading...</option>');
+
+					if (clientId) {
+						$.ajax({
+							url: "{% url 'get_event_projects' %}",
+							type: "GET",
+							data: { client_id: clientId },
+							success: function (data) {
+								$("#projectName").empty().append('<option value="" disabled selected>Select a project</option>');
+								if (data.length > 0) {
+									$.each(data, function (index, project) {
+										$("#projectName").append(`<option value="${project.id}">${project.project_name}</option>`);
+									});
+									$("#projectDiv, #projectDiv1").show(); // Show projectDivs if projects exist
+								} else {
+									$("#projectDiv, #projectDiv1").hide(); // Hide if no projects
+								}
+							}
+						});
+					} else {
+						$("#projectName").empty().append('<option value="" disabled selected>Select a project</option>');
+						$("#projectDiv, #projectDiv1").hide();
+					}
+				}
+
+				// Trigger when client is selected
+				$("#mySelect2").change(function () {
+					var clientId = $(this).val();
+					fetchProjects(clientId);
+				});
+    });
+
+
+    // START CODE FOR FREQUENT USED
+$(document).ready(function () {
+        $(document).on("click", ".recent-client", function () {
+            let clientId = $(this).data("client");
+            let categoryId = $(this).data("category");
+
+            console.log("Selected Client ID:", clientId);
+            console.log("Selected Category ID:", categoryId);
+
+            // Set the values
+            $("#mySelect2").val(clientId).trigger("change"); // Trigger change for Select2
+            $("#workCategory").val(categoryId).trigger("change");
+        });
+        $(document).on("click", ".recent-client1", function () {
+            let clientId = $(this).data("client");
+            let categoryId = $(this).data("category");
+
+            console.log("Selected Client ID:", clientId);
+            console.log("Selected Category ID:", categoryId);
+
+            // Set the values
+            $("#mySelect3").val(clientId).trigger("change"); // Trigger change for Select2
+            $("#workCategory1").val(categoryId).trigger("change");
+        });
+    });
+
+</script>
+
+
+<script>
+function edit_fetchProjects1(clientId, project_id) {
+    $("#projectName1").empty().append('<option value="" disabled selected>Loading...</option>');
+    console.log(project_id, 'CHECK PROJECT ID');
+
+    if (clientId) {
+        $.ajax({
+            url: "{% url 'get_event_projects' %}",
+            type: "GET",
+            data: { client_id: clientId },
+            success: function (data) {
+                $("#projectName1").empty().append('<option value="" disabled>Select a project</option>'); // Reset dropdown
+
+                let projectFound = false;
+
+                if (data.length > 0) {
+                    console.log(data);
+                    $.each(data, function (index, project) {
+                        let selected = project.id == project_id ? 'selected' : '';
+                        if (project.id == project_id) projectFound = true;
+                        $("#projectName1").append(`<option value="${project.id}" ${selected}>${project.project_name}</option>`);
+                    });
+					// Always show projectDiv1 if data exists, even if project_id doesn't match
+                    $("#projectDiv1").show();
+                    if (project_id && projectFound) {
+                        $("#projectName1").val(project_id).trigger('change');
+                        $("#projectDiv1").show(); // Show only if a valid project is found
+                    } else {
+                        $("#projectDiv1").hide(); // Hide if project_id is null or not found
+                    }
+                } else {
+                    $("#projectDiv1").hide(); // Hide if no projects exist
+                }
+            }
+        });
+    } else {
+        $("#projectName1").empty().append('<option value="" disabled selected>Select a project</option>');
+        $("#projectDiv1").hide();
+    }
+}
+
+				// Trigger when client is selected
+				//$("#mySelect3").change(function () {
+				//	var clientId = $(this).val();
+				//	edit_fetchProjects(clientId);
+				//});
+
+
+</script>
+<script>
+	function edit_fetchProjects(clientId, project_id) {
+    $("#projectName1").empty().append('<option value="" disabled selected>Loading...</option>');
+    console.log(project_id, 'CHECK PROJECT ID');
+
+    if (clientId) {
+        $.ajax({
+            url: "{% url 'get_event_projects' %}",
+            type: "GET",
+            data: { client_id: clientId },
+            success: function (data) {
+                $("#projectName1").empty().append('<option value="" disabled selected>Select a project</option>'); // Reset dropdown
+
+                let projectFound = false;
+
+                if (data.length > 0) {
+                    console.log(data);
+                    $.each(data, function (index, project) {
+                        let selected = project.id == project_id ? 'selected' : '';
+                        if (project.id == project_id) projectFound = true;
+                        $("#projectName1").append(`<option value="${project.id}" ${selected}>${project.project_name}</option>`);
+                    });
+
+                    // Always show projectDiv1 if data exists, even if project_id doesn't match
+                    $("#projectDiv1").show();
+
+                    if (project_id && projectFound) {
+                        $("#projectName1").val(project_id).trigger('change');
+                    }
+                } else {
+                    $("#projectDiv1").hide(); // Hide if no projects exist
+                }
+            }
+        });
+    } else {
+        $("#projectName1").empty().append('<option value="" disabled selected>Select a project</option>');
+        $("#projectDiv1").hide();
+    }
+}
+
+
+</script>
+{% endblock %}
+

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content container-fluid">
+
+	<div class="page-header">
+		<div class="row">
+			<div class="col">
+				<h3 class="page-title">Basic Inputs</h3>
+				<ul class="breadcrumb">
+					<li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+					<li class="breadcrumb-item active">Basic Inputs</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="card">
+				<div class="card-header">
+					<h4 class="card-title mb-0">Basic Inputs</h4>
+				</div>
+				<div class="card-body">
+					<form action="{% url 'upload_contracted_employee' %}" method="post" enctype="multipart/form-data">
+						{% csrf_token %}
+    					{{ form.as_p }}
+						<div class="input-block mb-3 row">
+							<label class="col-form-label col-md-2">File Input</label>
+							<div class="col-md-10">
+								<input class="form-control" type="file" name="emp_file1">
+							</div>
+						</div>
+
+						<div class="input-block mb-3 mb-0 row">
+							<label class="col-form-label col-md-2">Input Addons</label>
+							<div class="col-md-10">
+								<div class="input-group">
+									<!-- <span class="input-group-text">$</span> -->
+									<!-- <input class="form-control" type="text"> -->
+									<button class="btn btn-primary" type="submit">Submit</button>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

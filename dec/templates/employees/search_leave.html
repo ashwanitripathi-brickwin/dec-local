@@ -1,0 +1,819 @@
+{% extends "base.html" %}
+{% load date_filters %}
+{% block content %}
+
+<div class="content container-fluid">
+
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Leave</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Leave</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                <a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_leave"><i class="fa-solid fa-plus"></i> Add Leave</a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-3 d-flex">
+            <div class="stats-info w-100">
+                <h6>Today Presents</h6>
+                <h4>{{presents_count}} / {{employee_count}}</h4>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex">
+            <div class="stats-info w-100">
+                <h6>Planned Leave</h6>
+                <h4>{{planned_leave_count}} <span>Today</span></h4>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex">
+            <div class="stats-info w-100">
+                <h6>Unplanned Leave</h6>
+                <h4>0 <span>Today</span></h4>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex">
+            <div class="stats-info w-100">
+                <h6>Pending Requests</h6>
+                <h4>{{pending_leave_count}}</h4>
+            </div>
+        </div>
+    </div>
+
+    <form id="search_leave" action="{% url 'search_leave' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row filter-row">
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="input-block mb-3 form-focus">
+                <input type="text" class="form-control floating" name="employee_name">
+                <label class="focus-label">Employee Name</label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="input-block mb-3 form-focus select-focus">
+                <select class="select floating" name="leave_type" id="leave_type">
+                    <option value="" {% if not leave_detail.leave_instance.leave_type %} selected {% endif %}> -- Select -- </option>
+                    {% for leave_detail in leave_details %}
+                    <option value="{{ leave_detail.leave_instance.leave_type }}">{{ leave_detail.leave_instance.leave_type }}</option>
+                    {% endfor %}
+                </select>
+                <label class="focus-label">Leave Type</label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="input-block mb-3 form-focus select-focus">
+                <select class="select floating" name="status">
+                    <option value=""> -- Select -- </option>
+                    <option value="pending"> Pending </option>
+                    <option value="approved"> Approved </option>
+                    <option value="rejected"> Rejected </option>
+                </select>
+                <label class="focus-label">Leave Status</label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="input-block mb-3 form-focus">
+                <div class="cal-icon">
+                    <input class="form-control floating datetimepicker" type="text" name="search_from_date">
+                </div>
+                <label class="focus-label">From</label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <div class="input-block mb-3 form-focus">
+                <div class="cal-icon">
+                    <input class="form-control floating datetimepicker" type="text" name="search_to_date">
+                </div>
+                <label class="focus-label">To</label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3 col-lg-3 col-xl-2 col-12">
+            <button type="submit" class="btn btn-success w-100" id="searchBtn-rename"> Search </button>
+        </div>
+    </div>
+    </form>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive" id="leave-data">
+                <table class="table table-striped custom-table mb-0 datatable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>No of Days</th>
+                            <th>Reason</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaveTableBody">
+                    {% for leave_detail in result_list %}
+                    <tr>
+                        <td>
+                            <h2 class="table-avatar">
+                             <a href="{% url 'profile' leave_detail.0 %}" class="avatar" data-bs-toggle="tooltip" title="{{ leave_detail.2 }} {{ leave_detail.3 }}">
+                                 <img src="{{ leave_detail.4 }}" alt="User Image"></a>
+                                 {% if leave_detail.2 and leave_detail.3 %}
+                                 <a href="{% url 'profile' leave_detail.0 %}">{{ leave_detail.2 }} {{ leave_detail.3 }}</a>
+                                 {% else %}
+                                 <a href="{% url 'profile' leave_detail.0 %}">{{ leave_detail.5 }}</a>
+                                 {% endif %}
+                             </h2>
+                         </td>
+                         <td>{{leave_detail.6}}</td>
+                         <td>{{leave_detail.9}}</td>
+                         <td>{{leave_detail.10}}</td>
+                         <td>{{ leave_detail.10|calculate_days:leave_detail.9 }} days</td>
+                         <td>{{leave_detail.12}}</td>
+                         <td class="text-center">
+                            <div class="dropdown action-label">
+                                <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if leave_detail.13 == 'Approved' %}
+                                    <i class="fa-regular fa-circle-dot text-success"></i> Approved
+                                    {% elif leave_detail.13 == 'Declined' %}
+                                    <i class="fa-regular fa-circle-dot text-danger"></i> Declined
+                                    {% else %}
+                                    <i class="fa-regular fa-circle-dot text-info"></i> Pending
+                                    {% endif %}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-info"></i> Pending</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#approve_leave"><i class="fa-regular fa-circle-dot text-success"></i> Approved</a>
+                                    <a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Declined</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div class="dropdown dropdown-action">
+                                <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_leave"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_approve"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<div id="add_leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add-leave' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Select Employee <span class="text-danger">*</span></label>
+                        <select class="select" name="employee_id">
+                            <option value="">Select Employee</option>
+                            {% for employee in employees %}
+                                <option value="{{ employee.toggl_user_id }}">
+                                {% if employee.first_name|length > 0 %}
+                                    {{ employee.first_name}} {{ employee.last_name}}
+                                {% else %}
+                                    {{ employee.user_name}}
+                                {% endif %}
+                                </option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="select" name="leave_type">
+                            <option value="">Select Leave Type</option>
+                            {% for ltype in leave_type %}
+                                <option value="{{ ltype.id }}">{{ ltype.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">From <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" type="text" name="from_date">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">To <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" type="text" name="to_date">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Number of days <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly type="text">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Remaining Leave <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly value="12" type="text">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Reason <span class="text-danger">*</span></label>
+                        <textarea rows="4" class="form-control" name="reason"></textarea>
+                    </div>
+                    
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="edit_leave" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Type <span class="text-danger">*</span></label>
+                        <select class="select">
+                            <option>Select Leave Type</option>
+                            <option>Casual Leave 12 Days</option>
+                        </select>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">From <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" value="01-01-2019" type="text">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">To <span class="text-danger">*</span></label>
+                        <div class="cal-icon">
+                            <input class="form-control datetimepicker" value="01-01-2019" type="text">
+                        </div>
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Number of days <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly type="text" value="2">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Remaining Leave <span class="text-danger">*</span></label>
+                        <input class="form-control" readonly value="12" type="text">
+                    </div>
+                    <div class="input-block mb-3">
+                        <label class="col-form-label">Leave Reason <span class="text-danger">*</span></label>
+                        <textarea rows="4" class="form-control">Going to hospital</textarea>
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal custom-modal fade" id="approve_leave" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Leave Approve</h3>
+                    <p>Are you sure want to approve for this leave?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn">Approve</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Decline</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal custom-modal fade" id="delete_approve" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Delete Leave</h3>
+                    <p>Are you sure want to delete this leave?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<div class="settings-icon">
+    <span data-bs-toggle="offcanvas" data-bs-target="#theme-settings-offcanvas" aria-controls="theme-settings-offcanvas"><i class="las la-cog"></i></span>
+</div>
+<div class="offcanvas offcanvas-end border-0 " tabindex="-1" id="theme-settings-offcanvas">
+    <div class="sidebar-headerset">
+        <div class="sidebar-headersets">
+            <h2>Customizer</h2>
+            <h3>Customize your overview Page layout</h3>
+        </div>
+        <div class="sidebar-headerclose">
+            <a data-bs-dismiss="offcanvas" aria-label="Close"><img src="assets/img/close.png" alt="Close Icon"></a>
+        </div>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div data-simplebar class="h-100">
+            <div class="settings-mains">
+                <div class="layout-head">
+                    <h5>Layout</h5>
+                    <h6>Choose your layout</h6>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-check card-radio p-0">
+                            <input id="customizer-layout01" name="data-layout" type="radio" value="vertical" class="form-check-input">
+                            <label class="form-check-label avatar-md w-100" for="customizer-layout01">
+                                <img src="assets/img/vertical.png" alt="Layout Image">
+                            </label>
+                        </div>
+                        <h5 class="fs-13 text-center mt-2">Vertical</h5>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check card-radio p-0">
+                            <input id="customizer-layout02" name="data-layout" type="radio" value="horizontal" class="form-check-input">
+                            <label class="form-check-label  avatar-md w-100" for="customizer-layout02">
+                                <img src="assets/img/horizontal.png" alt="Layout Image">
+                            </label>
+                        </div>
+                        <h5 class="fs-13 text-center mt-2">Horizontal</h5>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check card-radio p-0">
+                            <input id="customizer-layout03" name="data-layout" type="radio" value="twocolumn" class="form-check-input">
+                            <label class="form-check-label  avatar-md w-100" for="customizer-layout03">
+                                <img src="assets/img/two-col.png" alt="Layout Image">
+                            </label>
+                        </div>
+                        <h5 class="fs-13 text-center mt-2">Two Column</h5>
+                    </div>
+                </div>
+                <div class="layout-head pt-3">
+                    <h5>Color Scheme</h5>
+                    <h6>Choose Light or Dark Scheme.</h6>
+                </div>
+                <div class="colorscheme-cardradio">
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-check card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-orange" value="orange">
+                                <label class="form-check-label  avatar-md w-100 " for="layout-mode-orange">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Orange</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-light" value="light">
+                                <label class="form-check-label  avatar-md w-100" for="layout-mode-light">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Light</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio dark  p-0 ">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-dark" value="dark">
+                                <label class="form-check-label avatar-md w-100 " for="layout-mode-dark">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Dark</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio blue  p-0 ">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-blue" value="blue">
+                                <label class="form-check-label  avatar-md w-100" for="layout-mode-blue">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Blue</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio maroon p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-maroon" value="maroon">
+                                <label class="form-check-label  avatar-md w-100 " for="layout-mode-maroon">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Maroon</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio purple p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-mode" id="layout-mode-purple" value="purple">
+                                <label class="form-check-label  avatar-md w-100 " for="layout-mode-purple">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Purple</h5>
+                        </div>
+                    </div>
+                </div>
+                <div id="layout-width">
+                    <div class="layout-head pt-3">
+                        <h5>Layout Width</h5>
+                        <h6>Choose Fluid or Boxed layout.</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-check card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-width" id="layout-width-fluid" value="fluid">
+                                <label class="form-check-label avatar-md w-100" for="layout-width-fluid">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Fluid</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check card-radio p-0 ">
+                                <input class="form-check-input" type="radio" name="data-layout-width" id="layout-width-boxed" value="boxed">
+                                <label class="form-check-label avatar-md w-100 px-2" for="layout-width-boxed">
+                                    <img src="assets/img/boxed.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Boxed</h5>
+                        </div>
+                    </div>
+                </div>
+                <div id="layout-position">
+                    <div class="layout-head pt-3">
+                        <h5>Layout Position</h5>
+                        <h6>Choose Fixed or Scrollable Layout Position.</h6>
+                    </div>
+                    <div class="btn-group bor-rad-50 overflow-hidden radio" role="group">
+                        <input type="radio" class="btn-check" name="data-layout-position" id="layout-position-fixed" value="fixed">
+                        <label class="btn btn-light w-sm" for="layout-position-fixed">Fixed</label>
+                        <input type="radio" class="btn-check" name="data-layout-position" id="layout-position-scrollable" value="scrollable">
+                        <label class="btn btn-light w-sm ms-0" for="layout-position-scrollable">Scrollable</label>
+                    </div>
+                </div>
+                <div class="layout-head pt-3">
+                    <h5>Topbar Color</h5>
+                    <h6>Choose Light or Dark Topbar Color.</h6>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-check card-radio  p-0">
+                            <input class="form-check-input" type="radio" name="data-topbar" id="topbar-color-light" value="light">
+                            <label class="form-check-label avatar-md w-100" for="topbar-color-light">
+                                <img src="assets/img/vertical.png" alt="Layout Image">
+                            </label>
+                        </div>
+                        <h5 class="fs-13 text-center mt-2">Light</h5>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-check card-radio p-0">
+                            <input class="form-check-input" type="radio" name="data-topbar" id="topbar-color-dark" value="dark">
+                            <label class="form-check-label  avatar-md w-100" for="topbar-color-dark">
+                                <img src="assets/img/dark.png" alt="Layout Image">
+                            </label>
+                        </div>
+                        <h5 class="fs-13 text-center mt-2">Dark</h5>
+                    </div>
+                </div>
+                <div id="sidebar-size">
+                    <div class="layout-head pt-3">
+                        <h5>Sidebar Size</h5>
+                        <h6>Choose a size of Sidebar.</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio  p-0 ">
+                                <input class="form-check-input" type="radio" name="data-sidebar-size" id="sidebar-size-default" value="lg">
+                                <label class="form-check-label avatar-md w-100" for="sidebar-size-default">
+                                    <img src="assets/img/vertical.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Default</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-sidebar-size" id="sidebar-size-compact" value="md">
+                                <label class="form-check-label  avatar-md w-100" for="sidebar-size-compact">
+                                    <img src="assets/img/compact.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Compact</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0 ">
+                                <input class="form-check-input" type="radio" name="data-sidebar-size" id="sidebar-size-small-hover" value="sm-hover">
+                                <label class="form-check-label avatar-md w-100" for="sidebar-size-small-hover">
+                                    <img src="assets/img/small-hover.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Small Hover View</h5>
+                        </div>
+                    </div>
+                </div>
+                <div id="sidebar-view">
+                    <div class="layout-head pt-3">
+                        <h5>Sidebar View</h5>
+                        <h6>Choose Default or Detached Sidebar view.</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio  p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-style" id="sidebar-view-default" value="default">
+                                <label class="form-check-label avatar-md w-100" for="sidebar-view-default">
+                                    <img src="assets/img/compact.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Default</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-layout-style" id="sidebar-view-detached" value="detached">
+                                <label class="form-check-label  avatar-md w-100" for="sidebar-view-detached">
+                                    <img src="assets/img/detached.png" alt="Layout Image">
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Detached</h5>
+                        </div>
+                    </div>
+                </div>
+                <div id="sidebar-color">
+                    <div class="layout-head pt-3">
+                        <h5>Sidebar Color</h5>
+                        <h6>Choose a color of Sidebar.</h6>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0" data-bs-toggle="collapse" data-bs-target="#collapseBgGradient.show">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-light" value="light">
+                                <label class="form-check-label  avatar-md w-100" for="sidebar-color-light">
+                                    <span class="bg-light bg-sidebarcolor"></span>
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Light</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0" data-bs-toggle="collapse" data-bs-target="#collapseBgGradient.show">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-dark" value="dark">
+                                <label class="form-check-label  avatar-md w-100" for="sidebar-color-dark">
+                                    <span class="bg-darks bg-sidebarcolor"></span>
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Dark</h5>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-check sidebar-setting card-radio p-0">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-gradient" value="gradient">
+                                <label class="form-check-label avatar-md w-100" for="sidebar-color-gradient">
+                                    <span class="bg-gradients bg-sidebarcolor"></span>
+                                </label>
+                            </div>
+                            <h5 class="fs-13 text-center mt-2">Gradient</h5>
+                        </div>
+                        <div class="col-4 d-none">
+                            <button class="btn btn-link avatar-md w-100 p-0 overflow-hidden border collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBgGradient" aria-expanded="false" aria-controls="collapseBgGradient">
+                                <span class="d-flex gap-1 h-100">
+                                    <span class="flex-shrink-0">
+                                        <span class="bg-vertical-gradient d-flex h-100 flex-column gap-1 p-1">
+                                            <span class="d-block p-1 px-2 bg-soft-light rounded mb-2"></span>
+                                            <span class="d-block p-1 px-2 pb-0 bg-soft-light"></span>
+                                            <span class="d-block p-1 px-2 pb-0 bg-soft-light"></span>
+                                            <span class="d-block p-1 px-2 pb-0 bg-soft-light"></span>
+                                        </span>
+                                    </span>
+                                    <span class="flex-grow-1">
+                                        <span class="d-flex h-100 flex-column">
+                                            <span class="bg-light d-block p-1"></span>
+                                            <span class="bg-light d-block p-1 mt-auto"></span>
+                                        </span>
+                                    </span>
+                                </span>
+                            </button>
+                            <h5 class="fs-13 text-center mt-2">Gradient</h5>
+                        </div>
+                    </div>
+                    <div class="collapse d-none" id="collapseBgGradient">
+                        <div class="d-flex gap-2 flex-wrap img-switch p-2 px-3 bg-light rounded">
+                            <div class="form-check sidebar-setting card-radio">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-gradient-1" value="gradient">
+                                <label class="form-check-label p-0 avatar-xs rounded-circle" for="sidebar-color-gradient">
+                                    <span class="avatar-title rounded-circle bg-vertical-gradient"></span>
+                                </label>
+                            </div>
+                            <div class="form-check sidebar-setting card-radio">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-gradient-2" value="gradient-2">
+                                <label class="form-check-label p-0 avatar-xs rounded-circle" for="sidebar-color-gradient-2">
+                                    <span class="avatar-title rounded-circle bg-vertical-gradient-2"></span>
+                                </label>
+                            </div>
+                            <div class="form-check sidebar-setting card-radio">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-gradient-3" value="gradient-3">
+                                <label class="form-check-label p-0 avatar-xs rounded-circle" for="sidebar-color-gradient-3">
+                                    <span class="avatar-title rounded-circle bg-vertical-gradient-3"></span>
+                                </label>
+                            </div>
+                            <div class="form-check sidebar-setting card-radio">
+                                <input class="form-check-input" type="radio" name="data-sidebar" id="sidebar-color-gradient-4" value="gradient-4">
+                                <label class="form-check-label p-0 avatar-xs rounded-circle" for="sidebar-color-gradient-4">
+                                    <span class="avatar-title rounded-circle bg-vertical-gradient-4"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-3 text-center">
+        <div class="row">
+            <div class="col-6">
+                <button type="button" class="btn btn-light w-100 bor-rad-50" id="reset-layout">Reset</button>
+            </div>
+            <div class="col-6">
+                <a href="https://themeforest.net/item/smarthr-bootstrap-admin-panel-template/21153150" target="_blank" class="btn btn-primary w-100 bor-rad-50">Buy Now</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $('#searchBtn').click(function() {
+            var employee_name = $("#employee_name").val();
+            var month = $("#month").val();
+            console.log(month);
+            if(month !=''){
+                $.ajax({
+                    // type: "POST",
+                    url: '{% url "search_leave" %}',
+                    data: $("#search_leave").serialize(),
+                    success: function(response) {
+                        $('#leave-data').html(response);
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }else{
+                alert("Please select month");
+            }
+        });
+    });
+    /*$(document).ready(function () {
+        $("#searchBtn").on("click", function () {
+            var leaveType = $("#leave_type").val();
+
+            if (leaveType !== "") {
+                // Perform AJAX request to a server-side script
+                $.ajax({
+                    url: '{% url "search" %}',  // Replace with your server-side script URL
+                    method: "GET",
+                    data: { leave_type: leaveType },
+                    success: function (data) {
+                        // Handle the response data
+                        console.log("Search result:", data);
+
+                        // Update the HTML table with search results
+                        if (data.result && data.result.length > 0) {
+                            // Assuming you have an element with the id 'leaveTableBody'
+                            var leaveTableBody = $("#leaveTableBody");
+
+                            // Clear existing content
+                            leaveTableBody.empty();
+
+                            // Iterate over search results and append them to the table
+                            data.result.forEach(function(result) {
+                                var rowHtml = '<tr>';
+                                rowHtml += '<td>';
+                                rowHtml += '<h2 class="table-avatar">';
+                                var url = "{% url 'profile' 0 %}".replace("0", result.employee_id);
+                                rowHtml += '<a href="'+url+'" class="avatar" data-bs-toggle="tooltip" title="' + result.first_name + ' ' + result.last_name + '">';
+                                rowHtml += '<img src="' + result.image_url + '" alt="User Image"></a>';
+                                // Check if either first name or last name is present
+                                if (result.first_name || result.last_name) {
+                                    rowHtml += '<a href="#">';
+
+                                    // Display first name if present
+                                    if (result.first_name) {
+                                        rowHtml += result.first_name;
+
+                                        // Display last name if both first and last names are present
+                                        if (result.last_name) {
+                                            rowHtml += ' ' + result.last_name;
+                                        }
+                                    } else {
+                                        // Display last name if first name is missing
+                                        rowHtml += result.last_name;
+                                    }
+
+                                    rowHtml += '</a>';
+                                } else {
+                                    // Display the username if both first name and last name are missing
+                                    rowHtml += '<a href="#">' + result.username + '</a>';
+                                }
+                                rowHtml += '</h2>';
+                                rowHtml += '</td>';
+                                rowHtml += '<td>' + result.leave_instance.leave_type + '</td>';
+                                rowHtml += '<td>' + result.leave_instance.start_date + '</td>';
+                                rowHtml += '<td>' + result.leave_instance.end_date + '</td>';
+                                rowHtml += '<td>' + result.duration + ' days</td>';
+                                rowHtml += '<td>' + result.leave_instance.reason + '</td>';
+                                rowHtml += '<td class="text-center">';
+                                rowHtml += '<div class="dropdown action-label">';
+                                rowHtml += '<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">';
+                                // Add your logic for status icons here based on result.leave_instance.status
+                                if (result.leave_instance.status === 'Approved') {
+                                    rowHtml += '<i class="fa-regular fa-circle-dot text-success"></i> Approved';
+                                } else if (result.leave_instance.status === 'Declined') {
+                                    rowHtml += '<i class="fa-regular fa-circle-dot text-danger"></i> Declined';
+                                } else {
+                                    rowHtml += '<i class="fa-regular fa-circle-dot text-info"></i> Pending';
+                                }
+                                rowHtml += '</a>';
+                                rowHtml += '<div class="dropdown-menu dropdown-menu-right">';
+                                rowHtml += '<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-info"></i> Pending</a>';
+                                rowHtml += '<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#approve_leave"><i class="fa-regular fa-circle-dot text-success"></i> Approved</a>';
+                                rowHtml += '<a class="dropdown-item" href="#"><i class="fa-regular fa-circle-dot text-danger"></i> Declined</a>';
+                                rowHtml += '</div>';
+                                rowHtml += '</div>';
+                                rowHtml += '</td>';
+
+                                rowHtml += '<td class="text-end">';
+                                rowHtml += '<div class="dropdown dropdown-action">';
+                                rowHtml += '<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>';
+                                rowHtml += '<div class="dropdown-menu dropdown-menu-right">';
+                                rowHtml += '<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_leave"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>';
+                                rowHtml += '<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_approve"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>';
+                                rowHtml += '</div>';
+                                rowHtml += '</div>';
+                                rowHtml += '</td>';
+                                rowHtml += '</tr>';
+
+                                // Append the row to the table
+                                leaveTableBody.append(rowHtml);
+                            });
+                        } else {
+                            // No results found
+                            alert("No results found for the selected leave type.");
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error:", error);
+                    }
+                });
+            } else {
+                alert("Please select a leave type before searching.");
+            }
+        });
+    });*/
+</script>
+
+
+
+{% endblock %}

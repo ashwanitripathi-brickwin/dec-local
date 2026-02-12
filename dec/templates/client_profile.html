@@ -1,0 +1,2982 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% load date_filters %}
+{% load custom_filters %}
+
+<style>
+    /* Styling for the clickable and hoverable elements */
+    .clickable {
+        cursor: pointer;
+
+    }
+    .container {
+        margin-top: -60px; /* Adjust this value as needed */
+    }
+
+    .custom-table td {
+        padding: 10px 10px !important;
+    }
+
+    #drive_url::placeholder {
+    color: #ccc; /* Light gray, adjust as needed */
+    opacity: 1;  /* Full opacity for consistent look across browsers */
+}
+
+#domain_source::placeholder {
+    color: #C0C0C0; /* light gray, adjust as needed */
+    opacity: 1;  /* ensures it's visible on all browsers */
+}
+#topic_name::placeholder {
+    color: #C0C0C0; /* light gray, adjust as needed */
+    opacity: 1;  /* ensures it's visible on all browsers */
+}
+#company_include::placeholder {
+    color: #C0C0C0; /* light gray, adjust as needed */
+    opacity: 1;  /* ensures it's visible on all browsers */
+}
+#exclude_content::placeholder {
+    color: #C0C0C0; /* light gray, adjust as needed */
+    opacity: 1;  /* ensures it's visible on all browsers */
+}
+#exclude_domain::placeholder {
+    color: #C0C0C0; /* light gray, adjust as needed */
+    opacity: 1;  /* ensures it's visible on all browsers */
+}
+
+.success-message {
+    display: none;
+    color: #155724;
+    background-color: #d4edda;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+</style>
+
+<div id="loaderOverlay" style="
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding-top: 20%;
+    font-size: 1.5rem;
+    color: #5e5e5e;">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-3">Generating Post...</div>
+</div>
+
+<div class="content container-fluid">
+
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h3 class="page-title">Profile</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profile</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                <form method="post" action="{% url 'client-profile' client.id %}" id="clientForm">
+                    {% csrf_token %}
+                    <div class="filter-filelds" id="filter_inputs">
+                        <div class="row filter-row">
+                            <div class="col-xl-12">
+                                <div class="input-block mb-3 form-focus focused">
+                                    <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange1">
+                                    <label class="focus-label">From - To Date</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% if request.user.id == 2 %}
+                <div class="col-auto float-end ms-auto" style="margin-top: -15px;">
+                    <a href="{% url 'dashboard' linkedin_user_url %}" class="btn add-btn" target="_blank"> Airtable</a>
+                </div>
+            {% endif %}
+            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                <div class="col-auto float-end ms-auto"  style="margin-top: -15px;">
+                    <form action="{% url 'export_client_data' %}" method="post" target="_blank" style="width: 100%">
+                        <input type="hidden" name="client_id" value="{{ client.id }}">
+                        <input type="hidden" name="date_range" class="form-control date-range bookingrange1">
+                        <button type="submit" class="btn add-btn">Export Data</button>
+                    </form>
+                </div>
+            {% endif %}
+            
+        </div>
+    </div>
+
+    <!-- <div class="page-header">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="page-title">Profile</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Profile</li>
+                </ul>
+            </div>
+
+            <div class="container">
+                <div class="row justify-content-end">
+                    <div class="col-md-3">
+                        <form method="post" action="{% url 'client-profile' client.id %}" id="clientForm">
+                            {% csrf_token %}
+                            <div class="filter-filelds" id="filter_inputs">
+                                <div class="row filter-row">
+                                    <div class="col-xl-8 offset-xl-4">
+                                        <div class="input-block mb-3 form-focus focused">
+                                            <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange1">
+                                            <label class="focus-label">From - To Date</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-2">
+                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                        <form action="{% url 'export_client_data' %}" method="post" target="_blank" style="width: 100%">
+                            <input type="hidden" name="client_id" value="{{ client.id }}">
+                            <input type="hidden" name="date_range" class="form-control date-range bookingrange1">
+                            <button type="submit" class="btn add-btn">Export Data</button>
+                        </form>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div> -->
+
+
+    <div class="card mb-0">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="profile-view">
+                        <div class="profile-img-wrap">
+                            <div class="profile-img">
+                                <a href>
+                                    <div class="profile-img">
+                                        {% if client.image_url|length > 0 %}
+                                        <a href="#"><img src="{{ client.image_url }}" alt="User Image"></a>
+                                        {% else %}
+                                        <a href="#"><img src="{% static 'assets/img/client/dummy-profile-pic.jpg' %}" alt="User Image"></a>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="profile-basic">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="profile-info-left">
+                                        <h3 class="user-name m-t-0">{{ client.client_name}}</h3>
+                                        <small class="text-muted">{{ client.company_name }}</small>
+                                        <div class="staff-id">Region : {{ client.region }}</div>
+                                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                                        <div class="clickable staff-id revenue" >Contracted Client Revenue : {{ client_details.cost }}</div>
+                                        <div class="clickable staff-id working-time" >Contracted Total Working Time : {{ client_details.total_working_hours }}
+                                        </div>
+
+
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <ul class="personal-info">
+                                        <li>
+                                            <span class="title">Company Name:</span>
+                                            <span class="text">{{ client.company_name }}</span>
+                                        </li>
+                                        <li>
+                                            <span class="title">Email:</span>
+                                            <span class="text"><a href><span class="__cf_email__" data-cfemail="55373427272c3620313415302d34382539307b363a38">{{ client.email }}</span></a></span>
+                                        </li>
+                                        <li>
+                                            <span class="title">Level:</span>
+                                            <span class="text">{{ client.level }}</span>
+                                        </li>
+                                        <li>
+                                            <span class="title">Industry:</span>
+                                            <span class="text">{{ client.industry }}</span>
+                                        </li>
+                                        <li>
+                                            <span class="title">Gender:</span>
+                                            <span class="text">{{ client.gender }}</span>
+                                        </li>
+                                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                                        <style type="text/css">
+                                            .borderless {
+                                                border: none;
+                                                background: none;
+                                                padding: 0;
+                                                margin: 0;
+                                                cursor: pointer;
+                                                text-align: left;
+                                            }
+                                        </style>
+                                        <li>
+                                            <form action="{% url 'generate_client_sheet' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="client_id" value="{{ client.id }}">
+                                                <input type="hidden" name="request_type" value="client revenue">
+                                                <input type="hidden" name="date_range" id="from_to_date" class="form-control date-range bookingrange1">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Contracted Client Revenue: </span><span class="text">{{ client_details.cost }}</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{% url 'generate_client_sheet' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="client_id" value="{{ client.id }}">
+                                                <input type="hidden" name="request_type" value="employee cost">
+                                                <input type="hidden" name="date_range" id="from_to_date" class="form-control date-range bookingrange1">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Actual Employee Cost: </span><span class="text">{{ sum_of_rates_employee }}</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{% url 'generate_client_sheet' %}" method="post" target="_blank" style="width: 100%">
+                                                <input type="hidden" name="client_id" value="{{ client.id }}">
+                                                <input type="hidden" name="request_type" value="">
+                                                <input type="hidden" name="date_range" id="from_to_date" class="form-control date-range bookingrange1">
+                                                <button type="submit" class="clickable borderless" style="width: 100%">
+                                                    <span class="title">Contracted Employee Cost: </span><span class="text">{{ contracted_sum_of_rates_employee }}</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        {% endif %}
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% if show_button %}
+                            <div class="pro-edit"><a class="edit-icon edit-client" href="javascript:void(0)" data-client-id="{{ client.id }}"><i class="fa-solid fa-pencil"></i></a></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card tab-box">
+        <div class="row user-tabs">
+            <div class="col-lg-12 col-md-12 col-sm-12 line-tabs">
+                <ul class="nav nav-tabs nav-tabs-bottom">
+                    <li class="nav-item col-sm-2"><a class="nav-link active" data-bs-toggle="tab" href="#client_contracted">Employee</a></li>
+                    <li class="nav-item col-sm-2"><a class="nav-link " data-bs-toggle="tab" href="#task">Tasks</a></li>
+                    <li class="nav-item col-sm-2"><a class="nav-link " data-bs-toggle="tab" href="#projects">Projects</a></li>
+                    <li class="nav-item col-sm-2"><a href="#fileManager" data-bs-toggle="tab" class="nav-link">File Manager</a></li>
+                    {% if client.id == 80 or client.id == 79 or client.id == 88 or client.id == 166 or client.id == 122 or client.id == 281 or client.id == 289 or client.id == 262 or client.id == 240 or client.id == 228 or client.id == 290 or client.id == 12 or client.id == 179 or client.id == 261 or client.id == 243 or client.id == 11 or client.id == 3 or client.id == 230 or client.id == 211 or client.id == 212 or client.id == 185 or client.id == 192 or client.id == 108 or client.id == 256 %}
+                    <li class="nav-item col-sm-2"><a href="#MediaPost" data-bs-toggle="tab" class="nav-link">Holiday Cover</a></li>
+                    {% endif %}
+                    <li class="nav-item col-sm-2"><a href="#AIAssistant" data-bs-toggle="tab" class="nav-link">AI Assistant</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content">
+        <div id="client_contracted" class="tab-pane fade show active">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive" id="leave-data">
+                        <table class="table table-striped custom-table mb-0 datatable">
+                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Contracted Working Time</th>
+                                    <th>Actual Working Time</th>
+                                    <th>Contracted Employee Cost</th>
+                                    <th>Actual Employee Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTableBody">
+                                {% for employee_id, details in employee_details.items %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'profile' employee_id %}" class="avatar" data-bs-toggle="tooltip" title="{{details.name}}">
+                                                {% if details.image_url %}
+                                                <img src="{{ details.image_url }}" alt="User Image">
+                                            </a>
+                                            {% else %}
+                                            <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                            {% endif %}
+                                        </h2>
+                                        {{details.name}}
+                                    </td>
+                                    <td>{{ details.role}}</td>
+                                    <td>{{details.hours_worked}}</td>
+
+                                    {% for employee_id1, data in category_time_dict_client.items %}
+                                        {% if employee_id == employee_id1 %}
+                                        <td>{{ data.formatted_time }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% for employee_id1, data in employee_salary_dict.items %}
+                                        {% if employee_id == employee_id1 %}
+                                        <td>{{ data }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% for employee_id1, data in employee_data.items %}
+                                        {% if employee_id == employee_id1 %}
+                                        <td>{{ data.total_payment }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% else %}
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Role</th>
+                                    <th>Contracted Working Time</th>
+                                    <th>Actual Working Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTableBody">
+                                {% for employee_id, details in employee_details2.items %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'profile' employee_id %}" class="avatar" data-bs-toggle="tooltip" title="{{details.name}}">
+                                                {% if details.image_url %}
+                                                <img src="{{ details.image_url }}" alt="User Image">
+                                            </a>
+                                            {% else %}
+                                            <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                            {% endif %}
+                                        </h2>
+                                        {{details.name}}
+                                    </td>
+                                    <td>{{ details.role}}</td>
+                                    <td><span data-bs-toggle="tooltip" title='{{ details.formula }}'>{{details.hours_worked}}</span></td>
+                                    {% for employee_id1, data in category_time_dict_client.items %}
+                                        {% if employee_id == employee_id1 %}
+                                        <td>{{ data.formatted_time }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="MediaPost" class="tab-pane fade">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h4 class="mb-0 text-white">Post Generate Form</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="mediaForm" class="mt-1">
+                                <input type="hidden" id="client_id1" name="client_id1" value="{{ client.id }}">
+                                <input type="hidden" id="client_name1" name="client_name1" value="{{ client.client_name }}">
+                                <div class="form-group mb-3">
+                                    <label for="topic_name">Topic</label>
+                                    <input type="text" class="form-control" id="topic_name" name="topic_name" placeholder="Enter topic name" value="{% if client.id == 80 %}Finance and Insurance transformation{% elif client.id == 79 %}Impact of AI on Cyber{% elif client.id == 88 %}Healthcare Innovation{% elif client.id == 3 %}Generative AI and Digital Transformation{% else %}General Business Trends{% endif %}" required>
+                                </div>
+        
+                                <div class="form-group mb-3">
+                                    <label for="company_include">Target Companies</label>
+                                    <input type="text" class="form-control" id="company_include" name="company_include" placeholder="Enter company names" value="{% if client.id == 80 %}QBE, QBE Insurance, QBE Asia, AIA Hong Kong and Macau, AIA, FWD Insurance, HSBC, Generali{% elif client.id == 79 %}Crowdstrike, Microsoft, Saviynt, Splunk, Tanium, Fortinet, Balbix, Safe Security, Nozomi Networks, EY{% elif client.id == 88 %}Johor Corporation, Khazanah Nasional Berhad, KPJ Healthcare Bhd, Think City, Malaysia Airports, GOVERNMENT OF MALAYSIA, EY{% elif client.id == 3 %}Boston Consulting Group (BCG), BCG X, Kering, Tencent, Richemont, LVMH, Movado, PVH, Danone, Mandarin Oriental, AS Watson, Walmart, Swire, The Coca-Cola Company, Mondelez, Amazon, AWS, Microsoft, Google, Anthropic, OpenAI, L'Oreal, Microsoft, Alibaba, Google, Intel, Huawei {% endif %}">
+                                </div>
+        
+                                <div class="form-group mb-3">
+                                    <label for="domain_source">Sources</label>
+                                    <input type="text" class="form-control" id="domain_source" name="domain_source" placeholder="Enter content sources"  value="{% if client.id == 80 %}ey.com,techradar.com, businessinsider.com,reuters.com{% elif client.id == 79 %}ey.com,techradar.com, businessinsider.com,reuters.com{% elif client.id == 88 %}ey.com,techradar.com, businessinsider.com,reuters.com{% elif client.id == 3 %}bcg.com,wired.com,hbr.org,technologyreview.com,voguebusiness.com,fortune.com
+                                    {% endif %}">
+                                </div>
+        
+                                <div class="form-group mb-3">
+                                    <label for="exclude_content">Exclude Content</label>
+                                    <input type="text" class="form-control" id="exclude_content" name="exclude_content" placeholder="Enter content to exclude" value="{% if client.id == 80 %}Deloitte{% elif client.id == 3 %}EY, KPMG, Deloitte, PwC, Pricewaterhousecoopers, IBM, McKinsey, Bain, Accenture
+                                    {% endif %}">
+                                </div>
+        
+                                <div class="form-group mb-3" hidden>
+                                    <label for="exclude_domain">Exclude Domains</label>
+                                    <input type="text" class="form-control" id="exclude_domain" name="exclude_domain" placeholder="Enter domains to exclude">
+                                </div>
+        
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>
+        
+                            <div id="successMessage" class="success-message mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+        <div id="task" class="tab-pane fade">
+            <div class="row">
+                {% for item in client_category_list %}
+                <div class="col-lg-4 col-sm-6 col-md-4 col-xl-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="dropdown profile-action" hidden>
+                                <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#edit_project"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_project"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                </div>
+                            </div>
+                            <h4 class="project-title"><a href="#"> {{ item.category_name }}</a></h4>
+                            <p class="text-muted"></p>
+                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Employee Cost:
+                                </div>
+                                <div class="text-muted">
+                                    {% for id, cost in category_cost_dict.items %}
+                                    {% if id == item.id %}
+                                    {{cost.total_cost}}
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="project-members m-b-15">
+                                <div>Project Member:</div>
+                                <ul class="team-members">
+                                    {% for id, employees_data in employee_info_dict.items %}
+                                        {% if id == item.id %}
+                                            {% for employee_data in employees_data %}
+                                            <li>
+                                                <a href="{% url 'profile' employee_data.id %}" data-bs-toggle="tooltip" title="{{ employee_data.name }}">
+                                                {% if employee_data.image_url %}
+                                                    <img src="{{ employee_data.image_url }}" alt="Project Member Image">
+                                                {% else %}
+                                                    <img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+                                                {% endif %}
+                                                </a>
+                                            </li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="pro-deadline m-b-15">
+                                <div class="sub-title">
+                                    Working Time:
+                                </div>
+                                <div class="text-muted">
+                                    {% for id, time_info in category_time_dict.items %}
+                                    {% if id == item.id %}
+                                    {{time_info.formatted_time}}
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="projects" class="tab-pane fade show">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive" id="leave-data">
+                        <table class="table table-striped custom-table mb-0 datatable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Project Value</th>
+                                    <th>Leader</th>
+                                    <th>Support</th>
+                                    <th>Advisor</th>
+                                    <th>Start Date</th>
+                                    <!-- <th>Status</th> -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project_data in project_data_with_employees %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'projects' %}" class="avatar">
+                                                {% if project_data.project.uploaded_file %}
+                                                    <!-- <img src="{{ project_data.project.uploaded_file }}" alt="User Image"> -->
+                                                    <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+                                                {% else %}
+                                                    <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+                                                {% endif %}
+                                            </a>
+                                            <a href="{% url 'projects' %}">{{ project_data.project.project_name }}</a>
+                                        </h2>
+                                    </td>
+                                    <td>{{ project_data.project.rate }}</td>
+                                    <td>
+                                        {% for employee in project_data.employee_details_by_role.L %}
+                                            {{ employee.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for employee in project_data.employee_details_by_role.S %}
+                                            {{ employee.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% for employee in project_data.employee_details_by_role.A %}
+                                            {{ employee.name }}{% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ project_data.project.start_date }}</td>
+                                </tr>
+                                {% endfor %}                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="fileManager2" class="tab-pane fade show">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="table-responsive" id="leave-data">
+                        <table class="table table-striped custom-table mb-0 datatable">
+                            <thead>
+                                <tr>
+                                    <th>Upload By</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Uploaded Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <h2 class="table-avatar">
+                                            <a href="{% url 'profile' file.uploaded_by.id %}" class="avatar" data-bs-toggle="tooltip" title="{{file.uploaded_by.last_name}}">
+                                                {% if file.uploaded_by.image_url %}
+                                                <img src="{{ file.uploaded_by.image_url }}" alt="User Image">
+                                                {% else %}
+                                                <img src="{% static 'assets/img/user.jpg' %}" alt="Default Image">
+                                                {% endif %}
+                                            </a>
+                                        </h2>
+                                        <a href="{% url 'profile' file.uploaded_by.id %}">{{ file.uploaded_by.first_name }} {{ file.uploaded_by.last_name }}</a>
+                                    </td>
+                                    <td>{{ file.description }}</td>
+                                    <td>{{ file.file_type }}</td>
+                                    <td>{{ file.created_at|date:"F d, Y" }}</td>
+                                    <td>
+                                        <div class="table-actions d-flex">
+                                            {% if file.file %}
+                                                {% with file_extension=file.file.url|slice:"-4:" %}
+                                                    {% if file_extension == ".jpg" or file_extension == ".jpeg" or file_extension == ".png" or file_extension == ".gif" %}
+                                                        <a class="delete-table me-2" href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="showImage('{{ file.file.url }}')">
+                                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="Eye Icon">
+                                                        </a>
+                                                    {% else %}
+                                                        <a class="delete-table me-2" href="{{ file.file.url }}" target="_blank">
+                                                            <img src="{% static 'assets/img/icons/eye.svg' %}" alt="PDF Icon">
+                                                        </a>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endif %}
+                                            <a class="delete-table me-2" href="{{ file.file.url }}" download>
+                                                <img src="{% static 'assets/img/icons/esultdown.png' %}" alt="Download Icon">
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                {% endfor %}                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        START DYNAMIC FILE SHOW-->
+<div id="fileManager" class="tab-pane fade show">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="file-wrap">
+                <div class="file-sidebar">
+                    <div class="file-header justify-content-center">
+<!--                        <span>Projects</span>-->
+<!--                        <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#upload_document" style="float: right;"><i class="fa-solid fa-plus"></i> Upload Document</button>-->
+                        <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#create_category"><i class="fa-solid fa-plus"></i> Create Category</button>
+                        <a href="javascript:void(0);" class="file-side-close"><i class="fa-solid fa-xmark"></i></a>
+                    </div>
+                    <form class="file-search">
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                            <input type="text" class="form-control rounded-pill" placeholder="Search">
+                        </div>
+                    </form>
+                    <div class="file-pro-list">
+                        <div class="file-scroll">
+                            <ul class="file-menu nav nav-tabs-bottom">
+                                <li class="nav-item active">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#all_files">All Files</a>
+                                </li>
+                                {% for category in client_file_category %}
+                                    <li class="nav-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#{{ category.name|lower|cut:" " }}">{{ category.name }}</a>
+                                        {% if category.file_count == 0 %}
+                                            <button
+                                              type="button"
+                                              class="btn btn-sm btn-secondary ms-2 py-0 px-1"
+                                              style="font-size: 0.75rem;"
+                                              data-bs-toggle="modal"
+                                              data-bs-target="#deleteCategoryModal"
+                                              data-category-id="{{ category.id }}"
+                                              data-category-name="{{ category.name }}"
+                                              data-client-id="{{ category.client_id }}"
+                                              data-entity-type="client"
+                                              title="Delete">
+                                              <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                          {% endif %}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="file-cont-wrap" style="width:100%;">
+                    <div class="file-cont-inner">
+                        <div class="file-cont-header">
+                            <span>File Manager</span>
+<!--                            <a href="/gd-auth" class="btn add-btn"><i class="fa-solid fa-plus"></i> Google Drive</a>-->
+                            <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#upload_document" style="float: right;"><i class="fa-solid fa-plus"></i> Upload Document</button>
+<!--                            <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#create_category"><i class="fa-solid fa-plus"></i> Create Category</button>-->
+                        </div>
+                        <div class="file-content">
+                            <form class="file-search">
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </div>
+                                    <input type="text" class="form-control rounded-pill" placeholder="Search">
+                                </div>
+                            </form>
+<!--                            START IMPLEMENT ALIGNMENT-->
+                            <div class="file-body">
+                                <div class="file-scroll">
+                                    <div class="file-content-inner">
+                                        <!-- Tab content -->
+                                        <div class="tab-content" style="padding-top: 10px;">
+                                            <!-- All Files Tab -->
+                                            <div class="tab-pane fade show active" id="all_files">
+                                                <h4>All Files</h4>
+                                                <div class="row row-sm mt-3">
+                                                    {% for file in all_files %}
+                                                    <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">
+                                                        <div class="card card-file">
+                                                            <div class="dropdown-file">
+                                                                <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>
+                                                                <div class="dropdown-menu dropdown-menu-right">
+                                                                   {% if file.file_type and file.file_type in 'jpg jpeg png' %}
+                                                                                    <a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="showImage('{{ file.file.url }}')">Preview</a>
+                                                                    {% endif %}
+                                                                                    {% if file.google_drive_file_url %}
+                                                                                        <a href="{{ file.google_drive_file_url }}" class="dropdown-item" target="_blank" rel="noopener noreferrer">
+                                                                                            View
+
+                                                                                        </a>
+                                                                                    {% endif %}
+<!--                                                                                    <a href="#" class="dropdown-item">Share</a>-->
+                                                                                    <!-- <a href="{{ file.file.url }}" class="dropdown-item" download>Download</a> -->
+                                                                                    <a href="{{ file.file.url }}" class="dropdown-item download-link" data-file="{{ file.file.url }}">Download</a>
+<!--                                                                                    <a href="#" class="dropdown-item">Rename</a>-->
+                                                                                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#renameModal" onclick="openRenameModal('{{ file.id }}', '{{ file.file.name|clean_filename_without_ext }}')">Rename</a>
+
+<!--                                                                                    <a href="/delete_document/{{file.id}}" class="dropdown-item">Delete</a>-->
+<!--                                                                                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteFileModal">Delete</a>-->
+                                                                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteFileModal" data-delete-url="/delete_document/{{ file.id }}">Delete</a>
+
+
+                                                                </div>
+                                                            </div>
+                                                            {% if file.google_drive_file_url %}
+                                                                    <a href="{{ file.google_drive_file_url }}" class="dropdown-item" target="_blank" rel="noopener noreferrer">
+                                                                        <div class="card-file-thumb">
+                                                                            {% if file.file_type == 'pdf' %}
+                                                                            <i class="fa-regular fa-file-pdf"></i>
+                                                                            {% elif file.file_type == 'doc' or file.file_type == 'docx' %}
+                                                                            <i class="fa-regular fa-file-word"></i>
+                                                                            {% elif file.file_type == 'xls' or file.file_type == 'xlsx' %}
+                                                                            <i class="fa-regular fa-file-excel"></i>
+                                                                            {% elif file.file_type == 'ppt' or file.file_type == 'pptx' %}
+                                                                            <i class="fa-regular fa-file-powerpoint"></i>
+                                                                            {% elif file.file_type == 'jpg' or file.file_type == 'png' or file.file_type == 'jpeg' %}
+                                                                            <i class="fa-regular fa-file-image"></i>
+                                                                            {% elif file.file_type == 'mp3' or file.file_type == 'wav' %}
+                                                                            <i class="fa-regular fa-file-audio"></i>
+                                                                            {% else %}
+                                                                            <i class="fa-regular fa-file"></i>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </a>
+                                                                {% else %}
+                                                                <div class="card-file-thumb">
+                                                                    {% if file.file_type == 'pdf' %}
+                                                                    <i class="fa-regular fa-file-pdf"></i>
+                                                                    {% elif file.file_type == 'doc' or file.file_type == 'docx' %}
+                                                                    <i class="fa-regular fa-file-word"></i>
+                                                                    {% elif file.file_type == 'xls' or file.file_type == 'xlsx' %}
+                                                                    <i class="fa-regular fa-file-excel"></i>
+                                                                    {% elif file.file_type == 'ppt' or file.file_type == 'pptx' %}
+                                                                    <i class="fa-regular fa-file-powerpoint"></i>
+                                                                    {% elif file.file_type == 'jpg' or file.file_type == 'png' or file.file_type == 'jpeg' %}
+                                                                    <i class="fa-regular fa-file-image"></i>
+                                                                    {% elif file.file_type == 'mp3' or file.file_type == 'wav' %}
+                                                                    <i class="fa-regular fa-file-audio"></i>
+                                                                    {% else %}
+                                                                    <i class="fa-regular fa-file"></i>
+                                                                    {% endif %}
+                                                                </div>
+                                                            {% endif %}
+                                                            <div class="card-body">
+<!--                                                                <h6><a href="{{ file.file.url }}" target="_blank">{{ file.file.name|split:'/:'|last }}</a></h6>-->
+                                                                <h6>{{ file.file.name|clean_filename }}</h6>
+                                                                <span>{{ file.description|default:"No description" }}</span>
+                                                                <br>
+                                                                <span>{{ employee_dict|get_name:file.uploaded_by }}</span>
+                                                            </div>
+<!--                                                            <div class="card-footer">{{ file.created_at|date:"d M g:i A" }}</div>-->
+                                                            <div class="card-footer">{{ file.created_at|date:"d M Y" }}</div>
+
+<!--                                                            <div class="card-footer">{{ file.file_type }}</div>-->
+                                                        </div>
+                                                    </div>
+                                                    {% empty %}
+                                                    <div class="col-12">
+                                                        <p>No files found.</p>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <!-- Category Tabs -->
+
+                                                {% for category in file_category %}
+                                                    <div class="tab-pane fade"
+                                                         id="{{ category.name|lower|cut:" " }}">
+                                                        <h4>{{ category.name }}</h4>
+                                                        <div class="row row-sm mt-3">
+                                                            {% with files_by_category|get_item:category.name as files1 %}
+
+                                                                {% for file in files1 %}
+                                                                    <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">
+                                                                        <div class="card card-file">
+                                                                            <div class="dropdown-file">
+                                                                                <a href="#" class="dropdown-link" data-bs-toggle="dropdown">
+                                                                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                                                                </a>
+                                                                                <div class="dropdown-menu dropdown-menu-right">
+<!--                                                                                    <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                                    <a href="{{ file.file.url }}" class="dropdown-item" download>Download</a>-->
+<!--                                                                                    <a href="#" class="dropdown-item delete-file" data-file-id="{{ file.id }}">Delete</a>-->
+                                                                                    {% if file.file_type and file.file_type in 'jpg jpeg png' %}
+                                                                                    <a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#imageModal" onclick="showImage('{{ file.file.url }}')">Preview</a>
+                                                                                    {% endif %}
+                                                                                    {% if file.google_drive_file_url %}
+                                                                                        <a href="{{ file.google_drive_file_url }}" class="dropdown-item" target="_blank" rel="noopener noreferrer">
+                                                                                            View
+                                                                                        </a>
+                                                                                    {% endif %}
+
+<!--                                                                                    <a href="#" class="dropdown-item">Share</a>-->
+                                                                                    <!-- <a href="{{ file.file.url }}" class="dropdown-item" download>Download</a> -->
+                                                                                    <a href="{{ file.file.url }}" class="dropdown-item download-link" data-file="{{ file.file.url }}">Download</a>
+<!--                                                                                    <a href="#" class="dropdown-item">Rename</a>-->
+                                                                                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#renameModal" onclick="openRenameModal('{{ file.id }}', '{{ file.file.name|clean_filename_without_ext }}')">Rename</a>
+
+<!--                                                                                    <a href="/delete_document/{{file.id}}" class="dropdown-item">Delete</a>-->
+                                                                                    <a href="#" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#deleteFileModal" data-delete-url="/delete_document/{{ file.id }}">Delete</a>
+
+                                                                                </div>
+                                                                            </div>
+                                                                            {% if file.google_drive_file_url %}
+                                                                                <a href="{{ file.google_drive_file_url }}" class="dropdown-item" target="_blank" rel="noopener noreferrer">
+                                                                                    <div class="card-file-thumb">
+                                                                                        {% if file.file_type == 'pdf' %}
+                                                                                            <i class="fa-regular fa-file-pdf"></i>
+                                                                                        {% elif file.file_type in 'doc docx' %}
+                                                                                            <i class="fa-regular fa-file-word"></i>
+                                                                                        {% elif file.file_type in 'xls xlsx' %}
+                                                                                            <i class="fa-regular fa-file-excel"></i>
+                                                                                        {% elif file.file_type in 'ppt pptx' %}
+                                                                                            <i class="fa-regular fa-file-powerpoint"></i>
+                                                                                        {% elif file.file_type in 'jpg jpeg png' %}
+                                                                                            <i class="fa-regular fa-file-image"></i>
+                                                                                        {% elif file.file_type in 'mp3 wav' %}
+                                                                                            <i class="fa-regular fa-file-audio"></i>
+                                                                                        {% else %}
+                                                                                            <i class="fa-regular fa-file"></i>
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </a>
+                                                                            {% else %}
+
+                                                                            <div class="card-file-thumb">
+                                                                                {% if file.file_type == 'pdf' %}
+                                                                                    <i class="fa-regular fa-file-pdf"></i>
+                                                                                {% elif file.file_type in 'doc docx' %}
+                                                                                    <i class="fa-regular fa-file-word"></i>
+                                                                                {% elif file.file_type in 'xls xlsx' %}
+                                                                                    <i class="fa-regular fa-file-excel"></i>
+                                                                                {% elif file.file_type in 'ppt pptx' %}
+                                                                                    <i class="fa-regular fa-file-powerpoint"></i>
+                                                                                {% elif file.file_type in 'jpg jpeg png' %}
+                                                                                    <i class="fa-regular fa-file-image"></i>
+                                                                                {% elif file.file_type in 'mp3 wav' %}
+                                                                                    <i class="fa-regular fa-file-audio"></i>
+                                                                                {% else %}
+                                                                                    <i class="fa-regular fa-file"></i>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                            {% endif %}
+                                                                            <div class="card-body">
+                                                                                <h6>
+                                                                                     <h6>{{ file.file.name|clean_filename }}</h6>
+                                                                                </h6>
+                                                                                <span>{{ file.description|default:"No description" }}</span>
+                                                                                <br>
+                                                                                <span>{{ employee_dict|get_name:file.uploaded_by }}</span>
+                                                                            </div>
+<!--                                                                            <div class="card-footer">{{ file.created_at|date:"d M g:i A" }}</div>-->
+                                                                            <div class="card-footer">{{ file.created_at|date:"d M Y" }}</div>
+
+                                                                        </div>
+                                                                    </div>
+                                                                {% empty %}
+                                                                    <div class="col-12">
+                                                                        <p>No files found in this category.</p>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            {% endwith %}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+
+
+                                </div>
+                            </div>
+                        </div>
+<!--                            END IMPLEMENT ALIGNMENT-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--        END DYNAMIC FILE SHOW-->
+<!--        <div id="fileManager" class="tab-pane fade show">-->
+<!--            <div class="row">-->
+<!--                <div class="col-sm-12">-->
+<!--                    <div class="file-wrap">-->
+<!--                        <div class="file-sidebar">-->
+<!--                            <div class="file-header justify-content-center">-->
+<!--                                <span>Projects</span>-->
+<!--                                <a href="javascript:void(0);" class="file-side-close"><i class="fa-solid fa-xmark"></i></a>-->
+<!--                            </div>-->
+<!--                            <form class="file-search">-->
+<!--                                <div class="input-group">-->
+<!--                                    <div class="input-group-text">-->
+<!--                                        <i class="fa-solid fa-magnifying-glass"></i>-->
+<!--                                    </div>-->
+<!--                                    <input type="text" class="form-control rounded-pill" placeholder="Search">-->
+<!--                                </div>-->
+<!--                            </form>-->
+<!--                            <div class="file-pro-list">-->
+<!--                                <div class="file-scroll">-->
+<!--                                    <ul class="file-menu nav nav-tabs-bottom">-->
+<!--                                        &lt;!&ndash; <li class="active">-->
+<!--                                            <a href="">All Files</a>-->
+<!--                                        </li> &ndash;&gt;-->
+<!--                                        <li class="nav-item active"><a class="nav-link active" data-bs-toggle="tab" href="#all_files">All Files</a></li>-->
+<!--                                        &lt;!&ndash; <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#employee_history">History</a></li> &ndash;&gt;-->
+<!--                                        {% for category in file_category %}-->
+<!--                                            &lt;!&ndash; <li>-->
+<!--                                                <a href="#category.name">{{ category.name }}</a>-->
+<!--                                            </li> &ndash;&gt;-->
+<!--                                            <li class="nav-item">-->
+<!--                                                <a class="nav-link" data-bs-toggle="tab" href="#{{ category.name|replace_space }}">{{ category.name }}</a>-->
+<!--                                            </li>-->
+
+<!--                                        {% endfor %}-->
+
+<!--                                    </ul>-->
+<!--                                    &lt;!&ndash; Nested Tabs inside Employee &ndash;&gt;-->
+<!--                                    &lt;!&ndash; <ul class="nav nav-tabs nav-tabs-bottom">-->
+<!--                                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#employee_details">Details</a></li>-->
+<!--                                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#employee_history">History</a></li>-->
+<!--                                    </ul> &ndash;&gt;-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="file-cont-wrap" style="width:100%;">-->
+<!--                            <div class="file-cont-inner">-->
+<!--                                <div class="file-cont-header">-->
+<!--                                    <span>File Manager</span>-->
+<!--                                    <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#upload_document" style="float: right;"><i class="fa-solid fa-plus"></i> Upload Document</button>-->
+<!--                                    <button class="btn add-btn" data-bs-toggle="modal" data-bs-target="#create_category"><i class="fa-solid fa-plus"></i> Create Category</button>-->
+<!--                                </div>-->
+<!--                                <div class="file-content">-->
+<!--                                    <form class="file-search">-->
+<!--                                        <div class="input-group">-->
+<!--                                            <div class="input-group-text">-->
+<!--                                                <i class="fa-solid fa-magnifying-glass"></i>-->
+<!--                                            </div>-->
+<!--                                            <input type="text" class="form-control rounded-pill" placeholder="Search">-->
+<!--                                        </div>-->
+<!--                                    </form>-->
+<!--                                    <div class="file-body">-->
+<!--                                        <div class="file-scroll">-->
+<!--                                            <div class="file-content-inner">-->
+<!--                                                &lt;!&ndash; Nested Tab content &ndash;&gt;-->
+<!--                                                <div class="tab-content mt-3">-->
+<!--                                                    <div class="tab-pane fade show active" id="all_files">-->
+<!--                                                        <h4>Files</h4>-->
+<!--                                                        <div class="row row-sm">-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-word"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Updates.docx</a></h6>-->
+<!--                                                                        <span>12mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">9 Aug 1:17 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-powerpoint"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Vision.ppt</a></h6>-->
+<!--                                                                        <span>72.50kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">6 Aug 11:42 AM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-audio"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Voice.mp3</a></h6>-->
+<!--                                                                        <span>2.17mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">-->
+<!--                                                                        <span class="d-none d-sm-inline">Last Modified: </span>30 Jul 9:00 PM-->
+<!--                                                                    </div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-pdf"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Tutorials.pdf</a></h6>-->
+<!--                                                                        <span>8.2mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">21 Jul 10:45 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-excel"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Tasks.xls</a></h6>-->
+<!--                                                                        <span>92.82kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">16 Jun 4:59 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-image"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Page.psd</a></h6>-->
+<!--                                                                        <span>118.71mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">14 Jun 9:00 AM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-lines"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">License.txt</a></h6>-->
+<!--                                                                        <span>18.7kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">5 May 8:21 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-word"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Expenses.docx</a></h6>-->
+<!--                                                                        <span>66.2kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">24 Apr 7:50 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-audio"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Music.mp3</a></h6>-->
+<!--                                                                        <span>3.6mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">13 Mar 2:00 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-lines"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Installation.txt</a></h6>-->
+<!--                                                                        <span>43.9kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">26 Feb 5:01 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-video"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Workflow.mp4</a></h6>-->
+<!--                                                                        <span>47.65mb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">3 Jan 11:35 AM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-code"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">index.html</a></h6>-->
+<!--                                                                        <span>23.7kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">1 Jan 8:55 AM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                        </div>-->
+<!--                                                    </div>-->
+<!--                                                    {% for category in file_category %}-->
+<!--                                                    <div class="tab-pane fade" id="{{ category.name|replace_space }}">-->
+<!--                                                        <h4>{{ category.name }}</h4>-->
+<!--                                                        <div class="row row-sm justify-content-center">-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-pdf"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Sample.pdf</a></h6>-->
+<!--                                                                        <span>10.45kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">-->
+<!--                                                                        <span class="d-none d-sm-inline">Last Modified: </span>1 min ago-->
+<!--                                                                    </div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-word"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Document.docx</a></h6>-->
+<!--                                                                        <span>22.67kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">-->
+<!--                                                                        <span class="d-none d-sm-inline">Last Modified: </span>30 mins ago-->
+<!--                                                                    </div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-image"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">icon.png</a></h6>-->
+<!--                                                                        <span>12.47kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">-->
+<!--                                                                        <span class="d-none d-sm-inline">Last Modified: </span>1 hour ago-->
+<!--                                                                    </div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                            <div class="col-12 col-sm-4 col-md-3 col-lg-4 col-xl-3">-->
+<!--                                                                <div class="card card-file">-->
+<!--                                                                    <div class="dropdown-file">-->
+<!--                                                                        <a href="#" class="dropdown-link" data-bs-toggle="dropdown"><i class="fa-solid fa-ellipsis-vertical"></i></a>-->
+<!--                                                                        <div class="dropdown-menu dropdown-menu-right">-->
+<!--                                                                            <a href="#" class="dropdown-item">View Details</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Share</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Download</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Rename</a>-->
+<!--                                                                            <a href="#" class="dropdown-item">Delete</a>-->
+<!--                                                                        </div>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-file-thumb">-->
+<!--                                                                        <i class="fa-regular fa-file-excel"></i>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-body">-->
+<!--                                                                        <h6><a href="#">Users.xls</a></h6>-->
+<!--                                                                        <span>35.11kb</span>-->
+<!--                                                                    </div>-->
+<!--                                                                    <div class="card-footer">23 Jul 6:30 PM</div>-->
+<!--                                                                </div>-->
+<!--                                                            </div>-->
+<!--                                                        </div>-->
+<!--                                                    </div>-->
+
+<!--                                                    {% endfor %}-->
+<!--                                                </div>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+    </div>
+</div>
+
+<div id="AIAssistant" class="tab-pane fade">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="table-responsive" id="chat-data">
+                {% include 'chat_assistant.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal HTML -->
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        {% if messages %}
+            $('#show_success').modal('show');
+        {% endif %}
+
+    });
+</script>
+
+<!-- Success Modal -->
+<!--<div class="modal custom-modal fade" id="show_success" role="dialog">-->
+<!--    <div class="modal-dialog modal-dialog-centered">-->
+<!--        <div class="modal-content">-->
+<!--            <div class="modal-body">-->
+<!--                <div class="form-header">-->
+<!--                    &lt;!&ndash; <h3>Client Update Successful</h3> &ndash;&gt;-->
+<!--                    {% for message in messages %}-->
+<!--                        <h3>{{ message }}</h3>-->
+<!--                    {% endfor %}-->
+<!--                </div>-->
+<!--                <div class="modal-btn delete-action">-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-12">-->
+<!--                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn" style="width:100px; float: right;">Close</a>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
+<!-- Success Modal -->
+<div class="modal fade custom-modal" id="show_success" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body text-center p-5">
+                <div class="form-header mb-4">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    {% for message in messages %}
+                        <h4 class="fw-semibold text-dark">{{ message }}</h4>
+                    {% endfor %}
+                </div>
+                <div class="d-grid mt-4">
+                    <button type="button" class="btn btn-primary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteFileModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this document?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+       <a href="#" id="confirmDelete" class="btn btn-primary">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renameModalLabel">Rename File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="renameForm">
+                    <input type="hidden" id="fileId">
+                    <div class="mb-3">
+                        <label for="newFileName" class="form-label">New File Name</label>
+                        <input type="text" class="form-control" id="newFileName" required>
+                    </div>
+                    <button type="submit" id="renameBtn" class="btn btn-primary">Rename</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal custom-modal fade" id="imageModal" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                <button onclick="toggleFullScreen()" class="btn btn-secondary mt-2">Full Screen</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Preview Image" style="max-width: 100%; max-height: 80vh;">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showImage(imageUrl) {
+        document.getElementById('modalImage').src = imageUrl;
+    }
+    function openInNewTab(fileUrl) {
+        window.open(fileUrl, '_blank');  // Open the file in a new tab
+    }
+    function toggleFullScreen() {
+        var img = document.getElementById('modalImage');
+        if (img.requestFullscreen) {
+            img.requestFullscreen();
+        } else if (img.webkitRequestFullscreen) { /* Safari */
+            img.webkitRequestFullscreen();
+        } else if (img.msRequestFullscreen) { /* IE11 */
+            img.msRequestFullscreen();
+        }
+    }
+</script>
+<!--  UPLOAD DOCUMENT ORIGINAL   -->
+<!--<div id="upload_document" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">-->
+<!--    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">-->
+<!--        <div class="modal-content">-->
+<!--            <div class="modal-header">-->
+<!--                <h5 class="modal-title">Upload Document</h5>-->
+<!--                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--            <div class="modal-body">-->
+<!--                <form action="{% url 'upload_document' %}" method="post" enctype="multipart/form-data" id="documentForm" data-project_name="">-->
+<!--                    {% csrf_token %}-->
+
+<!--                    <input type="hidden" name="entity_type" value="client">-->
+<!--                    <input type="hidden" name="client_id" value="{{ client.id }}">-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-sm-12">-->
+<!--                            <div class="input-block mb-3">-->
+<!--                                <label class="col-form-label">Document <span class="text-danger">*</span></label>-->
+<!--                                <input class="form-control" type="file" name="uploaded_file" id="uploaded_file">-->
+<!--                                <div class="invalid-feedback">Document cannot be blank.</div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="col-sm-12">-->
+<!--                            <div class="input-block mb-3">-->
+<!--                                <label class="col-form-label">File Category </label>-->
+<!--                                <select class="select floating" name="file_category" id="file_category">-->
+<!--                                    <option value="">Select Category</option>-->
+<!--                                    {% for category in file_category %}-->
+<!--                                        <option value="{{ category.id }}">{{ category.name }}</option>-->
+<!--                                    {% endfor %}-->
+<!--                                </select>-->
+<!--                                <div class="invalid-feedback">File Category cannot be blank.</div>-->
+<!--                            </div>-->
+<!--                        </div>                        -->
+<!--                        <div class="input-block mb-3">-->
+<!--                            <label class="col-form-label">Description <span class="text-danger">*</span></label>-->
+<!--                            <textarea class="form-control" name="description" id="description" placeholder="" spellcheck="false"></textarea>-->
+<!--                            <div class="invalid-feedback">Description cannot be blank.</div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+<!--                    -->
+<!--                    <div class="submit-section">-->
+<!--                        <button class="btn btn-primary submit-btn" id="submitBtn">Submit</button>-->
+<!--                    </div>-->
+<!--                </form>-->
+
+
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+<!--  UPLOAD DOCUMENT BACKUP     -->
+
+<!--    IMPLEMENT UPLOAD DOCUMENT CODE START-->
+    <div id="upload_document" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Document</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'upload_document' %}" method="post" enctype="multipart/form-data" id="documentForm" data-project_name="">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="entity_type" value="client">
+                    <input type="hidden" name="client_id" value="{{ client.id }}">
+
+                    <div class="row">
+                        <!-- Radio Buttons -->
+                        <div class="col-sm-12 mb-3">
+                            
+                            <label class="col-form-label">Upload Source</label><br>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="upload_type" id="upload_local" value="local" checked>
+                                <label class="form-check-label" for="upload_local">Upload from Computer</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="upload_type" id="upload_drive" value="drive">
+                                <label class="form-check-label" for="upload_drive">Upload from Drive</label>
+                            </div>
+                            
+                        </div>
+
+                        <!-- File Input -->
+                        <div class="col-sm-12" id="local_upload_block">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Document <span class="text-danger">*</span></label>
+                                <input class="form-control" type="file" name="uploaded_file" id="uploaded_file">
+                                <div class="invalid-feedback">Document cannot be blank.</div>
+                            </div>
+                        </div>
+
+                        <!-- Drive URL Input -->
+                        <div class="col-sm-12" id="drive_upload_block" style="display:none;">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Drive Folder URL <span class="text-danger">*</span></label>
+                                <input class="form-control" type="url" name="drive_url" id="drive_url" placeholder="https://drive.google.com/drive/folders/...">
+                                <div class="invalid-feedback">Drive URL cannot be blank.</div>
+                            </div>
+                        </div>
+
+                        <!-- File Category -->
+                        <div class="col-sm-12" id="file_category_hide">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">File Category </label>
+                                <select class="select floating" name="file_category" id="file_category">
+                                    <option value="">Select Category</option>
+                                    {% for category in client_file_category %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">File Category cannot be blank.</div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-sm-12">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="description" id="description" placeholder="" spellcheck="false"></textarea>
+                                <div class="invalid-feedback">Description cannot be blank.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn" id="submitBtn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--    IMPLEMENT UPLOAD DOCUMENT CODE END-->
+
+
+
+<div id="create_category" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'create_category' %}" method="post" enctype="multipart/form-data" id="categoryForm">
+                    {% csrf_token %}
+
+                    <input type="hidden" name="entity_type" value="client">
+                    <input type="hidden" name="client_id" value="{{ client.id }}">
+                    <input type="hidden" id="add_new_category" name="add_new_category" value="false">
+                    <div class="col-sm-12">
+                        <div class="input-block mb-3">
+                            <label class="col-form-label">Select Category </label>
+                            <select class="select floating" name="created_category" id="created_category">
+                                <option value="">Select Category</option>
+                                {% for category in file_category_all %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="invalid-feedback">File Category cannot be blank.</div>
+                        </div>
+                    </div>
+                    <div id="new_category" style="display: none; ">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Category Name <span class="text-danger">*</span></label>
+                                    <input class="form-control" type="text" name="file_name" id="file_name">
+                                    <div class="invalid-feedback">Category name cannot be blank.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        $(document).ready(function() {
+                            $('#created_category').on('change', function() {
+                                if ($(this).val() == 'other') {
+                                    $('#new_category').show();
+                                    // $('#created_category').prop('disabled', true);
+                                    $('#add_new_category').val('true');
+                                }else{
+                                    $('#new_category').hide();
+                                    $('#file_name').val('');
+                                    $('#add_new_category').val('false');
+                                }
+                            });
+                            $('#created_category').trigger('change');
+                        });
+                    </script>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn" id="createBtn">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <form action="{% url 'delete_category' %}" method="post" enctype="multipart/form-data" id="deleteCategoryForm">
+        {% csrf_token %}
+        <input type="hidden" name="deleted_category" id="deletedCategoryId">
+        <input type="hidden" name="entity_type" id="entityType">  <!-- Fixed from static value -->
+        <input type="hidden" name="client_id" id="client_id">
+  
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteCategoryModalLabel">Confirm Deletion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+  
+          <div class="modal-body">
+            Are you sure you want to delete the "<strong id="categoryName"></strong>" category?
+          </div>
+  
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-secondary">Yes, Delete</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+
+
+
+<style type="text/css">
+    .add-another, .delete-row{
+        margin-top: 25px;
+        line-height: 30px;
+    }
+</style>
+<div id="add_client" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document" style="max-width: 70% !important;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="client-form" action="{% url 'update_client_with_contracted' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <input type="hidden" id="client-id" name="client_id" value="{{ client.id }}">
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Client Name <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="client_name" id="client_name" value="{{ client.client_name }}" disabled>
+                                <div class="invalid-feedback">Client Name cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Company <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="company_name" id="company_name" value="{{ client.company_name }}" disabled>
+                                <div class="invalid-feedback">Company Name cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Email</label>
+                                <input class="form-control floating" type="email" name="email" id="email" value="{{ client.email }}">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Address</label>
+                                <input class="form-control" type="text" name="address" id="address" value="{{ client.address}}">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <label class="col-form-label col-md-2">Gender</label>
+                            <div class="col-md-10">
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="male" id="male-gender" {% if client.gender == 'male' %}checked{% endif %}> Male
+                                    </label>
+                                </div>
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="female" id="female-gender" {% if client.gender == 'female' %}checked{% endif %}> Female
+                                    </label>
+                                </div>
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="other" id="other-gender" {% if client.gender == 'other' %}checked{% endif %}> Other
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Date of Birth </label>
+                                <input type="date" class="form-control" name="dob" id="dob" placeholder="YYYY-MM-DD" value="{{ client.date_of_birth}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Phone </label>
+                                <input class="form-control" type="text" name="phone" id="phone" value="{{ client.phone}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Designation</label>
+                                <input class="form-control" type="text" name="designation" id="designation" value="{{ client.designation}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Company Size</label>
+                                <input class="form-control" type="text" name="company_size" id="company_size" value="{{ client.company_size}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Country</label>
+                                <input class="form-control" type="text" name="country" id="country" value="{{ client.country}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Industry</label>
+                                <input class="form-control" type="text" name="industry" id="industry" value="{{ client.industry}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Level</label>
+                                <input class="form-control" type="text" name="level" id="level" value="{{ client.level}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Location</label>
+                                <input class="form-control" type="text" name="location" id="location" value="{{ client.location}}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Region</label>
+                                <input class="form-control" type="text" name="region" id="region" value="{{ client.region}}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Image</label>
+                                <input class="form-control" type="file" name="client_image" id="client_image">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Monthly Amount in USD <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="monthly_cost" id="monthly_cost" value="{{ monthly_amount.cost}}">
+                                <div class="invalid-feedback">Amount cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3 form-focus">
+                                <label class="col-form-label">Year <span class="text-danger">*</span></label>
+                                <select class="select floating" name="year" id="year" disabled>
+                                    <option value="2024" {% if current_year == 2024 %}selected{% endif %}>2024</option>
+                                    <option value="2025" {% if current_year == 2025 %}selected{% endif %}>2025</option>
+                                    <option value="2026" {% if current_year == 2026 %}selected{% endif %} selected>2026</option>
+                                </select>
+                                <input type="hidden" name="year" value="{{ current_year }}">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+
+                            <div class="input-block mb-3" >
+                                <label class="col-form-label">Month <span class="text-danger">*</span></label>
+                                <select class="select form-control" name="month" id="month" disabled>
+                                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                                    <option value="2" {% if selected_month == 2 %}selected{% endif %} selected>February</option>
+                                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+                                </select>
+                                <input type="hidden" name="month" value="{{ selected_month }}">
+                                <div class="invalid-feedback">Please select month.</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Buddy</label>
+                                <select class="select form-control" multiple name="buddy">
+                                    <option value="" disabled>Select an Employee</option>
+                                    {% for employee in employee_list %}
+                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}" {% if employee.id in buddy_ids %}selected{% endif %}>{{ employee.first_name }} {{ employee.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select at least one leader.</div>
+
+                            </div>
+                        </div>                        
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Advisor</label>
+                                <select class="select form-control" multiple name="advisor">
+                                    <option value="" disabled>Select an Employee</option>
+                                    {% for employee in employee_list %}
+                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}" {% if employee.id in advisor_ids %}selected{% endif %}>
+                                        {{ employee.first_name }} {{ employee.last_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="consultant-row-container">
+                        {% if consultant_details.items %}
+                                                
+                            {% for consultant_id, hour in consultant_details.items %}
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Consultant</label>
+                                        <select class="select form-control" name="consultant[]">
+                                            <option value="">Select an Employee</option>
+                                            {% for employee in employee_list %}
+                                            <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}" {% if employee.id == consultant_id %}selected{% endif %}>
+                                                {{ employee.first_name }} {{ employee.last_name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Time</label>
+                                        <input class="form-control" type="text" name="consultant_time[]" value="{{ hour }}">                                   
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label"></label>
+                                        {% if forloop.counter == 1 %}
+                                        <button type="button" class="btn btn-primary add-another" data-bs-toggle="tooltip" aria-label="Add Another Consultant" data-bs-original-title="Add Another Consultant" style="line-height:30px; background-color: #009efb!important;border-color: #009efb!important;"> <i class="la la-plus"></i> </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-danger delete-row" data-bs-toggle="tooltip" aria-label="Delete Consultant" data-bs-original-title="Delete Consultant">
+                                                <i class="la la-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Consultant</label>
+                                        <select class="select form-control" name="consultant[]">
+                                            <option value="">Select an Employee</option>
+                                            {% for employee in employee_list %}
+                                            <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                                {{ employee.first_name }} {{ employee.last_name }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label">Time</label>
+                                        <input class="form-control" type="text" name="consultant_time[]" value="0">
+                                        
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <div class="input-block mb-3">
+                                        <label class="col-form-label"></label>
+                                        <button type="button" class="btn btn-primary add-another" data-bs-toggle="tooltip" aria-label="Add Another Consultant" data-bs-original-title="Add Another Consultant" style="line-height:30px; background-color: #009efb!important;border-color: #009efb!important;"> <i class="la la-plus"></i> </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $('.add-another').on('click', function() {
+                                var fieldType = $(this).closest('.row').find('label').first().text().toLowerCase();
+
+                                var fieldName = fieldType + '[]';
+                                var fieldTimeName = fieldType + '_time[]';
+
+                                var newRow = `
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label">${capitalizeFirstLetter(fieldType)}</label>
+                                                <select class="select form-control add_select" name="${fieldName}">
+                                                    <option value="">Select an Employee</option>
+                                                    {% for employee in employee_list %}
+                                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                                        {{ employee.first_name }} {{ employee.last_name }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label">Time</label>
+                                                <input class="form-control" type="text" name="${fieldTimeName}" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label"></label>
+                                                <button type="button" class="btn btn-danger delete-row" data-bs-toggle="tooltip" aria-label="Delete ${capitalizeFirstLetter(fieldType)}" data-bs-original-title="Delete ${capitalizeFirstLetter(fieldType)}">
+                                                    <i class="la la-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+
+                                $(`.${fieldType}-row-container`).append(newRow);
+
+                                $(`.${fieldType}-row-container`).find('.add_select').last().select2();
+                            });
+
+                            $(document).on('click', '.delete-row', function() {
+                                $(this).closest('.row').remove();
+                            });
+                            
+                            function capitalizeFirstLetter(string) {
+                                return string.charAt(0).toUpperCase() + string.slice(1);
+                            }
+                        });
+
+
+                        $(document).ready(function() {
+                            $('#add_new_client_button').on('click', function() {
+                                $('#new_client_fields').toggle();
+
+                                if ($('#new_client_fields').is(':visible')) {
+                                    $('#add_new_client').val('true');
+                                } else {
+                                    $('#add_new_client').val('false');
+                                }
+
+                                if ($('#new_client_fields').is(':visible')) {
+                                    $('#client_select').val('');
+                                    $('#client_select').prop('disabled', true);
+                                } else {
+                                    $('#client_select').prop('disabled', false);
+                                }
+                                $('#client_select').trigger('change');
+
+                                $('#add_new_client_button i').toggleClass('la-plus la-minus');
+
+                                if ($('#add_new_client_button i').hasClass('la-minus')) {
+                                    $('#add_new_client_button').css({
+                                        'background-color': '#36ba45',
+                                        'border-color': '#36ba45'
+                                    });
+
+                                    $('#add_new_client_button').attr('data-bs-original-title', 'Remove Client');
+                                } else {
+                                    $('#add_new_client_button').css({
+                                        'background-color': '#009efb',
+                                        'border-color': '#009efb'
+                                    });
+
+                                    $('#add_new_client_button').attr('data-bs-original-title', 'Add New Client');
+                                }
+
+                                var tooltip = bootstrap.Tooltip.getInstance($('#add_new_client_button')[0]); 
+                                if (tooltip) {
+                                    tooltip.dispose();
+                                }
+                                new bootstrap.Tooltip($('#add_new_client_button')[0]);
+                            });
+
+                            $('#client_select').on('change', function() {
+                                if ($(this).val() !== '') {
+                                    $('#new_client_fields').hide();
+                                    $('#client_select').prop('disabled', false);
+                                }
+                            });
+
+                            $('#client_select').trigger('change');
+                        });
+                    </script>
+
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn" id="saveBtn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="contractedClientRevenueModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="staticBackdropLabel">Contracted Client Revenue</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="contractedClientRevenueContent"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal fade" id="contractedTotalWorkingTimeModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="contractedTotalWorkingTimeModal">Contracted Total Working Time</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="contractedTotalWorkingTimeModal"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="actualEmployeeCostModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="actualEmployeeCostModal">Actual Employee Cost</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="actualEmployeeCostModal"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="contractedEmployeeCostModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="contractedEmployeeCostModal">Contracted Employee Cost</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="contractedEmployeeCostModal"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#employeeSelect').change(function () {
+            var selectedEmployees = $(this).val();
+            var workingHoursBlock = $('.working-hours-block');
+            var workingHoursInputs = $('#workingHoursInputs');
+
+                    workingHoursInputs.empty(); // Remove existing input fields
+
+                    if (selectedEmployees && selectedEmployees.length > 0) {
+                        workingHoursBlock.show();
+
+                        // Create input fields for each selected employee
+                        selectedEmployees.forEach(function (employeeId) {
+                            // Fetch the employee name from the data attribute
+                            var employeeName = $('#employeeSelect option[value="' + employeeId + '"]').data('employee-name');
+
+                            // Create input field for working hours
+                            workingHoursInputs.append('<div class="mb-3"><label class="col-form-label">' + employeeName + ' Working Hours</label>' +
+                                '<input type="text" class="form-control working-hours-input" name="working_hours[' + employeeId + ']" placeholder="Enter working hours for ' + employeeName + '"></div>');
+                        });
+                    } else {
+                        workingHoursBlock.hide();
+                    }
+                });
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.datetimepicker').datetimepicker({
+            format: 'YYYY-MM-DD', // Adjust format as needed
+            icons: {
+                up: "fa fa-angle-up",
+                down: "fa-solid fa-angle-down",
+                next: 'fa-solid fa-angle-right',
+                previous: 'fa-solid fa-angle-left'
+            }
+        });
+
+        // Function to check if both start and end dates are selected
+        function checkDates() {
+            const startDateInput = $('#start_date').val();
+            const endDateInput = $('#end_date').val();
+
+            if (startDateInput && endDateInput) {
+                // If both dates are selected, submit the form
+                console.log(startDateInput);
+                console.log(endDateInput);
+                $('#dateForm').submit();
+            }
+        }
+
+        // Event listener for date inputs
+        $('.datetimepicker').on('dp.change', checkDates);
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost outside the click function
+
+        function openPopup(ui_client_data, employee_id) {
+            var data = ui_client_data[employee_id];
+            if (data) {
+
+                var cost = parseFloat(data.ui_cost);
+                var weeks = parseFloat(data.ui_weeks);
+                var days = parseFloat(data.ui_date_difference);
+                var cal=(cost * weeks).toFixed(2);
+                var total = ((cal) / 4.3).toFixed(2);
+
+                var popupContent1 = `
+                Monthly client revenue from sheet(in USD): ${cost}<br>
+                No. of days from start date to end date: ${days}<br>
+                Total no of days in a week: 7<br>
+                Total no of weeks from Start date and end date: ${days} / 7 =${weeks}<br>
+                Total no of weeks from Start date and end date: ${weeks}<br>
+                Total no of week in 1 month: 4.3<br>
+                Contracted client revenue: (${cost} * ${weeks} )/ 4.3<br>
+                Contracted client revenue: $${total}<br>
+
+                <br>
+                `;
+
+                $('#contractedClientRevenueModal .modal-body').append(popupContent1);
+
+                // Accumulate total for each iteration
+                total = parseFloat(total);
+                if (!isNaN(total)) {
+                    totalCost += total;
+                    totalCost = parseFloat(totalCost.toFixed(2));
+                }
+            } else {
+                console.error("Employee data not found for ID:", employee_id);
+            }
+        }
+
+        $('.staff-id.revenue,.personal-info .title.client,.personal-info .text.client').click(function() {
+            var ui_client_data = JSON.parse($('#ui_client_data').text());
+            totalCost = 0; // Reset total cost before each click
+            for (var employee_id in ui_client_data) {
+                openPopup(ui_client_data, employee_id);
+            }
+
+            // Append total after the loop ends
+
+            var totalContent = `<br>Total Client Revenue:${totalCost} <br>`;
+            $('#contractedClientRevenueModal .modal-body').append(totalContent);
+
+            $('#contractedClientRevenueModal').modal('show');
+        });
+        $('#contractedClientRevenueModal').on('hidden.bs.modal', function() {
+            $('#contractedClientRevenueModal .modal-body').empty();
+        });
+
+        $('#contractedClientRevenueModal .btn-close').click(function() {
+            $('#contractedClientRevenueModal .modal-body').empty();
+            $('#contractedClientRevenueModal').modal('hide');
+        });
+    });
+</script>
+
+<!-- Add this hidden div to store the JSON data -->
+<div id="ui_client_data" style="display: none;">{{ ui_client_data|json_script }}</div>
+
+
+<script>
+    $(document).ready(function() {
+        function openPopup1() {
+            var total_hours = {{ ui_total_hours }};
+            var weeks = {{ weeks }}.toFixed(2);;
+            var formattedTime = "{{ ui_formatted_time2 }}";
+            var total= (total_hours * weeks).toFixed(2);
+
+            var popupContent1 = `
+                    Weekly hours contracted for (from sheet): ${total_hours}<br>
+                    Total no of weeks from Start date and end date: ${weeks}<br>
+                    Total weekly hours contracted : ${total_hours} * ${weeks} :  ${total}<br>
+                    Convert into Hours:minutes:second: ${formattedTime}<br>
+            `;
+
+            $('#contractedTotalWorkingTimeModal .modal-body').html(popupContent1);
+            $('#contractedTotalWorkingTimeModal').modal('show');
+        }
+
+        $('.staff-id.working-time').click(function() {
+            openPopup1();
+        });
+
+        $('#contractedTotalWorkingTimeModal .btn-close').click(function() {
+            $('#contractedTotalWorkingTimeModal').modal('hide');
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost
+
+        $('.personal-info .title.a_employee_cost,.personal-info .text.a_employee_cost').click(function() {
+            var ui = JSON.parse($('#ui').text());
+            totalCost = 0; // Reset total cost before each click
+
+            for (var employee_id in ui) {
+                openPopup3(ui, employee_id);
+            }
+
+            // Append total after the loop ends
+            var totalContent = `<br>Total Actual Employee Cost: ${totalCost.toFixed(2)}<br>`;
+            $('#actualEmployeeCostModal .modal-body').append(totalContent);
+
+            $('#actualEmployeeCostModal').modal('show');
+        });
+
+        // Function to open popup for each employee
+        function openPopup3(ui, employee_id) {
+            var data1 = ui[employee_id];
+            if (data1) {
+                var employee_name = data1.ui_employee_name;
+                var employee_salary = parseFloat(data1.ui_employee_salary);
+                var working_hours = parseFloat(data1.ui_working_hours);
+                var working_time = (employee_salary / (22 * 8)).toFixed(2);
+                var total = (working_time * working_hours).toFixed(2);
+
+                var popupContent1 = `
+                    Monthly ${employee_name} Salary: ${employee_salary}<br>
+                    Total no of working days of employee: 22 * 8<br>
+                    Hourly Employee cost: ${employee_salary} / (22 * 8): ${working_time}<br>
+                    Time spent from Start date and end date(in hours from timer): ${working_hours}<br>
+                    Total actual cost from Start date and end date: ${working_time} * ${working_hours}: ${total}<br>
+                    Actual Employee Cost: ${total}<br><br>
+                `;
+
+                $('#actualEmployeeCostModal .modal-body').append(popupContent1);
+
+                // Accumulate total for each iteration
+                totalCost += parseFloat(total);
+            } else {
+                console.error("Employee data not found for ID:", employee_id);
+            }
+        }
+
+        // Clear modal content when modal is closed
+        $('#actualEmployeeCostModal').on('hidden.bs.modal', function() {
+            $('#actualEmployeeCostModal .modal-body').empty();
+        });
+
+        $('#actualEmployeeCostModal .btn-close').click(function() {
+            $('#actualEmployeeCostModal .modal-body').empty();
+            $('#actualEmployeeCostModal').modal('hide');
+        });
+    });
+</script>
+
+<!-- Add this hidden div to store the JSON data -->
+<div id="ui" style="display: none;">{{ ui|json_script }}</div>
+
+<script>
+    $(document).ready(function() {
+        var totalCost = 0; // Initialize total cost outside the click function
+
+        function openPopup2(ui_data, employee_id) {
+            var data = ui_data[employee_id];
+            if (data) {
+                var employee_name=data.ui_employee_name;
+                var employee_salary = parseFloat(data.ui_employee_salary);
+                var working_hours = parseFloat(data.ui_working_hours);
+
+                var weeks = parseFloat(data.ui_weeks);
+                var totalWorkingHours = (weeks * working_hours).toFixed(2);
+                var working_time = (employee_salary / (22 * 8)).toFixed(2);
+                var total = (totalWorkingHours * working_time).toFixed(2);
+
+                var popupContent1 = `
+                    Monthly ${employee_name} Salary: ${employee_salary}<br>
+                    Total no of working days of employee: 22 * 8<br>
+                    Hourly Employee Cost:${employee_salary}/(22*8)    : ${working_time}<br>
+                    Contracted weekly working hours for employee (from sheet)=${working_hours}<br>
+                    Total no of weeks from Start date and end date: ${weeks}<br>
+                    Total weekly hours contracted : ${working_hours} * ${weeks}  :  ${totalWorkingHours}<br>
+                    Contracted Employee Cost: ${working_time} *${totalWorkingHours}   : ${total}<br>
+                    <br>
+                `;
+
+                $('#contractedEmployeeCostModal .modal-body').append(popupContent1);
+
+                // Accumulate total for each iteration
+                total = parseFloat(total);
+                if (!isNaN(total)) {
+                    totalCost += total;
+                }
+            } else {
+                console.error("Employee data not found for ID:", employee_id);
+            }
+        }
+
+        $('.personal-info .title.c_employee_cost,.personal-info .text.c_employee_cost').click(function() {
+            var ui_data = JSON.parse($('#ui_data').text());
+            totalCost = 0; // Reset total cost before each click
+            for (var employee_id in ui_data) {
+                openPopup2(ui_data, employee_id);
+            }
+
+            var totalContent = `<br>Total Contracted Employee Cost: ${totalCost.toFixed(2)}<br>`;
+            $('#contractedEmployeeCostModal .modal-body').append(totalContent);
+
+            $('#contractedEmployeeCostModal').modal('show');
+        });
+        $('#contractedEmployeeCostModal').on('hidden.bs.modal', function() {
+            $('#contractedEmployeeCostModal .modal-body').empty();
+        });
+
+        $('#contractedEmployeeCostModal .btn-close').click(function() {
+            $('#contractedEmployeeCostModal .modal-body').empty();
+            $('#contractedEmployeeCostModal').modal('hide');
+        });
+    });
+</script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".add-new-client").click(function() {
+            $("#client-form")[0].reset();
+
+            $("#client-id").val("");
+
+            $(".modal-title").text("Add Client");
+
+            $("input[name='gender']").prop('checked', false);
+
+            $('#add_client').modal('show');
+        });
+
+        $(document).on('click', '.edit-client', function() {
+            $("#client-form")[0].reset();
+            $("#client_name, #company_name").removeClass('is-invalid');
+            var clientId = $(this).data("client-id");
+
+            $('#add_client').modal('show');
+        });
+
+        // Handle the form submission
+        $("#client-form").submit(function(e) {
+            e.preventDefault();
+            $('#saveBtn').prop("disabled", true);
+
+            $("#client_name, #company_name, #monthly_cost").removeClass('is-invalid');
+            var errorMessages = [];
+
+            var clientSelector = $('#client_name');
+            var companySelector = $('#company_name');
+            var rateSelector = $("#monthly_cost");
+            var clientName = clientSelector.val().trim();
+            var clientCompany = companySelector.val().trim();
+            var rate = parseFloat(rateSelector.val());
+
+            if (clientName === '') {
+                clientSelector.addClass('is-invalid');
+                clientSelector.siblings(".invalid-feedback").text('Client name cannot be blank.');
+                errorMessages.push("Client Name cannot be blank.");
+            }
+
+            if (clientCompany === '') {
+                companySelector.addClass('is-invalid');
+                companySelector.siblings(".invalid-feedback").text('Company name cannot be blank.');
+                errorMessages.push("Company Name cannot be blank.");
+            }
+
+            if (isNaN(rate) || rate <= 0) {
+                rateSelector.addClass('is-invalid');
+                errorMessages.push("Amount must be a positive value.");
+            }
+
+            if (errorMessages.length > 0) {
+                $('#saveBtn').prop("disabled", false);
+                return false;
+            }
+
+            var subForm = this;
+
+            subForm.submit();
+        
+        });
+
+        $('#add_client').on('shown.bs.modal', function() {
+            $('.select').each(function() { 
+                $(this).select2({ dropdownParent: $(this).parent()});
+            });
+        });
+    });
+</script>
+
+<!--    UPLOAD DOCUMENT VALIDATION ORIGINAL -->
+<!--<script type="text/javascript">-->
+<!--    $("#documentForm").submit(function(e) {-->
+<!--        e.preventDefault();-->
+<!--        $('#submitBtn').prop("disabled", true);-->
+
+<!--        $("#uploaded_file, #description").removeClass('is-invalid');-->
+<!--        var errorMessages = [];-->
+
+<!--        var fileSelector = $('#uploaded_file');-->
+<!--        var descriptionSelector = $('#description');-->
+<!--        var fileName = fileSelector.val().trim();-->
+<!--        var description = descriptionSelector.val().trim();-->
+
+<!--        if (fileName === '') {-->
+<!--            fileSelector.addClass('is-invalid');-->
+<!--            fileSelector.siblings(".invalid-feedback").text('Client name cannot be blank.');-->
+<!--            errorMessages.push("Client Name cannot be blank.");-->
+<!--        }-->
+
+<!--        if (description === '') {-->
+<!--            descriptionSelector.addClass('is-invalid');-->
+<!--            descriptionSelector.siblings(".invalid-feedback").text('Company name cannot be blank.');-->
+<!--            errorMessages.push("Company Name cannot be blank.");-->
+<!--        }-->
+
+
+<!--        if (errorMessages.length > 0) {-->
+<!--            $('#submitBtn').prop("disabled", false);-->
+<!--            return false;-->
+<!--        }-->
+
+<!--        var subForm = this;-->
+
+<!--        subForm.submit();-->
+<!--    -->
+<!--    });-->
+<!--</script>-->
+<!--    UPLOAD DOCUMENT VALIDATION ORIGINAL-->
+
+    <script type="text/javascript">
+    $("#documentForm").submit(function(e) {
+        e.preventDefault();
+        $('#submitBtn').prop("disabled", true);
+
+        // Clear any existing error styles/messages
+        $("#uploaded_file, #description, #drive_url").removeClass('is-invalid');
+        var errorMessages = [];
+
+        // Check which upload type is selected
+        var isLocalUpload = $("#upload_local").is(":checked");
+        var isDriveUpload = $("#upload_drive").is(":checked");
+
+        var descriptionSelector = $('#description');
+        var description = descriptionSelector.val().trim();
+
+        if (isLocalUpload) {
+            var fileSelector = $('#uploaded_file');
+            var fileName = fileSelector.val().trim();
+
+            if (fileName === '') {
+                fileSelector.addClass('is-invalid');
+                fileSelector.siblings(".invalid-feedback").text('Document cannot be blank.');
+                errorMessages.push("Document cannot be blank.");
+            }
+        }
+
+        if (isDriveUpload) {
+            var driveUrlSelector = $('#drive_url');
+            var driveUrl = driveUrlSelector.val().trim();
+
+            if (driveUrl === '') {
+                driveUrlSelector.addClass('is-invalid');
+                driveUrlSelector.siblings(".invalid-feedback").text('Drive URL cannot be blank.');
+                errorMessages.push("Drive URL cannot be blank.");
+            }
+        }
+
+        if (description === '') {
+            descriptionSelector.addClass('is-invalid');
+            descriptionSelector.siblings(".invalid-feedback").text('Description cannot be blank.');
+            errorMessages.push("Description cannot be blank.");
+        }
+
+        // If errors exist, prevent submission
+        if (errorMessages.length > 0) {
+            $('#submitBtn').prop("disabled", false);
+            return false;
+        }
+
+        // All good, submit the form
+        this.submit();
+    });
+</script>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script> -->
+<script src="https://unpkg.com/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+
+
+<script>
+    jQuery(document).ready(function() {
+        /*jQuery("#categoryForm").submit(function(e) {
+            e.preventDefault();
+            $('#createBtn').prop("disabled", true);
+
+            $("#file_name").removeClass('is-invalid');
+            var errorMessages = [];
+
+            var fileNameSelector = $('#file_name');
+            var fileName = fileNameSelector.val().trim();
+
+            if (fileName === '') {
+                fileNameSelector.addClass('is-invalid');
+                fileNameSelector.siblings(".invalid-feedback").text('File name cannot be blank.');
+                errorMessages.push("File Name cannot be blank.");
+            } else {
+                var regex = /^[a-zA-Z0-9\s]+$/;
+                if (!regex.test(fileName)) {
+                    fileNameSelector.addClass('is-invalid');
+                    fileNameSelector.siblings(".invalid-feedback").text('File name must be alphanumeric and spaces only.');
+                    errorMessages.push("File Name must be alphanumeric and spaces only.");
+                }
+            }
+
+            if (errorMessages.length > 0) {
+                $('#createBtn').prop("disabled", false);
+                return false;
+            }
+
+            var subForm = this;
+
+            subForm.submit();
+            
+        });*/
+        jQuery("#categoryForm").submit(function(e) {
+            e.preventDefault();
+            // $('#createBtn').prop("disabled", true);
+
+            // Reset the error messages
+            $("#file_name").removeClass('is-invalid');
+            var errorMessages = [];
+
+            var fileNameSelector = $('#file_name');
+            var fileName = fileNameSelector.val().trim();
+            var is_new = JSON.parse($('#add_new_category').val());
+            if (is_new) {
+                if (fileName === '') {
+                    fileNameSelector.addClass('is-invalid');
+                    fileNameSelector.siblings(".invalid-feedback").text('File name cannot be blank.');
+                    errorMessages.push("File Name cannot be blank.");
+                } else {
+                    var regex = /^[a-zA-Z0-9\s]+$/;
+                    if (!regex.test(fileName)) {
+                        fileNameSelector.addClass('is-invalid');
+                        fileNameSelector.siblings(".invalid-feedback").text('File name must be alphanumeric and spaces only.');
+                        errorMessages.push("File Name must be alphanumeric and spaces only.");
+                    }
+                }
+
+                if (errorMessages.length > 0) {
+                    $('#createBtn').prop("disabled", false);
+                    return false;
+                }
+                var client_id = '';
+            }else{
+                var created_category = $('#created_category option:selected').val();
+                var fileName = $('#created_category option:selected').text();
+                if(created_category == ''){
+                    alert('Please select file name.');
+                    errorMessages.push("Please select file name.");
+                }
+                var client_id = "{{ client.id }}";
+            }
+            if (errorMessages.length > 0) {
+                return false;
+            }
+
+            $.ajax({
+                url: '/check-file-name/',
+                type: 'GET',
+                data: {'client_id': client_id,'file_name': fileName},
+                success: function(response) {
+                    if (response.success === true) {
+                        alert(response.message);
+                        $('#createBtn').prop("disabled", false);
+                    } else {
+                        var subForm = document.getElementById('categoryForm');
+                        subForm.submit();
+                    }
+                },
+                error: function() {
+                    alert('Error checking the file name. Please try again later.');
+                    $('#createBtn').prop("disabled", false);
+                }
+            });
+
+        });
+
+    });
+</script>
+    <script>
+        function openRenameModal(fileId, fileName) {
+    document.getElementById('fileId').value = fileId;
+    document.getElementById('newFileName').value = fileName;
+}
+
+document.getElementById('renameForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const fileId = document.getElementById('fileId').value;
+    const newFileName = document.getElementById('newFileName').value;
+
+    fetch(`/rename_document/${fileId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'  // Django CSRF token
+        },
+        body: JSON.stringify({ new_name: newFileName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();  // Refresh page after renaming
+        } else {
+            alert("Error renaming file!");
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+
+    </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var deleteFileModal = document.getElementById("deleteFileModal");
+    deleteFileModal.addEventListener("show.bs.modal", function(event) {
+      var button = event.relatedTarget; // Button that triggered the modal
+      var deleteUrl = button.getAttribute("data-delete-url"); // Get the delete URL
+      var confirmDelete = document.getElementById("confirmDelete");
+      confirmDelete.setAttribute("href", deleteUrl); // Set delete URL dynamically
+    });
+  });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Select all buttons that should trigger the tab storage
+    let buttons = document.querySelectorAll("#submitBtn, #createBtn, #renameBtn, #confirmDelete");
+
+    buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            let activeTab = document.querySelector(".nav-tabs .active").getAttribute("href");
+            localStorage.setItem("activeTab", activeTab);
+        });
+    });
+
+    // Restore the active tab after reload
+    let activeTab = localStorage.getItem("activeTab");
+    if (activeTab) {
+        let tabElement = document.querySelector(`.nav-tabs a[href="${activeTab}"]`);
+        if (tabElement) {
+            tabElement.click(); // Activate the stored tab
+        }
+    }
+});
+</script>
+<script>
+    $(document).ready(function () {
+        $(".file-menu .nav-item .nav-link").click(function () {
+            $(".file-menu .nav-item").removeClass("active"); // Remove active from all nav-items
+            $(".file-menu .nav-link").removeClass("active"); // Remove active from all nav-links
+
+            $(this).addClass("active"); // Activate clicked nav-link
+            $(this).parent().addClass("active"); // Activate clicked nav-item
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".download-link").forEach(link => {
+            link.addEventListener("click", function (event) {
+                event.preventDefault(); // Prevent default link behavior
+
+                let fileUrl = this.getAttribute("data-file");
+                let fileName = fileUrl.split('/').pop(); // Get only the filename
+
+                // Extract the part after the second underscore
+                let parts = fileName.split("_");
+                if (parts.length >= 3) {
+                    let newFileName = parts.slice(2).join("_"); // Get filename after second underscore
+
+                    // Fetch the file and create a Blob for forced download
+                    fetch(fileUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            let blobUrl = URL.createObjectURL(blob);
+
+                            let tempLink = document.createElement("a");
+                            tempLink.href = blobUrl;
+                            tempLink.download = newFileName; // Correct filename
+                            document.body.appendChild(tempLink);
+                            tempLink.click();
+                            document.body.removeChild(tempLink);
+
+                            URL.revokeObjectURL(blobUrl);
+                        })
+                        .catch(error => console.error("Download error:", error));
+                }
+            });
+        });
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const localRadio = document.getElementById('upload_local');
+    const driveRadio = document.getElementById('upload_drive');
+    const localBlock = document.getElementById('local_upload_block');
+    const driveBlock = document.getElementById('drive_upload_block');
+    const file_category_hide = document.getElementById('file_category_hide');
+    const form = document.getElementById('documentForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function toggleUploadSource() {
+        if (localRadio.checked) {
+            localBlock.style.display = 'block';
+            file_category_hide.style.display = 'block';
+            driveBlock.style.display = 'none';
+            form.setAttribute('action', "{% url 'upload_document' %}");
+            submitBtn.textContent = 'Submit';
+        } else {
+            localBlock.style.display = 'none';
+            file_category_hide.style.display = 'none';
+            driveBlock.style.display = 'block';
+            form.setAttribute('action', "{% url 'upload_from_drive' %}");
+            submitBtn.textContent = 'Upload from Drive';
+        }
+    }
+
+    localRadio.addEventListener('change', toggleUploadSource);
+    driveRadio.addEventListener('change', toggleUploadSource);
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var deleteModal = document.getElementById('deleteCategoryModal');
+    
+      deleteModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+    
+        document.getElementById('deletedCategoryId').value = button.getAttribute('data-category-id');
+        document.getElementById('categoryName').textContent = button.getAttribute('data-category-name');
+        document.getElementById('client_id').value = button.getAttribute('data-client-id') || '';
+        document.getElementById('entityType').value = button.getAttribute('data-entity-type') || 'client';
+      });
+    });
+    </script>
+
+<script>
+    $(document).ready(function() {
+        // Handle form submission with jQuery
+        $('#mediaForm').on('submit', function(e) {
+            e.preventDefault();
+            $('#loaderOverlay').fadeIn(200);
+            // Collect form data
+            const formData = {
+                topic_name: $('#topic_name').val(),
+                client_id1: $('#client_id1').val(),
+                client_name1: $('#client_name1').val(),
+                company_include: $('#company_include').val(),
+                domain_source: $('#domain_source').val(),
+                exclude_content: $('#exclude_content').val(),
+                exclude_domain: $('#exclude_domain').val()
+            };
+    
+            // Send data to backend using jQuery AJAX
+            $.ajax({
+                url: '/submit-data/',
+                type: 'POST',
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                success: function(response) {
+                    // Show success message with animation
+                    $('#loaderOverlay').fadeOut(300);
+                    $('#successMessage').html('<i class="bi bi-check-circle-fill me-2"></i>Post Generated Successfully');
+                    $('#successMessage').fadeIn(300).delay(10000).fadeOut(300);
+    
+                    // Reset form
+                    $('#mediaForm')[0].reset();
+                },
+                error: function(xhr, status, error) {
+                    // Handle error
+                    $('#loaderOverlay').fadeOut(300);
+                    console.error('Error:', error);
+                    alert('Error submitting form. Please try again.');
+                }
+            });
+        });
+    });
+    </script>
+    
+<!-- Add this hidden div to store the JSON data -->
+<div id="ui_data" style="display: none;">{{ ui_data|json_script }}</div>
+
+{% endblock %}

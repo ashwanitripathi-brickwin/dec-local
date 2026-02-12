@@ -1,0 +1,1046 @@
+{% extends "base2.html" %}
+{% load humanize %}
+
+{% block content %}
+{% load static %}
+<style type="text/css">
+	.page-title, h3{
+		letter-spacing: -0.025em !important;
+		font-size: 1.875rem !important;
+    	line-height: 2.25rem !important;
+    	font-weight: 700 !important;
+    	margin-bottom: 0px !important;
+	}
+	.breadcrumb li{
+		color:rgb(142 145 150) !important;
+	}
+	.card .card-header .card-title {
+	    color: #212529;
+	    font-size: 1.5rem;
+	    font-weight: 600;
+	    margin-bottom: 0;
+	}
+	.card .card-title {
+	    color: #212529;
+	    font-size: 1.5rem;
+	    font-weight: 600;
+	    margin-bottom: 0;
+	}
+</style>
+<div class="content container-fluid">
+	<div class="page-header">
+		<div class="row">
+			<div class="col-sm-12 d-flex justify-content-between align-items-center">
+				<div class="left">
+					<h3 class="page-title">LinkedIn Progress Dashboard</h3>
+					<ul class="breadcrumb">
+						<li class="breadcrumb-item active">Track your LinkedIn performance and engagement metrics</li>
+					</ul>
+				</div>
+				<div class="right text-end">
+					<input type="text" id="linkedin-url" value="{{ full_dashboard_url }}" readonly style="position: absolute; left: -9999px;">
+					
+					<button id="copy-btn" class="btn btn-success">Copy Profile Link</button>
+					
+					<span id="copy-msg" style="display: none; color: green; margin-left: 10px;">Copied!</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<style type="text/css">
+		.client-page {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 1.5rem !important;
+		}
+		.client-image {
+		    --tw-border-opacity: 1;
+/*		    border-color: rgb(155 135 245);*/
+		    border: 1px solid rgb(155 135 245) !important;
+		
+		    border-width: 2px;
+		
+		    border-radius: 9999px;
+	
+		    overflow: hidden;
+		}
+	</style>
+	<div class="row">
+		<div class="col-md-12">
+		    <div class="card">
+		        <div class="card-body client-page">
+				    <div style="display: flex; align-items: center;">
+				        <div style="flex-shrink: 0; margin-right: 20px;" class="client-image">
+				            <img src="{{client_details.image_url}}" alt="Client Image" style="width: 90px; height: 90px; object-fit: cover; border-radius: 50%;">
+				        </div>
+				        <div>
+				            <!-- <h3 class="card-title mb-1" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;">{{client_details.client_name}}</h3>
+				            <p class="card-text" style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">{{client_details.level}} at {{client_details.company_name}}</p>
+				            <a href="{{airtable_details.linkedin_url}}" style="color: rgb(155 135 245 / 1); font-size: 0.9rem; text-decoration: none;" target="_blank">View LinkedIn Profile ></a> -->
+				            <h3 class="card-title mb-1" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;">{{client_details.client_name}}</h3>
+				            <p class="card-text" style="color: #666; font-size: 0.9rem; margin-bottom: 5px;">{{client_details.level}} at {{client_details.company_name}}</p>
+				            <a href="{{airtable_details.linkedin_url}}" style="color: rgb(155 135 245 / 1); font-size: 0.9rem; text-decoration: none;" target="_blank">View LinkedIn Profile ></a>
+				        </div>
+				    </div>
+
+				    
+				</div>
+
+		    </div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<div class="card-body" style="padding: 20px;">
+					<div class="dash-widget-info" style="text-align: left;">
+						<span>Total Followers</span>
+						<h3 style="font-size: 24px;">{{ airtable_details.linkedin_follower_count|intcomma}}</h3>
+					</div>
+					<span class="dash-widget-icon"><i class="si si-people" data-bs-toggle="tooltip"></i></span>
+					<span class="text-success" style="color:rgb(51 195 240) !important;">
+						<i class="ti-arrow-top-right" data-bs-toggle="tooltip"></i>
+
+						+{% if linkedin_growth is not None %}
+					        {{ linkedin_growth|intcomma }}
+					    {% else %}
+					        N/A
+					    {% endif %} (
+						{% if linkedin_growth_percentage %}
+					        {{ linkedin_growth_percentage|floatformat:2 }}%
+					    {% else %}
+					        N/A
+					    {% endif %}
+					)</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget">
+				<div class="card-body" style="padding: 20px;">
+					<div class="dash-widget-info" style="text-align: left;">
+						<span>6-Month Growth</span>
+						<h3 style="font-size: 24px;">
+							{% if linkedin_growth_percentage %}
+						        {{ linkedin_growth_percentage|floatformat:2 }}%
+						    {% else %}
+						        N/A
+						    {% endif %}
+						</h3>
+					</div>
+					<span class="dash-widget-icon"><i class="ti-arrow-top-right" data-bs-toggle="tooltip"></i></span>
+					<span class="text-success" style="color:rgb(51 195 240) !important;"><i class="ti-arrow-top-right" data-bs-toggle="tooltip"></i> +{{ linkedin_growth }} followers
+					</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget" style="min-height: 123px;">
+				<div class="card-body" style="padding: 20px;">
+					<div class="dash-widget-info" style="text-align: left;margin-bottom: 22px;">
+						<span>Avg. Engagement</span>
+						<h3 style="font-size: 24px;">{{avg_engagement|floatformat:2}}%</h3>
+					</div>
+					<span class="dash-widget-icon"><i class="fe fe-bar-chart" data-bs-toggle="tooltip"></i></span>
+					<!-- <span class="text-success" style="color:rgb(51 195 240) !important;"><i class="fa fa-arrow-up" aria-hidden="true"></i> +10%</span> -->
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-sm-6 col-lg-6 col-xl-3">
+			<div class="card dash-widget" style="min-height: 123px;">
+				<div class="card-body" style="padding: 20px;">
+					<div class="dash-widget-info" style="text-align: left;margin-bottom: 22px;">
+						<span>Avg. Impressions</span>
+						<!-- <h3 style="font-size: 24px;">{{airtable_details.linkedin_profile_view_count|intcomma}}</h3> -->
+						<h3 style="font-size: 24px;">{{ avg_impressions|floatformat:0|intcomma }}</h3>
+					</div>
+					<span class="dash-widget-icon"><i class="fe fe-eye" data-bs-toggle="tooltip"></i></span>
+				</div>
+			</div>
+		</div>
+		
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header d-flex justify-content-between align-items-center">
+					      <h5 class="card-title mb-0">Timeline Analytics</h5>
+					      <span id="selectedPeriodLabel" class="text-muted small">Quarterly</span>
+					    </div>
+						<div class="card-body">
+							<div class="mb-3" style="background: hsl(214.3 31.8% 91.4% / 1.0);  border-radius: 6px; max-width: 153px;">
+								<div class="btn-group" role="group" id="chart-buttons" style="padding: 5px;">
+									<div class="" style="background: hsl(214.3 31.8% 91.4% / 1.0);">
+										<!-- <button type="button" class="btn" data-period="Weekly">Weekly</button> -->
+										<button type="button" class="btn btn-sm" data-period="Monthly">Monthly</button>
+										<button type="button" class="btn btn-sm" data-period="Quarterly">Quarterly</button>
+										<!-- <button type="button" class="btn" data-period="semiAnnually">Semi Annually</button> -->
+									</div>
+								</div>
+							</div>
+							<style type="text/css">
+								.dash-widget-icon{
+									background-color: rgb(229 222 255) !important;
+								}
+								#chart-buttons button, .btn-group button{
+									border: none !important;
+								}
+								#chart-buttons .btn.active{
+									background: white !important;
+									color: black !important;
+								}
+								.btn.active{
+									background: white !important;
+									color: black !important;
+								}
+								.bg-post-frequescy.active{
+									background: rgb(155, 135, 245) !important;
+									color: white !important;
+								}
+								.bg-engagement.active{
+									background: rgb(51, 195, 240) !important;
+									color: white !important;
+								}
+								.bg-impressions.active{
+									background: rgb(126, 105, 171) !important;
+									color: white !important;
+								}
+								.bg-profile-views.active{
+									background: rgb(217, 70, 239) !important;
+									color: white !important;
+								}
+								.bg-profile-searches.active{
+									background: rgb(234, 56, 76) !important;
+									color: white !important;
+								}
+								.bg-followers.active{
+									background: rgb(229, 222, 255) !important;
+									color: white !important;
+								}
+								.bg-connections.active{
+									background: rgb(85, 85, 85) !important;
+									color: white !important;
+								}
+								.flex-wrap span{
+									background: rgb(241 241 241 );
+									color: rgb(85, 85, 85);
+								}
+								.timeline-analytics{
+									cursor: pointer;
+								}
+							</style>
+							<div class="btn-group mb-3 col-md-11" role="group" id="timeline-analytics">
+								<div class="d-flex flex-wrap gap-2">
+									<span class="badge rounded-pill bg-post-frequescy timeline-analytics" data-period="Post-Frequency">Post Frequency</span>
+									<span class="badge rounded-pill bg-engagement timeline-analytics" data-period="Engagement">Engagement</span>
+									<span class="badge rounded-pill bg-impressions timeline-analytics" data-period="Impressions">Impressions</span>
+									<span class="badge rounded-pill bg-profile-views timeline-analytics" data-period="Profile-Views">Profile Views</span>
+									<span class="badge rounded-pill bg-profile-searches timeline-analytics" data-period="Profile-Searches">Profile Searches</span>
+									<span class="badge rounded-pill bg-followers timeline-analytics" data-period="New-Followers">New Followers</span>
+									<span class="badge rounded-pill bg-connections timeline-analytics" data-period="New-Connections">New Connections</span>
+								</div>
+							</div>
+						    <div class="row">
+						    	<!-- <div class="col-md-6">
+									<div class="card">
+										<div class="card-header">
+											<h5 class="card-title">Line Chart</h5>
+										</div>
+										<div class="card-body">
+											<div class="h-250" id="flotLine1"></div>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="col-md-6">
+									<div class="card">
+										<div class="card-header">
+											<h5 class="card-title">Line ChartPOints</h5>
+										</div>
+										<div class="card-body">
+											<div class="h-250" id="flotLine2"></div>
+										</div>
+									</div>
+								</div> -->
+
+								<div class="col-md-6">
+									<div class="statistic-header">
+										<p>Post Frequency</p>
+									</div>
+									<div>
+										<canvas id="chartBar1" class="h-300" style="height: 338px;"></canvas>
+									</div>
+								</div>
+								<!-- <div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>Engagement</p>
+									</div>
+									<div id="engagement"></div>
+								</div> -->
+								<div class="col-md-6">
+									<div class="card">
+										<div class="card-header">
+											<p>Engagement</p>
+										</div>
+										<div class="card-body">
+											<div class="h-250" id="engagement"></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>Impressions</p>
+									</div>
+									<div class="h-250" id="impressions"></div>
+								</div>
+								<div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>Profile Views</p>
+									</div>
+									<div class="h-250" id="profile-views"></div>
+								</div>
+								<div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>Profile Searches</p>
+									</div>
+									<div>
+										<canvas id="profile-searches" style="height: 338px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>New Followers</p>
+									</div>
+									<div>
+										<canvas id="new-followers" style="height: 338px;"></canvas>
+									</div>
+								</div>
+								<div class="col-md-6 text-center">
+									<div class="statistic-header">
+										<p>New Connections</p>
+									</div>
+									<div>
+										<canvas id="new-connections" style="height: 338px;"></canvas>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<style type="text/css">
+			.card.w-100{
+				padding: 10px;
+				background-color: #fff;
+				border-top: 1px solid #eff0f1;
+			}
+			.top-performing .card.w-100{
+				border-left: 5px solid rgb(51 195 240);  /* Left border with color */
+				box-shadow: -3px 0 5px rgb(51 195 240 0.2); /* Left shadow */
+				padding: 10px;
+				background-color: #fff;
+				border-top: 1px solid #eff0f1;
+			}
+			.under-performing .card.w-100{
+				border-left: 5px solid rgb(234 56 76);  /* Left border with color */
+				box-shadow: -3px 0 5px rgb(234 56 76 0.2); /* Left shadow */
+				padding: 10px;
+				background-color: #fff;
+				border-top: 1px solid #eff0f1;
+			}
+			.post-intelligence-module{
+				background:rgb(241 241 241);
+				padding: 5px;
+				border-radius: 5px;
+			}
+			.post-intelligence-module p{
+				color:rgb(142 145 150);
+				font-size: 12px;
+			}
+			.post-header {
+	            display: flex;
+	            justify-content: space-between;
+	            align-items: center;
+	            padding: 15px 0;
+	        }
+	        .post-type {
+	            display: flex;
+	            align-items: center;
+	            gap: 5px;
+	            font-size: 0.9rem;
+	            color: #555;
+	        }
+	        .post-intelligence .row>*{
+	        	padding-right: calc(var(--bs-gutter-x) * .2);
+	        	padding-left: calc(var(--bs-gutter-x) * .2);
+	        }
+	        .card {
+			  	transition: all 0.3s ease-in-out;
+			  	border: none; /* Optional: Remove default border */
+			}
+			.card .card-body {
+			     padding: 16px; 
+			}
+	        .post-intelligence:hover .card {
+				border-left: 5px solid rgb(51 195 240);
+				border-top: 1px solid rgb(51 195 240 .2);
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+				transform: scale(1.03);
+				transition: all 0.3s ease-in-out;
+				z-index: 2;
+			}
+			.top-performing .post-intelligence:hover .card {
+				border-left: 5px solid rgb(51 195 240);
+			}
+			.under-performing .post-intelligence:hover .card {
+				border-left: 5px solid rgb(234 56 76);
+			}
+	        .post-intelligence .flex-wrap {
+	        	margin-top: 10px;
+	        }
+	        .post-intelligence-container .btn.active {
+	        	background: white !important;
+    			color: black !important;
+    			border: none;
+	        }
+	        .audienceInsights .btn.active {
+	        	background: white !important;
+    			color: black !important;
+    			border: none;
+	        }
+		</style>
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header d-flex justify-content-between align-items-center">
+					      	<h5 class="card-title mb-0">Post Intelligence</h5>
+					      	<!-- <span id="selectedPeriodLabel" class="text-muted small">Quarterly</span> -->
+					    </div>
+						<div class="card-body post-intelligence-container">
+							<div class="d-flex justify-content-between align-items-center flex-wrap" style="width: 100%;">
+								<div class="div1 mb-3" style="background: hsl(214.3 31.8% 91.4% / 1.0); border-radius: 6px; width: 247px;">
+									<div class="btn-group performing-btn" role="group" style="padding: 5px;">
+										<div style="background: hsl(214.3 31.8% 91.4% / 1.0);">
+											<button type="button" class="btn btn-sm active" data-period="Top Performing">Top Performing</button>
+											<button type="button" class="btn btn-sm" data-period="Underperforming">Underperforming</button>
+										</div>
+									</div>
+								</div>
+
+								<!-- <div class="div2 ms-auto">
+									<div class="dropdown statistic-dropdown" style="margin-top:-10px;">
+										<div class="card-select">
+											<ul class="mb-0">
+												<li>
+													<a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+														All Types
+													</a>
+													<div class="dropdown-menu dropdown-menu-end">
+														<a href="javascript:void(0);" class="dropdown-item">Text</a>
+														<a href="javascript:void(0);" class="dropdown-item">Image</a>
+														<a href="javascript:void(0);" class="dropdown-item">Video</a>
+														<a href="javascript:void(0);" class="dropdown-item">Carousel</a>
+													</div>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div> -->
+							</div>
+
+
+							<div class="row top-performing">
+								{% for post in top_performing_posts %}
+								    <div class="col-lg-4 col-sm-6 col-md-4 col-xl-4 d-flex post-intelligence">
+										<div class="card w-100">
+
+											<div class="card-body">
+												<div class="post-header">
+							                        <div class="post-type">
+							                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image-fill" viewBox="0 0 16 16">
+							                                <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm3.5-1h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+							                                <path d="M.936 5.016A2 2 0 0 1 3 3h10a2 2 0 0 1 1.964 2.016L14.235 10H1.765l-.829-4.984zM1 4.5l1-.5v6l-1-.5V4.5zm14 7l-1 .5v-6l1 .5v6z"/>
+							                            </svg>
+							                            Image
+							                        </div>
+							                        <small class="text-muted">{{ post.published_date }}</small>
+							                    </div>
+												<p class="text-muted">
+													{{ post.post_content|truncatewords:10 }}
+												</p>
+												<div class="row">
+													<div class="col-md-6">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fe fe-thumbs-up" data-bs-toggle="tooltip"></i></span>
+															<h6 class="project-title">{{ post.engagement_rate|default:0|floatformat:0|intcomma }}</h6>
+															<p style="color:rgb(142 145 150)">Engagements</p>								
+														</div>
+													</div>
+													<div class="col-md-6">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fe fe-eye" data-bs-toggle="tooltip"></i></span>
+															<h6 class="project-title">{{ post.view_count|default:0|floatformat:0|intcomma }}</h6>
+															<p style="color:rgb(142 145 150)">Impressions</p>								
+														</div>
+													</div>
+													<!-- <div class="col-md-4">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fe fe-bar-chart-2" data-bs-toggle="tooltip" title="fe fe-bar-chart-2"></i></span>
+															<h6 class="project-title">4.7%</h6>
+															<p style="color:rgb(142 145 150)">CTR</p>								
+														</div>
+													</div> -->
+													<div class="btn-group" role="group">
+														<div class="d-flex flex-wrap gap-2">
+															<span class="badge rounded-pill">{{ post.topic_1 }}</span>
+															<span class="badge rounded-pill">{{ post.topic_2 }}</span>
+															<span class="badge rounded-pill">{{ post.topic_3 }}</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% empty %}
+								    <li>No posts available.</li>
+								{% endfor %}
+							</div>
+							<div class="row under-performing" style="display: none;">
+								{% for post in under_performing_posts %}
+								    <div class="col-lg-4 col-sm-6 col-md-4 col-xl-4 d-flex post-intelligence">
+										<div class="card w-100">
+
+											<div class="card-body">
+												<div class="post-header">
+							                        <div class="post-type">
+							                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image-fill" viewBox="0 0 16 16">
+							                                <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm3.5-1h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5z"/>
+							                                <path d="M.936 5.016A2 2 0 0 1 3 3h10a2 2 0 0 1 1.964 2.016L14.235 10H1.765l-.829-4.984zM1 4.5l1-.5v6l-1-.5V4.5zm14 7l-1 .5v-6l1 .5v6z"/>
+							                            </svg>
+							                            Image
+							                        </div>
+							                        <small class="text-muted">{{ post.published_date }}</small>
+							                    </div>
+												<p class="text-muted">
+													{{ post.post_content|truncatewords:10 }}
+												</p>
+												<div class="row">
+													<div class="col-md-6">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fe fe-thumbs-up" data-bs-toggle="tooltip"></i></span>
+															<h6 class="project-title">{{ post.engagement_rate|default:0|floatformat:0|intcomma }}</h6>
+															<p style="color:rgb(142 145 150)">Engagements</p>								
+														</div>
+													</div>
+													<div class="col-md-6">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fe fe-eye" data-bs-toggle="tooltip"></i></span>
+															<h6 class="project-title">{{ post.view_count|default:0|floatformat:0|intcomma }}</h6>
+															<p style="color:rgb(142 145 150)">Impressions</p>								
+														</div>
+													</div>
+													<!-- <div class="col-md-6">
+														<div class="post-intelligence-module text-center">
+															<span><i class="fa fa-eye" aria-hidden="true"></i></span>
+															<h6 class="project-title">4.7%</h6>
+															<p style="color:rgb(142 145 150)">CTR</p>								
+														</div>
+													</div> -->
+													<div class="btn-group" role="group">
+														<div class="d-flex flex-wrap gap-2">
+															<span class="badge rounded-pill">{{ post.topic_1 }}</span>
+															<span class="badge rounded-pill">{{ post.topic_2 }}</span>
+															<span class="badge rounded-pill">{{ post.topic_3 }}</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								{% empty %}
+								    <li>No posts available.</li>
+								{% endfor %}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card">
+				<div class="card-body">
+					<div class="statistic-header">
+						<h5 class="card-title mb-0">Theme & Topic Breakdown</h5>
+					</div>
+					<div id="leadpiechart"></div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-12 col-lg-12 col-xl-6 d-flex">
+			<div class="card flex-fill dash-statistics">
+				<div class="card-body">
+					<h5 class="card-title">Content Trends & Sources</h5>
+					<span>Source Breakdown</span>
+					<style>
+
+						.bar-wrapper {
+							display: flex;
+							align-items: center;
+							margin-top: 20px;
+						}
+
+						.bar-container {
+							flex: 1;
+							height: 16px;
+							background-color: #E5E7EB;
+							border-radius: 999px;
+							overflow: hidden;
+							position: relative;
+						}
+
+						.bar-fill {
+							background-color: #A78BFA;
+							height: 100%;
+							width: {{ original_percent }}%;
+							border-radius: 999px;
+						}
+
+						.legend {
+							margin-left: 20px;
+							font-size: 13px;
+						}
+
+						.legend-item {
+							display: flex;
+							align-items: center;
+							margin-bottom: 6px;
+							color: #111;
+						}
+
+						.legend-circle {
+							width: 10px;
+							height: 10px;
+							border-radius: 50%;
+							margin-right: 8px;
+						}
+
+						.original { background-color: #A78BFA; }
+						.reshared { background-color: #E5E7EB; }
+					</style>
+					<div class="bar-wrapper">
+						<div class="bar-container">
+							<div class="bar-fill"></div>
+						</div>
+						<div class="legend">
+							<div class="legend-item">
+								<div class="legend-circle original"></div>
+								<span>Original ({{ original_percent }}%)</span>
+							</div>
+							<div class="legend-item">
+								<div class="legend-circle reshared"></div>
+								<span>Reshared ({{ reshared_percent }}%)</span>
+							</div>
+						</div>
+					</div>
+					<div class="stats-list mb-3" style="margin-top: 30px;">
+						<!-- <div id="sourceBreakdown"></div> -->
+
+						
+						<span class="mb-3">Most Used Domains</span>
+					</div>
+					<div class="btn-group mb-3 col-md-11" role="group" id="timeline-analytics">
+						<div class="d-flex flex-wrap gap-2">
+							<style type="text/css">
+								.bg-innovation{
+									background: rgb(237 248 249) !important;
+									color: rgb(51 195 240) !important;
+									padding: 7px;
+									font-weight: 400 !important;
+								}
+								.bg-leadership{
+									background: rgb(255 220 224) !important;
+									color: rgb(234 56 76) !important;
+									padding: 7px;
+									font-weight: 400 !important;
+								}
+								.flex-wrap span{
+									font-weight: 400 !important;
+									padding: 7px;
+								}
+							</style>
+							{% for domain, count in top_domains %}
+								<span class="badge rounded-pill bg-innovation">{{ domain }} ({{ count }}) </span>
+							{% endfor %}
+							<!-- <span class="badge rounded-pill bg-innovation">AI 18% </span>
+							<span class="badge rounded-pill ">Marketing</span>
+							<span class="badge rounded-pill bg-leadership">Leadership 5% </span> -->
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">Sentiment Analysis </h5>
+					<div class="d-flex justify-content-end">
+						<div class="mb-3" style="background: hsl(214.3 31.8% 91.4% / 1.0);  border-radius: 6px;">
+							<div class="btn-group" role="group" style="padding: 5px;">
+								<div class="" style="background: hsl(214.3 31.8% 91.4% / 1.0);">
+									<button class="btn btn-sm post-btn2 active" data-mode="current">Current</button>
+  									<button class="btn btn-sm post-btn2" data-mode="history">History</button>
+								</div>
+							</div>
+						</div>
+
+					</div>
+					<div id="sentimentCurrentChart">
+						<canvas id="sentimentAnalysis" class="h-300" style="min-height: 310px;"></canvas>
+					</div>
+					<div id="sentimentHistoryChart" style="display: none;">
+					  	<canvas id="sentimentHistory" class="h-300" style="min-height: 310px;"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- <div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="statistic-header">
+						<h4>Audience Insights</h4>
+					</div>
+					<style type="text/css">
+						.audience-tabs-container {
+							background: hsl(214.3 31.8% 91.4% / 1.0);
+							border-radius: 8px;
+							padding: 5px;
+							margin-bottom: 20px;
+							width: 100%;
+						}
+
+						.audience-tabs {
+							display: flex;
+							gap: 10px;
+						}
+
+						.tab-button {
+							flex: 1;
+							background: transparent;
+							border: none;
+							padding: 10px 0;
+							border-radius: 6px;
+							font-weight: 500;
+							cursor: pointer;
+							color: #000;
+							text-align: center;
+						}
+
+						.tab-button.active {
+							background: white;
+							border: 1px solid #ccc;
+						}
+
+					</style>
+					<div class="audience-tabs-container">
+					  	<div class="audience-tabs">
+					  		<button class="tab-button active" data-chart="roles">Roles</button>
+					  		<button type="button" class="tab-button" data-chart="locations">Locations</button>
+					  		<button class="tab-button" data-chart="industries">Industries</button>
+					  		<button class="tab-button" data-chart="interaction">Interaction</button>
+					  	</div>
+					</div>
+					<div id="leadpiechart2"></div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-body">
+					<div class="statistic-header">
+						<h4 class="card-title">Best Time to Post</h4>
+					</div>
+					<div class="d-flex justify-content-end">
+						<div class="mb-3" style="background: hsl(214.3 31.8% 91.4% / 1.0);  border-radius: 6px;">
+							<div class="btn-group" role="group" style="padding: 5px;">
+								<div class="" style="background: hsl(214.3 31.8% 91.4% / 1.0);">
+									<!-- <button type="button" class="btn post-btn active" data-period="Likes" style="float: left;">Likes</button>
+									<button type="button" class="btn post-btn" data-period="Comments" style="float: left;">Comments</button>
+									<button type="button" class="btn post-btn" data-period="Shares" style="float: left;">Shares</button> -->
+									<button type="button" class="btn btn-sm post-btn active" data-period="Weekly" style="float: left;">Weekly</button>
+									<button type="button" class="btn btn-sm post-btn" data-period="Monthly" style="float: left;">Monthly</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- <div id="chart-wrapper" style="width: 100%; height: 500px;">
+					  	<canvas id="engagementHeatmap"></canvas>
+					</div> -->
+					<div class="chart-wrapper" id="weekly-chart-container">
+						<canvas id="weeklyHeatmap"></canvas>
+					</div>
+
+					<div class="chart-wrapper" id="monthly-chart-container" style="display: none;">
+						<canvas id="monthlyHeatmap"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<style type="text/css">
+	.chart-wrapper {
+		width: 100%;
+		height: 500px;
+	}
+
+	#weeklyHeatmap {
+		width: 100% !important;
+		height: 100% !important;
+		display: block;
+	}
+	#monthlyHeatmap {
+		width: 100% !important;
+		height: 100% !important;
+		display: block;
+	}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.3.0/dist/chartjs-chart-matrix.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+<script>
+  const valuesWeekly = {{ weekly_data|safe }};
+  const valuesMonthly = {{ monthly_data|safe }};
+  const monthLabels = {{ month_labels|safe }};
+  const weekLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  function prepareData(matrix, xLabels) {
+    const data = [];
+    for (let y = 0; y < days.length; y++) {
+      for (let x = 0; x < xLabels.length; x++) {
+        const v = matrix[y][x];
+        const total = typeof v.total === 'number' ? Math.round(v.total) : 0;
+        const alpha = Math.min(1, Math.max(0.1, total / 100)); // keep within 0.1–1 range
+        data.push({
+          x: xLabels[x],
+          y: days[y],
+          v: { ...v, total },  // includes rounded total
+          backgroundColor: `rgba(126, 34, 206, ${alpha.toFixed(2)})`
+        });
+      }
+    }
+    return data;
+  }
+
+  function createHeatmap(canvasId, matrix, xLabels) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    return new Chart(ctx, {
+      type: 'matrix',
+      data: {
+        datasets: [{
+          label: 'Engagement Heatmap',
+          data: prepareData(matrix, xLabels),
+          backgroundColor: ctx => ctx.raw.backgroundColor,
+          borderWidth: 1,
+          borderColor: '#fff',
+          width: ({ chart }) => (chart.chartArea?.width || 600) / xLabels.length - 10,
+          height: ({ chart }) => (chart.chartArea?.height || 400) / 7 - 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => `${items[0].raw.y}, ${items[0].raw.x}`,
+              label: (item) => {
+                const v = item.raw.v;
+                return [
+                  `Likes: ${v.likes}`,
+                  `Comments: ${v.comments}`,
+                  `Shares: ${v.shares}`,
+                  `Engagement: ${v.total}`
+                ];
+              }
+            }
+          },
+          datalabels: {
+            color: '#000',
+            font: {
+              size: 12,
+              weight: 'bold'
+            },
+            formatter: (value) => {
+              return value.v.total > 0 ? value.v.total : '';
+            },
+            anchor: 'center',
+            align: 'center',
+            clip: true
+          }
+        },
+        scales: {
+          x: {
+            type: 'category',
+            labels: xLabels,
+            offset: true,
+            grid: { display: false },
+            position: 'top'
+          },
+          y: {
+            type: 'category',
+            labels: days,
+            offset: true,
+            grid: { display: false },
+            reverse: true
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  // Initial render
+  const weeklyChart = createHeatmap('weeklyHeatmap', valuesWeekly, weekLabels);
+  const monthlyChart = createHeatmap('monthlyHeatmap', valuesMonthly, monthLabels);
+
+  // Toggle buttons
+  document.querySelectorAll('.post-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.post-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      const period = this.dataset.period;
+      document.getElementById('weekly-chart-container').style.display = period === 'Weekly' ? 'block' : 'none';
+      document.getElementById('monthly-chart-container').style.display = period === 'Monthly' ? 'block' : 'none';
+    });
+  });
+</script>
+
+<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}" data-cfasync="false" type="text/javascript"></script>
+
+<script type="text/javascript" data-cfasync="false" >
+
+	$(document).ready(function() {
+	    const maxVisible = 4;
+	    const defaultMaxVisible = 4;
+	    const $badges = $('.timeline-analytics');
+
+	    // Initialize: activate first 4 badges
+	    $badges.each(function(index) {
+	        if (index < defaultMaxVisible) {
+	            $(this).addClass('active');
+	            showAnalytics($(this).data('period'));
+	        } else {
+	            $(this).removeClass('active');
+	            hideAnalytics($(this).data('period'));
+	        }
+	    });
+
+	    $badges.on('click', function() {
+	        const $badge = $(this);
+	        const isActive = $badge.hasClass('active');
+	        const activeCount = $('.timeline-analytics.active').length;
+
+	        if (isActive) {
+	            $badge.removeClass('active');
+	            hideAnalytics($badge.data('period'));
+	        } else {
+	            if (activeCount < maxVisible) {
+	                $badge.addClass('active');
+	                showAnalytics($badge.data('period'));
+	            }
+	        }
+	    });
+
+	    // Show chart section
+	    function showAnalytics(period) {
+	        const id = periodToId(period);
+	        if (id) {
+	            $('#' + id).closest('.col-md-6').show();
+	        }
+	    }
+
+	    // Hide chart section
+	    function hideAnalytics(period) {
+	        const id = periodToId(period);
+	        if (id) {
+	            $('#' + id).closest('.col-md-6').hide();
+	        }
+	    }
+
+	    // Map Period to Chart ID
+	    function periodToId(period) {
+	        switch (period) {
+	            case 'Post-Frequency': return 'chartBar1';
+	            case 'Engagement': return 'engagement';
+	            case 'Impressions': return 'impressions';
+	            case 'Profile-Views': return 'profile-views';
+	            case 'Profile-Searches': return 'profile-searches';
+	            case 'New-Followers': return 'new-followers';
+	            case 'New-Connections': return 'new-connections';
+	            default: return '';
+	        }
+	    }
+	});
+
+	$(document).ready(function () {
+		$('.performing-btn .btn').click(function () {
+			$('.performing-btn .btn').removeClass('active');
+
+			$(this).addClass('active');
+
+			const period = $(this).data('period');
+
+			if (period === 'Top Performing') {
+				$('.top-performing').show();
+				$('.under-performing').hide();
+			} else if (period === 'Underperforming') {
+				$('.top-performing').hide();
+				$('.under-performing').show();
+			}
+		});
+
+		$('.top-performing').show();
+		$('.under-performing').hide();
+	});
+
+	
+</script>
+<script>
+	$(document).ready(function(){
+	    $('#copy-btn').click(function() {
+	        var copyText = $('#linkedin-url');
+	        copyText.select();
+	        document.execCommand("copy");
+
+	        // Show confirmation
+	        $('#copy-msg').fadeIn().delay(1000).fadeOut();
+	    });
+	});
+</script>
+
+{% endblock %}

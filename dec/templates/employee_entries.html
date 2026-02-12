@@ -1,0 +1,846 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+
+<style>
+.rectangle-cell {
+    position: relative; /* Ensure position context */
+}
+
+.rectangle {
+    width: 30px; /* Adjust width as needed */
+    background-color: #d5e9f4;
+    position: absolute; /* Position the rectangle relative to the cell */
+    left: 10px; /* Adjust left position as needed */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Center vertically */
+    border: 1px solid black;
+    line-height: 25px; /* Adjust line-height to center the text vertically */
+    border-radius: 20%; /* Make it circular */
+    text-align: center;
+
+}
+
+.rectangle1 {
+    width: 30px; /* Adjust width as needed */
+    background-color: #d5e9f4;
+    position: absolute; /* Position the rectangle relative to the cell */
+    left: 90px; /* Adjust left position as needed */
+    top: -10px;
+    transform: translateY(-50%); /* Center vertically */
+    border: 1px solid black;
+    line-height: 25px; /* Adjust line-height to center the text vertically */
+    border-radius: 20%; /* Make it circular */
+    text-align: center;
+    position: relative;
+}
+.rectangle2 {
+    width: 30px; /* Adjust width as needed */
+    background-color: #d5e9f4;
+    position: absolute; /* Position the rectangle relative to the cell */
+    left: 110px; /* Adjust left position as needed */
+    top: -10px;
+    transform: translateY(-50%); /* Center vertically */
+    border: 1px solid black;
+    line-height: 25px; /* Adjust line-height to center the text vertically */
+    border-radius: 20%; /* Make it circular */
+    text-align: center;
+    position: relative;
+}
+
+
+.employee-name {
+    margin-left: 20px; /* Adjust the margin to shift the employee name towards the right */
+}
+
+    .entry-details {
+        display: none; /* Hide entry details by default */
+    }
+    .form-focus .select2-container .select2-selection--single .select2-selection__rendered {
+        padding-top: 3px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        margin-top: -5px;
+    }
+
+    .client-list-container {
+    height: 300px; /* Set the height as needed */
+    overflow-y: scroll;
+}
+    .employee-list-container {
+    height: 300px; /* Set the height as needed */
+    overflow-y: scroll;
+}
+.dropdown-toggle#table-filter {
+    color: grey !important;
+}
+.dropdown-toggle#table-filter1 {
+    color: grey !important;
+}
+
+#statusToggle {
+    font-family: inherit; /* Use the same font family as the filter text */
+    font-size: inherit; /* Use the same font size as the filter text */
+    font-weight: inherit; /* Use the same font weight as the filter text */
+    white-space: nowrap; /* Prevent the ellipsis from wrapping */
+}
+#statusToggle1 {
+    font-family: inherit; /* Use the same font family as the filter text */
+    font-size: inherit; /* Use the same font size as the filter text */
+    font-weight: inherit; /* Use the same font weight as the filter text */
+    white-space: nowrap; /* Prevent the ellipsis from wrapping */
+}
+
+#resetButton {
+        width: 70px; /* Adjust the width as needed */
+        text-align: center; /* Center-align the text */
+        padding: 10px; /* Adjust padding to center the text vertically */
+        display: inline-block; /* Ensures that padding is applied properly */
+        line-height: 1; /* Reset line height */
+    }
+
+#statusDropdownClient {
+    position: relative;
+    top: -40px; /* Adjust this value as needed */
+    left: 220px; /* Adjust this value as needed */
+}
+#statusDropdownEmployee {
+    position: relative;
+    top: -40px; /* Adjust this value as needed */
+    left: 220px; /* Adjust this value as needed */
+}
+table.dataTable th {
+            background-color: #fff9f9;
+        }
+        table.dataTable td {
+            background-color: #fff9f9;
+        }
+</style>
+
+<div class="card">
+    <div class="card-body">
+
+    <ul class="nav nav-tabs nav-tabs-solid nav-justified">
+    <li class="nav-item"><a class="nav-link active" href="{% url 'report' %}">Summary</a></li>
+        <li class="nav-item"><a class="nav-link " href="{% url 'detailed' %}">Detailed</a></li>
+    <li class="nav-item"><a class="nav-link" href="{% url 'weekly' %}">Weekly</a></li>
+
+    </ul>
+    </div>
+</div>
+
+<div class="content container-fluid pb-0">
+
+    <div class="row">
+
+
+        <form method="post" action="{% url 'employee_entries' employee_id %}" id="reportForm">
+        {% csrf_token %}
+        <div class="filter-filelds" id="filter_inputs">
+            <div class="row filter-row">
+                <div class="col-xl-3">
+                    <div class="input-block mb-3 form-focus focused">
+                        <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange" >
+                        <label class="focus-label">From - To Date</label>
+                    </div>
+                </div>
+                {% for client_id in selected_client_ids %}
+                    <input type="hidden" name="client_id" value="{{ client_id }}">
+                {% endfor %}
+
+                  {% for employee_id in selected_employee_ids %}
+                    <input type="hidden" name="employee_id" value="{{ employee_id }}">
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+
+
+        <div class="col-md-4">
+      <form method="post" action="{% url 'employee_entries' employee_id %}" id="clientForm">
+       {% csrf_token %}
+        <div class="filter-section" id="clientBox">
+            <ul>
+                <li>
+                    <div class="form-sorts dropdown" style="margin-left: 65%">
+
+                        <a href="javascript:void(0);" class="dropdown-toggle" id="table-filter"><i class="fas fa-user me-1"></i>Client</a>
+                        <div class="rectangle1" id="totalSelectedClients">
+                                            {{ total_selected_clients }}
+                        </div>
+                        <div class="filter-dropdown-menu">
+                            <div class="filter-set-view">
+
+                                <div class="accordion" id="accordionExample1">
+                                    <div class="filter-set-content">
+
+                                        <div class="filter-set-contents accordion-collapse collapse" id="collapseTwo1" data-bs-parent="#accordionExample1">
+                                            <div class="search-set">
+                                                <div class="search-input">
+                                                    <div class="dataTables_filter">
+                                                        <label> <input type="search" class="form-control form-control-sm" id="searchQuery" name="search_query" placeholder="Search"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="client-list-container">
+                                                <ul class="client-list" id="clientList">
+                                                    {% for client in all_clients %}
+                                                        <li data-status="{{ client.status }}">
+                                                            <div class="filter-checks">
+                                                                <label class="checkboxs">
+                                                                    <input type="checkbox" name="client_id" value="{{ client.id }}" {% if client.id|stringformat:"s" in selected_client_ids %} checked {% endif %}>
+                                                                    <span class="checkmarks"></span>
+                                                                </label>
+                                                            </div>
+                                                            <div class="collapse-inside-text">
+                                                                <h5>{{ client.toggl_client_name }}</h5>
+                                                            </div>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter-reset-btns">
+                                    <a href="#" id="resetButton" class="btn btn-light">Reset</a>
+                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                    <div class="dropdown dropdown-action" id="statusDropdownClient">
+                                        <a href="#" class="action-icon dropdown-toggle" id="statusToggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <button type="button" class="dropdown-item status-button" data-status="1">Active</button>
+                                            <button type="button" class="dropdown-item status-button" data-status="2">Archive</button>
+                                            <button type="button" class="dropdown-item status-button" data-status="0">Both</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <input type="hidden" name="from_to_date" value="{{ from_to_date }}">
+                  {% for employee_id in selected_employee_ids %}
+                    <input type="hidden" name="employee_id" value="{{ employee_id }}">
+                {% endfor %}
+                <li>
+                </li>
+            </ul>
+        </div>
+    </form>
+    </div>
+
+        <div class="col-md-4">
+      <form method="post" action="{% url 'employee_entries' employee_id %}" id="employeeForm">
+       {% csrf_token %}
+        <div class="filter-section" id="employeeBox">
+            <ul>
+                <li>
+                    <div class="form-sorts dropdown" style="margin-left: -17%">
+
+                        <a href="javascript:void(0);" class="dropdown-toggle" id="table-filter1"><i class="fa-solid fa-users me-1"></i>Employee</a>
+                        <div class="rectangle2" id="totalSelectedEmployees">
+                                            {{ total_selected_employees }}
+                        </div>
+                        <div class="filter-dropdown-menu">
+                            <div class="filter-set-view">
+
+                                <div class="accordion" id="accordionExample2">
+                                    <div class="filter-set-content">
+
+                                        <div class="filter-set-contents accordion-collapse collapse" id="collapseTwo2" data-bs-parent="#accordionExample2">
+                                            <div class="search-set">
+                                                <div class="search-input">
+                                                    <div class="dataTables_filter">
+                                                        <label> <input type="search" class="form-control form-control-sm" id="searchQuery1" name="search_query1" placeholder="Search"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="employee-list-container">
+                                                <ul class="employee-list" id="employeeList">
+                                                    {% for employee in all_employees %}
+                                                        <li data-status1="{{ employee.status }}">
+                                                            <div class="filter-checks">
+                                                                <label class="checkboxs">
+                                                                    <input type="checkbox" name="employee_id" value="{{ employee.id }}" {% if employee.id|stringformat:"s" in selected_employee_ids %} checked {% endif %}>
+                                                                    <span class="checkmarks"></span>
+                                                                </label>
+                                                            </div>
+                                                            <div class="collapse-inside-text">
+                                                                <h5>{{ employee.user_name }}</h5>
+                                                            </div>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter-reset-btns">
+                                    <a href="#" id="resetButton" class="btn btn-light">Reset</a>
+                                    <button type="submit" class="btn btn-primary">Filter</button>
+                                    <div class="dropdown dropdown-action" id="statusDropdownEmployee">
+                                        <a href="#" class="action-icon dropdown-toggle" id="statusToggle1" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <button type="button" class="dropdown-item status-button1 active" data-status1="1">Active</button>
+                                            <button type="button" class="dropdown-item status-button1" data-status1="2">Archive</button>
+                                            <button type="button" class="dropdown-item status-button1" data-status1="0">Both</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <input type="hidden" name="from_to_date" value="{{ from_to_date }}">
+
+                  {% for client_id in selected_client_ids %}
+                    <input type="hidden" name="client_id" value="{{ client_id }}">
+                {% endfor %}
+                <li>
+                </li>
+            </ul>
+        </div>
+    </form>
+    </div>
+     <div class="small text-muted">
+                        TOTAL HOURS<br/>{{ total_time }}
+         </div>
+
+
+
+
+    </div>
+
+
+
+
+    <div class="row" >
+        <div class="col-md-12">
+            <div class="card" style="background-color: #fff9f9">
+                <!-- <div class="card-header">
+                    <h5 class="card-title">Employee Data</h5>
+                </div> -->
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 datatable1">
+                            <thead>
+                                <tr>
+                                    <th>Time Entry</th>
+                                    <th>User</th>
+                                    <th>Duration</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in entries_with_details %}
+                                <tr>
+                                    <td>
+                                        {% if entry.client_name == "Google Calendar" %}
+                                        
+                                        {{ entry.category_name }} - <img src="{% static 'assets/img/Google_Calendar_icon.png' %}" alt="Google Calendar Icon" style="width: 24px; height: 24px;"><br>{{ entry.description|slice:":100" }}{% if entry.description|length > 100 %}...{% endif %}
+
+                                        {% else %}
+                                            {{ entry.client_name }} - {{ entry.category_name }}
+                                            {% if entry.project_name != "" %}
+                                                <br><i>Project: {{ entry.project_name }}</i>
+                                            {% endif %}
+                                            
+                                            <br>
+                                            {{ entry.description|slice:":100" }}{% if entry.description|length > 100 %}...{% endif %}
+
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ entry.employee_name }}</td>
+                                    <td>{{ entry.time }}</td>
+                                    <td>{{ entry.start_time }} - {{ entry.stop_time }}<br>{{ entry.start_date}}</td>
+
+                                </tr>
+
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+<!--for submitting outside box-->
+<script>
+    $(document).ready(function() {
+        var clickedInside = false;
+
+        $('#clientBox').mousedown(function() {
+            clickedInside = true;
+        });
+
+        $(document).mousedown(function(event) {
+            if (!$(event.target).closest('#clientBox').length) {
+                if (clickedInside) {
+                    $('#clientForm').submit(); // Submit the form when clicked inside the box and then clicked outside
+                }
+                clickedInside = false;
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        var clickedInside = false;
+
+        $('#employeeBox').mousedown(function() {
+            clickedInside = true;
+        });
+
+        $(document).mousedown(function(event) {
+            if (!$(event.target).closest('#employeeBox').length) {
+                if (clickedInside) {
+                    $('#employeeForm').submit(); // Submit the form when clicked inside the box and then clicked outside
+                }
+                clickedInside = false;
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function() {
+        // Toggle entry details when total count is clicked
+        $('.toggle-entry-details').click(function() {
+            var target = $($(this).data('toggle-target'));
+            target.toggle(); // Toggle visibility of entry details
+        });
+    });
+</script>
+
+
+<!--for scroll-->
+<script>
+        $(document).ready(function() {
+        $('.client-list-container').scroll(function() {
+            if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+                // At the bottom of the container
+                // Perform actions to load more clients
+                // You can make an AJAX call to fetch more clients and append them to the list
+            }
+        });
+});
+</script>
+<script>
+        $(document).ready(function() {
+        $('.employee-list-container').scroll(function() {
+            if($(this).scrollTop() + $(this).innerHeight() >= $(this)[0].scrollHeight) {
+                // At the bottom of the container
+                // Perform actions to load more clients
+                // You can make an AJAX call to fetch more clients and append them to the list
+            }
+        });
+});
+</script>
+
+
+
+
+
+<!--for search-->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const statusButtons = document.querySelectorAll(".status-button");
+    const clientList = document.getElementById("clientList");
+    const searchInput = document.getElementById("searchQuery");
+
+    // Function to filter client list based on search query and status
+    function filterClientList() {
+        const searchQuery = searchInput.value.trim().toUpperCase();
+        let selectedStatus = "0"; // Default to "Both"
+
+        // Check if any status button is active
+        statusButtons.forEach(button => {
+            if (button.classList.contains("active")) {
+                selectedStatus = button.getAttribute("data-status");
+            }
+        });
+
+        const clients = clientList.querySelectorAll("li");
+        clients.forEach(client => {
+            const name = client.querySelector(".collapse-inside-text h5").textContent.toUpperCase();
+            const status = client.getAttribute("data-status");
+
+            // Check if client matches search query and status
+            if ((name.includes(searchQuery)) && (status === selectedStatus || selectedStatus === "0")) {
+                client.style.display = "";
+            } else {
+                client.style.display = "none";
+            }
+        });
+    }
+
+    // Add event listeners for search input and status buttons
+    searchInput.addEventListener("input", filterClientList);
+    statusButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            // Toggle active class for status buttons
+            statusButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            // Filter client list based on search query and selected status
+            filterClientList();
+        });
+    });
+});
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    const statusButtons = document.querySelectorAll(".status-button1");
+    const employeeList = document.getElementById("employeeList");
+    const searchInput = document.getElementById("searchQuery1");
+
+    // Function to filter client list based on search query and status
+    function filterEmployeeList() {
+        const searchQuery1 = searchInput.value.trim().toUpperCase();
+        let selectedStatus = "0"; // Default to "Both"
+
+
+        // Check if any status button is active
+        statusButtons.forEach(button => {
+            if (button.classList.contains("active")) {
+                selectedStatus = button.getAttribute("data-status1");
+            }
+        });
+
+        const employees = employeeList.querySelectorAll("li");
+        employees.forEach(employee => {
+            const name = employee.querySelector(".collapse-inside-text h5").textContent.toUpperCase();
+            const status = employee.getAttribute("data-status1");
+
+            // Check if client matches search query and status
+            if ((name.includes(searchQuery1)) && (status === selectedStatus || selectedStatus === "0")) {
+                employee.style.display = "";
+            } else {
+                employee.style.display = "none";
+            }
+        });
+    }
+
+    // Add event listeners for search input and status buttons
+    searchInput.addEventListener("input", filterEmployeeList);
+    statusButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            // Toggle active class for status buttons
+            statusButtons.forEach(btn => btn.classList.remove("active"));
+            this.classList.add("active");
+
+            // Filter client list based on search query and selected status
+            filterEmployeeList();
+        });
+    });
+
+    filterEmployeeList();
+});
+
+</script>
+
+
+
+
+
+<!--for automatic opening of client-->
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+<script>
+$(document).ready(function() {
+    // Event handler for clicking on the Client button
+    $('#table-filter').click(function () {
+        // Show the client section
+        $('.filter-set-contents').addClass('show');
+        // Show the client list container
+        $('.client-list-container').show();
+        // Hide the employee dropdown if it's open
+        $('#employeeBox .filter-dropdown-menu').hide();
+    });
+
+    // Event handler for clicking on the Employee button
+    $('#table-filter1').click(function () {
+        // Show the employee section
+        $('.filter-set-contents').addClass('show');
+        // Show the employee list container
+        $('.employee-list-container').show();
+        // Hide the client dropdown if it's open
+        $('#clientBox .filter-dropdown-menu').hide();
+    });
+
+    // Ensure client dropdown is shown when clicking client button again
+    $('#table-filter').on('click', function() {
+        $('#clientBox .filter-dropdown-menu').toggle(); // Toggle the client dropdown
+        $('#employeeBox .filter-dropdown-menu').hide(); // Hide the employee dropdown
+    });
+});
+
+
+</script>
+
+<!-- Script for handling client checkboxes and updating in box count-->
+<script>
+    $(document).ready(function() {
+        $('#clientForm input[type="checkbox"]').change(function() {
+            var totalSelectedClients = $('#clientForm input[type="checkbox"]:checked').length;
+            $('#totalSelectedClients').text(totalSelectedClients);
+        });
+    });
+</script>
+
+<!-- Script for handling employee checkboxes and updating in box count-->
+<script>
+    $(document).ready(function() {
+        $('#employeeForm input[type="checkbox"]').change(function() {
+            var totalSelectedEmployees = $('#employeeForm input[type="checkbox"]:checked').length;
+            $('#totalSelectedEmployees').text(totalSelectedEmployees);
+        });
+    });
+</script>
+
+
+<!--for unchecking-->
+<!-- Script for handling client checkboxes and decreasing count-->
+<script>
+    // Function to uncheck all client checkboxes and reset count
+    function uncheckAllClients() {
+        $('#clientForm input[type="checkbox"]').prop('checked', false);
+        $('#totalSelectedClients').text(0); // Update the total selected clients count
+    }
+
+    $(document).ready(function() {
+        // Call uncheckAllClients() function when the "Reset" button is clicked for clients
+        $('#clientForm .btn-light').click(function() {
+            uncheckAllClients();
+        });
+
+        // Update total selected clients count when any client checkbox is changed
+        $('#clientForm input[type="checkbox"]').change(function() {
+            var totalSelected = $('#clientForm input[type="checkbox"]:checked').length;
+            $('#totalSelectedClients').text(totalSelected);
+        });
+    });
+</script>
+
+<!-- Script for handling employee uncheckboxes -->
+<script>
+    // Function to uncheck all employee checkboxes and reset count
+    function uncheckAllEmployees() {
+        $('#employeeForm input[type="checkbox"]').prop('checked', false);
+        $('#totalSelectedEmployees').text(0); // Update the total selected employees count
+    }
+
+    $(document).ready(function() {
+        // Call uncheckAllEmployees() function when the "Reset" button is clicked for employees
+        $('#employeeForm .btn-light').click(function() {
+            uncheckAllEmployees();
+        });
+
+        // Update total selected employees count when any employee checkbox is changed
+        $('#employeeForm input[type="checkbox"]').change(function() {
+            var totalSelected = $('#employeeForm input[type="checkbox"]:checked').length;
+            $('#totalSelectedEmployees').text(totalSelected);
+        });
+    });
+</script>
+
+
+<!--for showning active,both and archived-->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusButtons = document.querySelectorAll(".status-button");
+        const statusDropdownToggleClient = document.querySelector("#statusDropdownClient .dropdown-toggle");
+        const clientList = document.getElementById("clientList");
+
+        statusButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const status = this.getAttribute("data-status");
+
+                // Show all clients by default
+                const clients = clientList.querySelectorAll("li");
+
+                clients.forEach(client => {
+                    client.style.display = "block";
+                });
+
+                // Filter clients based on the selected status
+                if (status !== "0") {
+
+                    const filteredClients = clientList.querySelectorAll(`li:not([data-status="${status}"])`);
+                    filteredClients.forEach(client => {
+                        client.style.display = "none";
+                    });
+
+                }
+
+                // Close the dropdown menu
+                statusDropdownToggleClient.click();
+            });
+        });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusButtons = document.querySelectorAll(".status-button1");
+        const statusDropdownToggleEmployee = document.querySelector("#statusDropdownEmployee .dropdown-toggle");
+        const employeeList = document.getElementById("employeeList");
+
+        statusButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const status = this.getAttribute("data-status1");
+
+                // Show all employees by default
+                const employees = employeeList.querySelectorAll("li");
+
+                employees.forEach(employee => {
+                    employee.style.display = "block";
+                });
+
+                // Filter employees based on the selected status
+
+                if (status !== "0") {
+                    const filteredEmployees = employeeList.querySelectorAll(`li:not([data-status1="${status}"])`);
+                    filteredEmployees.forEach(employee => {
+                        employee.style.display = "none";
+                    });
+                }
+
+
+                // Close the dropdown menu
+                statusDropdownToggleEmployee.click();
+            });
+        });
+    });
+</script>
+
+
+
+
+
+<!--for showing active,archived an d-->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const statusButtons = document.querySelectorAll(".status-button");
+    const statusToggle = document.getElementById("statusToggle");
+
+    statusButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            const status = this.getAttribute("data-status");
+            let statusText = "";
+
+            // Determine the status text based on the selected status
+            switch (status) {
+                case "1":
+                    statusText = "Active";
+                    break;
+                case "2":
+                    statusText = "Archive";
+                    break;
+                case "0":
+                    statusText = "Both";
+                    break;
+                default:
+                    statusText = "Unknown";
+            }
+
+            // Update the text content of the dropdown toggle button
+            statusToggle.textContent = statusText; // Set status text
+
+            // Add the dot before the text
+            statusToggle.innerHTML = '<i class="material-icons" style="position: absolute; top: 8px; left: 40px; font-weight: 400; font-size: 25px; vertical-align: middle;">more_vert</i>' + '<span style="position: relative; left: -50px;">' + statusText + '</span>';
+
+        });
+    });
+});
+
+
+
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const statusButtons = document.querySelectorAll(".status-button1");
+    const statusToggle1 = document.getElementById("statusToggle1");
+
+    statusButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            const status = this.getAttribute("data-status1");
+            let statusText = "";
+
+            // Determine the status text based on the selected status
+            switch (status) {
+                case "1":
+                    statusText = "Active";
+                    break;
+                case "2":
+                    statusText = "Archive";
+                    break;
+                case "0":
+                    statusText = "Both";
+                    break;
+                default:
+                    statusText = "Unknown";
+            }
+
+            // Update the text content of the dropdown toggle button
+            statusToggle1.textContent = statusText; // Set status text
+
+            // Add the dot before the text
+            statusToggle1.innerHTML = '<i class="material-icons" style="position: absolute; top: 8px; left: 40px; font-weight: 400; font-size: 25px; vertical-align: middle;">more_vert</i>' + '<span style="position: relative; left: -50px;">' + statusText + '</span>';
+
+        });
+    });
+});
+
+
+</script>
+
+<script>
+
+    $(document).ready(function() {
+        $('.datatable1').DataTable({
+            "columnDefs": [{
+                "targets": 3, 
+                "type": "string",
+                "render": function(data, type, row) {
+                    if (type === 'sort') {
+                        let datePart = data.split('<br>')[1]; // Extract "01/21/2025"
+                        let formattedDate = moment(datePart, "MM/DD/YYYY").format("YYYY-MM-DD");
+                        return formattedDate;
+                    }
+                    return data;
+                }
+            }],
+            "order": [[3, 'desc']]
+        });
+    });
+
+
+</script>
+
+
+
+<!-- <script src="../../cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="44e0a7ba4338de8cf5a6a2fd-|49" defer></script></body> -->
+
+{% endblock %}
+

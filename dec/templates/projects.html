@@ -1,0 +1,1168 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<style type="text/css">
+	.select2-search--dropdown.select2-search--hide{
+		display: block;
+	}
+
+</style>
+
+<div class="content container-fluid">
+
+	<div class="page-header">
+		<div class="row align-items-center">
+			<div class="col">
+				<h3 class="page-title">Projects</h3>
+				<ul class="breadcrumb">
+					<li class="breadcrumb-item"><a href="{% url 'admin-dashboard' %}">Dashboard</a></li>
+					<li class="breadcrumb-item active">Projects</li>
+				</ul>
+			</div>
+			<div class="col-auto float-end ms-auto">
+				<a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#create_project"><i class="fa-solid fa-plus"></i> Create Project</a>
+				<!-- <div class="view-icons">
+					<a href="#" class="grid-view btn btn-link active"><i class="fa fa-th"></i></a>
+					<a href="#" class="list-view btn btn-link"><i class="fa-solid fa-bars"></i></a>
+				</div> -->
+			</div>
+		</div>
+	</div>
+
+
+	<form id="search_project" action="{% url 'projects' %}" method="post" enctype="multipart/form-data">
+		<div class="row filter-row">
+	    	{% csrf_token %}
+	    	<input type="hidden" name="request_for" value="filter_project">
+			<div class="col-sm-6 col-md-3">
+				<div class="input-block mb-3 form-focus">
+					<input type="text" class="form-control floating hideLabel" name="search_project" id="search_project_name" value="{% if project_name %}{{project_name}}{% endif %}">
+					<label class="focus-label">Project Name</label>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="input-block mb-3 form-focus">
+					<select class="select form-control leaderDropdown hideLabel" id="employee_id" multiple name="employee_id" >
+						{% for employee in employee_list %}
+							<option value="{{ employee.id }}" {% if employee.id|stringformat:"s" in employee_ids %} selected {% endif %}>{{ employee.first_name }} {{ employee.last_name }}</option>
+						{% endfor %}
+					</select>
+					<label class="focus-label">Employee Name</label>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<div class="input-block mb-3 form-focus select-focus">
+					<select class="select floating hideLabel" name="search_status" id="search_status">
+						<option value="">Select Status</option>
+						<option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>InProgress</option>
+						<option value="completed" {% if status == 'completed' %}selected{% endif %}>Completed</option>
+						<option value="onboarding" {% if status == 'onboarding' %}selected{% endif %}>Onboarding</option>
+					</select>
+					<label class="focus-label">Status</label>
+				</div>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<button type="submit" class="btn btn-success w-100">Search</button>
+			</div>
+		</div>
+	</form>
+
+	<div class="row">
+		{% for project_data in project_data_with_employees %}
+		<div class="col-lg-4 col-sm-6 col-md-4 col-xl-3 d-flex">
+			<div class="card w-100">
+				<div class="card-body">
+					<div class="dropdown dropdown-action profile-action">
+						<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown"  aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical" style="margin-right: 10px;"></i></a>
+						<div class="dropdown-menu dropdown-menu-right">
+	                        <a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal({{ project_data.project.id }})">
+	                            <i class="fa-solid fa-pencil m-r-5"></i> Edit
+	                        </a>
+	                        <a class="dropdown-item" href="javascript:void(0)" onclick="deleteProject({{ project_data.project.id }})"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+	                    </div>
+					</div>
+					<h4 class="project-title"><a href="javascript:void(0)">{{ project_data.project.project_name }}</a></h4>
+					<div class="pro-deadline m-b-15">
+						<div class="sub-title">
+							Status:
+						</div>
+						<div class="text-muted">
+							{% if project_data.project.status == 'in_progress' %}
+						        InProgress
+						    {% elif project_data.project.status == 'completed' %}
+						        Completed
+						    {% elif project_data.project.status == 'onboarding' %}
+						        Onboarding
+						    {% else %}
+						        InProgress
+						    {% endif %}
+						</div>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Leader:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.L %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No leaders assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Support:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.S %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No support assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Advisor:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.A %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No advisor assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+
+</div>
+
+<div id="create_project" class="modal fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Create Project</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form action="{% url 'projects' %}" method="post" enctype="multipart/form-data" id="projectForm" data-project_name="">
+					{% csrf_token %}
+
+					<input type="hidden" name="request_for" value="add_project">
+					<div class="row">
+						<div class="col-sm-11">
+					        <div class="input-block mb-3">
+					            <label class="col-form-label">Client <span class="text-danger">*</span></label>
+					            <select class="select form-control" name="client_id" id="client_select">
+								    <option value="">Select Client</option>
+								    {% for client in client_list %}
+								      <option value="{{ client.id }}">{{ client.client_name }}</option>
+								    {% endfor %}
+								</select>
+								<div class="invalid-feedback">Please select a client.</div>
+					        </div>
+					    </div>
+						<div class="col-sm-1">
+					        <div class="input-block mb-3">
+					            <label class="col-form-label"></label>
+					            <button type="button" class="btn btn-primary add-new-client" data-bs-toggle="tooltip" aria-label="Add New Client" data-bs-original-title="Add New Client" id="add_new_client_button" style="line-height:32px; background-color: #009efb!important;border-color: #009efb!important;">
+					                <i class="la la-plus"></i>
+					            </button>
+					        </div>
+					    </div>
+					</div>
+
+					<div class="row" id="new_client_fields" style="display: none; ">
+						<input type="hidden" id="add_new_client" name="add_new_client" value="false">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label" style="color:#55ce63;">Client Name <span class="text-danger">*</span></label>
+								<input class="form-control" type="text" name="client_name" id="client_name" style="border-color:#55ce63;">
+								<div class="invalid-feedback">Client Name cannot be blank.</div>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label" style="color:#55ce63;">Client Company <span class="text-danger">*</span></label>
+								<input class="form-control" type="text" name="client_company" id="client_company" style="border-color:#55ce63;">
+								<div class="invalid-feedback">Company Name cannot be blank.</div>
+							</div>
+						</div>
+					</div>
+
+					<script>
+						$(document).ready(function() {
+					        $('#add_new_client_button').on('click', function() {
+							    $('#new_client_fields').toggle();
+
+							    if ($('#new_client_fields').is(':visible')) {
+							        $('#add_new_client').val('true');
+							    } else {
+							        $('#add_new_client').val('false');
+							    }
+
+							    if ($('#new_client_fields').is(':visible')) {
+							        $('#client_select').val('');
+							        $('#client_select').prop('disabled', true);
+							    } else {
+							        $('#client_select').prop('disabled', false);
+							    }
+							    $('#client_select').trigger('change');
+
+							    $('#add_new_client_button i').toggleClass('la-plus la-minus');
+
+							    if ($('#add_new_client_button i').hasClass('la-minus')) {
+							        $('#add_new_client_button').css({
+							            'background-color': '#36ba45',
+							            'border-color': '#36ba45'
+							        });
+
+							        $('#add_new_client_button').attr('data-bs-original-title', 'Remove Client');
+							    } else {
+							        $('#add_new_client_button').css({
+							            'background-color': '#009efb',
+							            'border-color': '#009efb'
+							        });
+
+							        $('#add_new_client_button').attr('data-bs-original-title', 'Add New Client');
+							    }
+
+							    var tooltip = bootstrap.Tooltip.getInstance($('#add_new_client_button')[0]); 
+							    if (tooltip) {
+							        tooltip.dispose();
+							    }
+							    new bootstrap.Tooltip($('#add_new_client_button')[0]);
+							});
+
+
+							$('#client_select').on('change', function() {
+								if ($(this).val() !== '') {
+					                $('#new_client_fields').hide();
+					                $('#client_select').prop('disabled', false);
+								    $('#add_new_client').val('false');
+					            }
+					        });
+							$('#client_select').trigger('change');
+						});
+					</script>
+
+
+					<div class="row">
+						<!-- <div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Company</label>
+								<input class="form-control" type="text" name="company">
+							</div>
+						</div> -->
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Name <span class="text-danger">*</span></label>
+								<input class="form-control" type="text" name="project_name" id="add_project_name">
+								<div class="invalid-feedback">Project Name cannot be blank.</div>
+							</div>
+						</div>
+						<div class="col-sm-3">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Start Date</label>
+								<input class="form-control " type="date" name="start_date" id="add_start_date" placeholder="YYYY-MM-DD">
+							</div>
+						</div>
+
+						<div class="col-sm-3">
+							<div class="input-block mb-3">
+								<label class="col-form-label">End Date</label>
+
+								<input class="form-control " type="date" name="end_date" id="add_end_date" placeholder="YYYY-MM-DD">
+								<div class="invalid-feedback">End Date must be greater than Start Date.</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-3">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Value <span class="text-danger">*</span></label>
+								<input placeholder="$" class="form-control" type="text" name="rate" id="add_rate" step="any">
+								<div class="invalid-feedback">Project value must be a positive value.</div>
+							</div>
+						</div>
+						<div class="col-sm-3" data-select2-id="select2-data-24-j7jw">
+							<div class="input-block mb-3" data-select2-id="select2-data-23-trjy">
+								<label class="col-form-label">&nbsp;</label>
+								<select class="select" name="rate_type" id="add_rate_type">
+									<option value="">Select</option>
+									<option value="hourly">Hourly</option>
+									<option value="fixed">Fixed</option>
+									<option value="weekly">Weekly</option>
+									<option value="monthly">Monthly</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-3 col-md-3">
+							<div class="mb-3">
+								<label class="col-form-label">Working Hours</label>
+								<div class="input-icon-end position-relative">
+									<input type="text" class="form-control" placeholder="hh:mm" name="working_hours">
+									<span class="input-icon-addon">
+										<i class="ti ti-clock-hour-3 text-gray-7"></i>
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-3 col-md-3">
+							<div class="mb-3">
+								<label class="col-form-label">&nbsp;</label>
+								<div class="input-icon-end position-relative">
+									<select class="select" name="working_hours_type" id="add_working_hours_type">
+										<option value="">Select</option>
+										<option value="fixed">Fixed</option>
+										<option value="weekly">Weekly</option>
+										<option value="monthly">Monthly</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<script type="text/javascript">
+							$(document).ready(function() {
+								$('#add_working_hours_type').on('change', function() {
+									if ($(this).val() == 'fixed') {
+						                $('#add_duration').hide();
+						            }else{
+						            	$('#add_duration').show();
+						            }
+						        });
+					        });
+						</script>
+					</div>
+					<div class="row" id="add_duration">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Duration</label>
+								<input class="form-control" type="number" name="duration" step="any">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-6">
+							<div class="mb-3">
+								<label class="col-form-label">&nbsp;</label>
+								<div class="input-icon-end position-relative">
+									<select class="select" name="duration_type">
+										<option value="">Select</option>
+										<option value="month">Month</option>
+										<option value="week">Week</option>
+										<option value="year">Year</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Leader <span class="text-danger">*</span></label>
+								<select class="select form-control leaderDropdown" id="leaderDropdown" onchange="updateTeamMemberImages('leader')" multiple name="leader">
+									<option value="" disabled>Select an Employee</option>
+									{% for employee in employee_list %}
+									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+									{% endfor %}
+								</select>
+								<div class="invalid-feedback">Please select at least one leader.</div>
+
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Team Leader</label>
+								<div class="project-members" id="leaderContainer">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Support</label>
+								<select class="select form-control supportDropdown" id="supportDropdown" onchange="updateTeamMemberImages('support')" multiple name="support">
+									<option value="" disabled>Select an Employee</option>
+									{% for employee in employee_list %}
+									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+										{{ employee.first_name }} {{ employee.last_name }}
+									</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Support Members</label>
+								<div class="project-members" id="supportContainer">
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Advisor</label>
+								<select class="select form-control advisorDropdown" id="advisorDropdown" onchange="updateTeamMemberImages('advisor')" multiple name="advisor">
+									<option value="" disabled>Select an Employee</option>
+									{% for employee in employee_list %}
+									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+										{{ employee.first_name }} {{ employee.last_name }}
+									</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Advisor Members</label>
+								<div class="project-members" id="advisorContainer">
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<script>
+						$(document).ready(function() {
+					        // Initial update for the consultant and advisor containers
+							updateTeamMemberImages('leader');
+							updateTeamMemberImages('support');
+							updateTeamMemberImages('advisor');
+						});
+
+					    // Generalized function to update team member images for both Consultant and Advisor
+						function updateTeamMemberImages(type) {
+					        // Determine which dropdown and container to use based on the 'type' parameter
+							var dropdown = $('#' + type + 'Dropdown');
+							var container = $('#' + type + 'Container');
+
+							var selectedEmployees = dropdown.find('option:selected');
+
+							if (selectedEmployees.length > 0 && selectedEmployees.val() !== "") {
+								container.empty();
+								selectedEmployees.each(function() {
+									var imageUrl = $(this).data('image');
+									var employeeId = $(this).data('id');
+						            var employeeName = $(this).text(); // Get employee name (first name and last name)
+
+						            // Create the image container for each selected employee
+						            var dummyProfilePic = "{% static 'assets/img/user/dummy-profile-pic.jpg' %}";
+						            var imageContainer = $('<a href="/profile/' + employeeId + '" target="_blank" class="avatar" data-bs-toggle="tooltip" title="' + employeeName + '"></a>');
+						            // var imgTag = $('<img src="' + imageUrl + '" alt="' + employeeName + '">');
+						            if(employeeId ==52){
+						            	var imgTag = $('<img src="' + dummyProfilePic + '" alt="' + employeeName + '">');
+						            }else{
+						            	var imgTag = $('<img src="' + imageUrl + '" alt="' + employeeName + '">');
+						            }
+						            imageContainer.append(imgTag);
+
+						            container.append(imageContainer);
+						        });
+							}
+						}
+					</script>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Description</label>
+								<input class="form-control" type="text" name="description">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Status</label>
+								<select class="select" name="status">
+									<option value="in_progress">InProgress</option>
+									<option value="completed">Completed</option>
+									<option value="onboarding">Onboarding</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<!-- <div class="input-block mb-3">
+						<label class="col-form-label">Project Logo</label>
+						<input class="form-control" type="file" name="uploaded_file">
+					</div> -->
+					<div class="submit-section">
+						<button class="btn btn-primary submit-btn" id="saveProjectBtn">Submit</button>
+					</div>
+				</form>
+
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="edit_project_modal" class="modal custom-modal fade" role="dialog">
+	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Update Project</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form id="edit_project_form" method="post" enctype="multipart/form-data">                
+					{% csrf_token %}
+
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Name <span class="text-danger">*</span></label>
+								<input class="form-control" type="text" name="project_name" id="project_name">
+								<div class="invalid-feedback">Project Name cannot be blank.</div>
+							</div>
+						</div>
+						<!-- <div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Company</label>
+								<input class="form-control" type="text" name="company" id="company">
+							</div>
+						</div> -->
+						<div class="col-sm-6">
+					        <div class="input-block mb-3">
+					            <label class="col-form-label">Client <span class="text-danger">*</span></label>
+					            <select class="select" name="client_id" id="edit_client_id">
+					                <option value="">Select Client</option>
+					                {% for client in client_list %}
+					                <option value="{{ client.id }}">{{ client.client_name }}</option>
+					                {% endfor %}
+					            </select>
+					            <div class="invalid-feedback">Please select a client.</div>
+					        </div>
+					    </div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Start Date</label>
+								<input class="form-control " type="date" name="start_date" placeholder="YYYY-MM-DD" id="start_date">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">End Date</label>
+
+								<input class="form-control " type="date" name="end_date" placeholder="YYYY-MM-DD" id="end_date">
+								<div class="invalid-feedback">End Date must be greater than Start Date.</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-3">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Value <span class="text-danger">*</span></label>
+								<input placeholder="$" class="form-control" type="number" name="rate" id="rate" step="any">
+								<div class="invalid-feedback">Project value must be a positive value.</div>
+							</div>
+						</div>
+						<div class="col-sm-3" data-select2-id="select2-data-24-j7jw">
+							<div class="input-block mb-3" data-select2-id="select2-data-23-trjy">
+								<label class="col-form-label">&nbsp;</label>
+								<select class="select" name="rate_type" id="rate_type">
+									<option value="">Select</option>
+									<option value="hourly">Hourly</option>
+									<option value="fixed">Fixed</option>
+									<option value="weekly">Weekly</option>
+									<option value="monthly">Monthly</option>
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-3 col-md-3">
+							<div class="mb-3">
+								<label class="col-form-label">Working Hours</label>
+								<div class="input-icon-end position-relative">
+									<input type="text" class="form-control" placeholder="hh:mm" name="working_hours" id="working_hours">
+									<span class="input-icon-addon">
+										<i class="ti ti-clock-hour-3 text-gray-7"></i>
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-3 col-md-3">
+							<div class="mb-3">
+								<label class="col-form-label">&nbsp;</label>
+								<div class="input-icon-end position-relative">
+									<select class="select" name="working_hours_type" id="working_hours_type">
+										<option value="">Select</option>
+										<option value="fixed">Fixed</option>
+										<option value="weekly">Weekly</option>
+										<option value="monthly">Monthly</option>
+									</select>
+								</div>
+							</div>
+						</div>
+						<script type="text/javascript">
+							$(document).ready(function() {
+								$('#working_hours_type').on('change', function() {
+									if ($(this).val() == 'fixed') {
+						                $('#edit_duration').hide();
+						            }else{
+						            	$('#edit_duration').show();
+						            }
+						        });
+					        });
+						</script>
+					</div>
+					<div class="row" id="edit_duration">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Duration</label>
+								<input class="form-control" type="number" name="duration" id="duration">
+							</div>
+						</div>
+						<div class="col-sm-6 col-md-6">
+							<div class="mb-3">
+								<label class="col-form-label">&nbsp;</label>
+								<div class="input-icon-end position-relative">
+									<select class="select" name="duration_type" id="duration_type">
+										<option value="">Select</option>
+										<option value="month">Month</option>
+										<option value="week">Week</option>
+										<option value="year">Year</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Leader <span class="text-danger">*</span></label>
+								<select class="select form-control leaderDropdown" id="editLeaderDropdown" onchange="updateTeamMemberImages('editLeader')" multiple name="leader">
+									
+								</select>
+								<div class="invalid-feedback">Please select at least one leader.</div>
+
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Team Leader</label>
+								<div class="project-members" id="editLeaderContainer">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Support</label>
+								<select class="select form-control supportDropdown" id="editSupportDropdown" onchange="updateTeamMemberImages('editSupport')" multiple name="support">
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Support Members</label>
+								<div class="project-members" id="editSupportContainer">
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Advisor</label>
+								<select class="select form-control advisorDropdown" id="editAdvisorDropdown" onchange="updateTeamMemberImages('editAdvisor')" multiple name="advisor">
+								</select>
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Advisor Members</label>
+								<div class="project-members" id="editAdvisorContainer">
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Description</label>
+								<input class="form-control" type="text" name="description" id="description">
+							</div>
+						</div>
+						<div class="col-sm-6">
+							<div class="input-block mb-3">
+								<label class="col-form-label">Project Status</label>
+								<select class="select" name="status" id="status">
+									<option value="in_progress">In Progress</option>
+									<option value="completed">Completed</option>
+									<option value="onboarding">Onboarding</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<!-- <div class="input-block mb-3 hidden">
+						<label class="col-form-label">Project Logo</label>
+						<input class="form-control" type="file" name="uploaded_file" id="uploaded_file">
+					</div> -->
+					<div class="submit-section">
+						<button class="btn btn-primary submit-btn" id="updateProjectBtn">Submit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal custom-modal fade" id="delete_project" role="dialog">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-body">
+				<div class="form-header">
+					<h3>Delete Project</h3>
+					<p>Are you sure want to delete?</p>
+				</div>
+				<div class="modal-btn delete-action">
+					<div class="row">
+						<div class="col-6">
+							<input type="hidden" name="delete_project_id" id="delete_project_id" value="">
+							<a href="javascript:void(0);" class="btn btn-primary continue-btn" id="confirmDelete">Delete</a>
+						</div>
+						<div class="col-6">
+							<a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- <script src="{% static 'assets/plugins/select2/js/select2.min.js' %}" type="a1683d4f1d21b36147379d09-text/javascript"></script>
+<script src="{% static 'assets/plugins/select2/js/custom-select.js' %}" type="a1683d4f1d21b36147379d09-text/javascript"></script>
+<script src="{% static 'assets/plugins/select2/js/rocket-loader.min.js' %}" data-cf-settings="a1683d4f1d21b36147379d09-|49" defer></script> -->
+<script>
+    function openEditModal(projectId) {
+        // Show the modal first
+        $('#edit_project_modal').modal('show');
+
+        // Make AJAX request to get project data
+        $.ajax({
+            url: '/get_project_data/' + projectId + '/',
+            method: 'GET',
+            success: function(response) {
+            	$('#edit_project_form').data('project-id', response.id);
+            	$('#edit_project_form').data('project_name', response.project_name);
+                $('#project_name').val(response.project_name);
+                // $('#company').val(response.company);
+                $('#edit_client_id').val(response.client_id);
+                $('#start_date').val(response.start_date);
+                $('#end_date').val(response.end_date);
+                $('#rate').val(response.rate);
+                $('#rate_type').val(response.rate_type);
+                $('#working_hours').val(response.working_hours);
+                $('#working_hours_type').val(response.working_hours_type);
+                $('#description').val(response.description);
+                $('#duration').val(response.duration);
+                $('#duration_type').val(response.duration_type);
+                $('#status').val(response.status);
+	            $('#working_hours_type').trigger('change');
+	            $('#duration_type').trigger('change');
+	            $('#rate_type').trigger('change');
+	            $('#status').trigger('change');
+	            $('#edit_client_id').trigger('change');
+
+                var leaderDropdown = $('#editLeaderDropdown');
+	            leaderDropdown.empty();
+	            var op = '<option value="" disabled>Select an Employee</option>';
+	            leaderDropdown.append(op);
+	            response.employee_list.forEach(function(employee) {
+	            	var isSelected = response.leader_ids.includes(employee.id) ? 'selected' : '';
+	            	var option = '<option value="' + employee.id + '" data-image="' + employee.image_url + '" ' + isSelected + ' data-id="' + employee.id + '">' + employee.first_name + ' ' + employee.last_name + '</option>';
+	                leaderDropdown.append(option);
+	            });
+	            leaderDropdown.trigger('change');
+
+                var supportDropdown = $('#editSupportDropdown');
+	            supportDropdown.empty();
+	            var op = '<option value="" disabled>Select an Employee</option>';
+	            supportDropdown.append(op);
+	            response.employee_list.forEach(function(employee) {
+	            	var isSelected = response.support_ids.includes(employee.id) ? 'selected' : '';
+	            	var option = '<option value="' + employee.id + '" data-image="' + employee.image_url + '" ' + isSelected + ' data-id="' + employee.id + '">' + employee.first_name + ' ' + employee.last_name + '</option>';
+	                supportDropdown.append(option);
+	            });
+	            supportDropdown.trigger('change');
+	            
+	            var advisonDropdown = $('#editAdvisorDropdown');
+	            advisonDropdown.empty();
+	            var op = '<option value="" disabled>Select an Employee</option>';
+	            advisonDropdown.append(op);
+	            response.employee_list.forEach(function(employee) {
+	            	var isSelected = response.advisor_ids.includes(employee.id) ? 'selected' : '';
+	            	var option = '<option value="' + employee.id + '" data-image="' + employee.image_url + '" ' + isSelected + ' data-id="' + employee.id + '">' + employee.first_name + ' ' + employee.last_name + '</option>';
+	                advisonDropdown.append(option);
+	            });
+	            advisonDropdown.trigger('change');
+	        },
+            error: function(error) {
+                console.log('Error:', error);
+            }
+        });
+    }
+
+	$('#edit_project_form').on('submit', function(e) {
+	    e.preventDefault();
+	    $('#updateProjectBtn').prop("disabled", true);
+
+	    $("#editLeaderDropdown, #rate, #project_name, #end_date").removeClass('is-invalid');
+        var errorMessages = [];
+
+        var leaderSelector = $("#editLeaderDropdown");
+        var rateSelector = $("#rate");
+        var projectSelector = $("#project_name");
+		var projectName = projectSelector.val().trim();
+		var rate = parseFloat(rateSelector.val());
+		var selectedLeaders = leaderSelector.val();
+
+		var clientDropdown = $("#edit_client_id");
+        var selectedClient = clientDropdown.val();
+        if (selectedClient === '') {
+            clientDropdown.addClass('is-invalid');
+            clientDropdown.siblings(".invalid-feedback").text('Please select a client.');
+            errorMessages.push("Please select a client.");
+        }
+
+		if (projectName === "") {
+		    projectSelector.addClass('is-invalid');
+		    projectSelector.siblings(".invalid-feedback").text('Project name cannot be blank.');
+		    errorMessages.push("Project Name cannot be blank.");
+		}
+
+        // if (isNaN(rate) || rate <= 0) {
+        // 	rateSelector.addClass('is-invalid');
+	    //     errorMessages.push("Project value must be a positive value.");
+	    // }
+        	
+        if (!selectedLeaders || selectedLeaders.length === 0) {
+		    leaderSelector.addClass('is-invalid');
+		    errorMessages.push("Please select at least one leader.");
+		}
+
+		var startDateSelector = $("#start_date");
+	    var endDateSelector = $("#end_date");
+	    var startDate = startDateSelector.val();
+	    var endDate = endDateSelector.val();
+
+	    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+	        endDateSelector.addClass('is-invalid');
+	        errorMessages.push("End Date must be greater than Start Date.");
+	    }
+
+		if (errorMessages.length > 0) {
+			$('#updateProjectBtn').prop("disabled", false);
+	        return false;
+	    }
+
+		var formData = new FormData(this);
+	    var initialProjectName = $(this).data('project_name').trim();
+		if (projectName === initialProjectName || projectName === '') {
+	        submitForm(formData);
+	    } else {
+	        $.ajax({
+	            url: '{% url "check_project_name" %}',
+	            method: 'GET',
+	            data: { 'project_name': projectName },
+	            success: function(response) {
+	                if (response.exists) {
+	                    projectSelector.addClass('is-invalid');
+		                projectSelector.siblings(".invalid-feedback").text('This project name already exists.');
+			      		$('#updateProjectBtn').prop("disabled", false);
+			      		return false;
+	                } else {
+	                    submitForm(formData);
+	                }
+	            },
+	            error: function(error) {
+	                console.log('Error:', error);
+	            }
+	        });
+	    }
+	});
+
+	function submitForm(formData) {
+	    $.ajax({
+	        url: '/edit_project/' + $('#edit_project_form').data('project-id') + '/',
+	        type: 'POST',
+	        data: formData,
+	        contentType: false,
+	        processData: false,
+	        success: function(response) {
+	            $('#edit_project_modal').modal('hide');
+	            // location.reload();
+	            var host = window.location.protocol + "//" + window.location.host;
+    			window.location.href = host + "/projects";
+	        },
+	        error: function(error) {
+	            console.log('Error:', error);
+	        }
+	    });
+	}
+
+    $(document).ready(function() {
+	    $("#projectForm").on("submit", function(e) {
+	        e.preventDefault();
+	        $('#saveProjectBtn').prop("disabled", true);
+
+	        $("#leaderDropdown, #add_rate, #add_project_name, #add_end_date, #client_name, #client_company, #client_select").removeClass('is-invalid');
+	        var errorMessages = [];
+
+	        var leaderSelector = $("#leaderDropdown");
+	        var rateSelector = $("#add_rate");
+	        var projectSelector = $("#add_project_name");
+			var projectName = projectSelector.val().trim();
+	        var rate = parseFloat(rateSelector.val());
+	        var selectedLeaders = leaderSelector.val();
+
+            if ($('#new_client_fields').is(':visible')) {
+                var clientSelector = $('#client_name');
+                var companySelector = $('#client_company');
+				var clientName = clientSelector.val().trim();
+				var clientCompany = companySelector.val().trim();
+
+                if (clientName === '') {
+                    clientSelector.addClass('is-invalid');
+				    clientSelector.siblings(".invalid-feedback").text('Client name cannot be blank.');
+				    errorMessages.push("Client Name cannot be blank.");
+                }
+
+                if (clientCompany === '') {
+                    companySelector.addClass('is-invalid');
+				    companySelector.siblings(".invalid-feedback").text('Company name cannot be blank.');
+				    errorMessages.push("Company Name cannot be blank.");
+                }
+
+            }else {
+		        var clientDropdown = $("#client_select");
+		        var selectedClient = clientDropdown.val();
+		        if (selectedClient === '') {
+		            clientDropdown.addClass('is-invalid');
+		            clientDropdown.siblings(".invalid-feedback").text('Please select a client.');
+		            errorMessages.push("Please select a client.");
+		        }
+		    }
+
+			if (projectName === "") {
+			    projectSelector.addClass('is-invalid');
+			    projectSelector.siblings(".invalid-feedback").text('Project name cannot be blank.');
+			    errorMessages.push("Project Name cannot be blank.");
+			}
+
+	        // if (isNaN(rate) || rate <= 0) {
+	        // 	rateSelector.addClass('is-invalid');
+		    //     errorMessages.push("Project value must be a positive value.");
+		    // }
+	        	
+	        if (!selectedLeaders || selectedLeaders.length === 0) {
+			    leaderSelector.addClass('is-invalid');
+			    errorMessages.push("Please select at least one leader.");
+			}
+
+			var startDateSelector = $("#add_start_date");
+		    var endDateSelector = $("#add_end_date");
+		    var startDate = startDateSelector.val();
+		    var endDate = endDateSelector.val();
+
+		    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+		        endDateSelector.addClass('is-invalid');
+		        errorMessages.push("End Date must be greater than Start Date.");
+		    }
+
+			if (errorMessages.length > 0) {
+				$('#saveProjectBtn').prop("disabled", false);
+		        return false;
+		    }
+
+	        var subForm = this;
+
+			if (projectName !== '') {
+				$.ajax({
+			      	url: '{% url "check_project_name" %}',
+			      	method: 'GET',
+			      	data: { 'project_name': projectName },
+			      	success: function(response) {
+				      	if (response.exists) {
+				      		projectSelector.addClass('is-invalid');
+			                projectSelector.siblings(".invalid-feedback").text('This project name already exists.');
+			                $('#saveProjectBtn').prop("disabled", false);
+				      		return false;
+				      	}else{
+				      		subForm.submit();
+				      	}
+	  				},
+				});
+			}
+		});
+	});
+
+</script>
+
+
+<script type="text/javascript">
+	function deleteProject(project_id){
+        $("#delete_project_id").val(project_id);
+        $("#delete_project").modal('show');
+    }
+	$("#confirmDelete").click(function(){
+        var project_id = $("#delete_project_id").val();
+        $("#delete_project").modal('hide');
+        $.ajax({
+            // type: "POST",
+            url: '{% url "delete_project" %}',
+            data: {project_id:project_id},
+            success: function(response) {
+                if (response.status==1) {
+                    // window.location.reload();
+                    var host = window.location.protocol + "//" + window.location.host;
+    				window.location.href = host + "/projects";
+                }else{
+                    alert('error');
+                }
+            },
+            error: function(xhr, errmsg, err) {
+                console.log('Error: ' + errmsg);
+            }
+        });
+    });
+
+	$(document).ready(function() {
+		$('input[name="project_name"]').on('blur', function() {
+			var projectSelector = $(this);
+			var projectName = projectSelector.val().trim();
+			var initialProjectName = $(this).closest('form').data('project_name').trim();
+
+			if (projectName !== initialProjectName && projectName !== '') {
+				$.ajax({
+			      	url: '{% url "check_project_name" %}',
+			      	method: 'GET',
+			      	data: { 'project_name': projectName },
+			      	success: function(response) {
+				      	if (response.exists) {
+				      		projectSelector.addClass('is-invalid');
+			                projectSelector.siblings(".invalid-feedback").text('This project name already exists.');
+				      	}else{
+				      		projectSelector.removeClass('is-invalid');
+				      		projectSelector.addClass('is-valid');
+				      		projectSelector.siblings(".invalid-feedback").text('Project name cannot be blank.');
+				      	}
+      				},
+  				});
+			}else{
+				projectSelector.removeClass('is-invalid');
+				projectSelector.removeClass('is-valid');
+	      		projectSelector.siblings(".invalid-feedback").text('Project name cannot be blank.');
+			}
+		});
+	});
+
+	$(document).ready(function () {
+        $('#search_project').on('submit', function (event) {
+            // Get form field values
+            const projectName = $('#search_project_name').val().trim();
+            const employeeId = $('#employee_id').val(); // Array of selected employee IDs
+            const status = $('#search_status').val();
+            console.log('projectName '+projectName+' employeeId '+employeeId+' status '+status);
+            // return false;
+
+            if (!projectName && (!employeeId || employeeId.length === 0) && !status) {
+                event.preventDefault(); // Prevent form submission
+                return false; // Stop form submission
+            }
+
+            return true; // Allow form submission
+        });
+        $("#add_rate,#rate").on("keydown", function(event) {
+	        if (!((event.keyCode >= 48 && event.keyCode <= 57) ||    // Numbers 0-9
+	              event.keyCode == 8 ||                               // Backspace
+	              event.keyCode == 37 || event.keyCode == 38 ||       // Arrow Left and Up
+	              event.keyCode == 39 || event.keyCode == 40 ||       // Arrow Right and Down
+	              event.keyCode == 190)) {                            // Dot (.)
+	            event.preventDefault();
+	        }
+
+	        var value = $(this).val();
+	        if (event.keyCode == 190 && value.indexOf('.') !== -1) {
+	            event.preventDefault();
+	        }
+	    });
+
+	    $('.hideLabel').on('change', function() {
+            var selected = $(this).val();
+            
+            if (selected && selected.length > 0) {
+                $(this).siblings("label").hide();
+            } else {
+                $(this).siblings("label").show();
+            }
+        });
+    });
+
+
+    $(document).ready(function() {	    
+	    /*$('#create_project').on('shown.bs.modal', function() {
+	        $('.select').select2({
+	            dropdownParent: $('#create_project .modal-content'),
+	            allowClear: true
+	        });
+	    });*/
+	    $('#create_project, #edit_project_modal').on('shown.bs.modal', function() {
+		    $('.select').each(function() { 
+			    $(this).select2({ dropdownParent: $(this).parent()});
+			});
+	    });
+    });
+
+
+
+
+</script>
+
+<style>
+    /* Make Add Leave button text white */
+.add-btn {
+    color: #ffffff !important;
+}
+
+.add-btn:hover,
+.add-btn:focus {
+    color: #ffffff !important;
+}
+
+</style>
+
+{% endblock %}

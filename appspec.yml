@@ -1,0 +1,14 @@
+version: 0.0
+os: linux
+files:
+    - source: ./
+      destination: /home/dec/dec-code/dec
+permissions:
+    - object: /home/dec/dec-code/dec
+      owner: dec
+      group: dec
+hooks:
+    BeforeInstall:
+        - location: scripts/beforeInstall.sh
+    AfterInstall:
+        - location: scripts/afterInstall.sh

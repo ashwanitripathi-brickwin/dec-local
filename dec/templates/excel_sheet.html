@@ -1,0 +1,1173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .short-input {
+        width: 45px; /* Adjust the width according to your preference */
+        height: 20px;
+    }
+    .short-input2 {
+        width: 45px; /* Adjust the width according to your preference */
+        height: 20px;
+    }
+    .form-inline {
+        display: flex;
+        align-items: center; /* Align items vertically */
+    }
+    .employee-dropdown {
+        width: 250px; /* Adjust the width as needed */
+    }
+    .select2-search--dropdown.select2-search--hide{
+        display: block;
+    }
+    .add-another {
+        line-height:32px;
+        background-color: #009efb!important;
+        border-color: #009efb!important;
+    }
+    .dynamic-employee-role select{
+        margin-right: 4px;
+    }
+    .dynamic-employee-role input{
+        margin-right: 3px;
+    }
+</style>
+<div class="content container-fluid">
+
+    <div class="page-header">
+        <div class="row">
+            <div class="col">
+                <h3 class="page-title">Data Tables</h3>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Data Tables</li>
+                </ul>
+            </div>
+            <div class="col-auto float-end ms-auto">
+                <a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#add_new"><i class="fa-solid fa-plus"></i> Add New</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card mb-0">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="input-block mb-3 form-focus">
+                                <select class="select floating" id="yearList" name="year" disabled>
+                                    <option value="2024" {% if current_year == 2024 %}selected{% endif %}>2024</option>
+                                    <option value="2025" {% if current_year == 2025 %}selected{% endif %}>2025</option>
+                                    <option value="2026" {% if current_year == 2026 %}selected{% endif %}>2026</option>
+                                </select>
+                                <label class="focus-label">Year</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-9">
+                            <div class="form-inline" style="max-width: 90%">
+                                <label class="focus-label" for="monthSelect1">Select Month:</label>
+                                <select class="select floating" id="monthSelect1" name="month1">
+                                    <option value="">Select</option>
+                                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                                    <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+                                </select>
+                                <button class="btn btn-edit" id="editButton">Edit</button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="float: right;">
+                                <button class="btn btn-success reload_page">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="datatable2 table table-stripped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Company</th>
+                                    <th>Client Name</th>
+                                    <th>Total People</th>
+                                    <th>Amount<br>(USD)</th>
+                                    <th>Contracted Hours<br>Weekly</th>
+                                    <th>Employee Contracted</th>
+                                    <th>Employee Hours</th>
+                                    <th></th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract_data in data %}
+                                <tr>
+                                    <td class="editable1" data-field="company_name" data-client-id="{{ contract_data.client_id }}">
+                                        <input type="text" value="{{ contract_data.company_name }}" data-editable-field="company_name" disabled>
+                                    </td>
+
+                                    <td class="editable1"><input type="text" value="{{ contract_data.client_name }}"disabled></td>
+
+                                    <td class="editable" data-field="no_of_people_on_account" data-client-id="{{ contract_data.client_id }}">
+                                        <input type="text" value="{{ contract_data.no_of_people_on_account }}" class="short-input" data-editable-field="no_of_people_on_account"disabled>
+                                    </td>
+
+                                    <td class="editable" data-field="cost" data-client-id="{{ contract_data.client_id }}">
+                                        <input type="text" value="{{ contract_data.cost}}" class="short-input" data-editable-field="cost"disabled>
+                                    </td>
+                                    <td class="editable" data-field="total_working_hours" data-client-id="{{ contract_data.client_id }}">
+                                        <input type="text" value="{{ contract_data.total_working_hours}}" class="short-input" data-editable-field="total_working_hours"disabled>
+                                    </td>
+
+                                    <td class="editable" data-client-id="{{ contract_data.client_id }}">
+                                        {% for employee_detail in contract_data.employee_details %}
+                                        <div class="employee-details" data-field="employee_name" data-id="{{ forloop.counter }}">
+                                            <select class="employee-dropdown"data-editable-field="employee_name" data-prev-employee-id="{{ employee_detail.employee_id }}"disabled>
+                                                {% for employee in contract_data.employee_list_data %}
+                                                {% if employee.id == employee_detail.employee_id %}
+                                                <option value="{{ employee.name }}" selected data-employee-id="{{ employee.id }}">
+                                                    {{ employee.name }} (B: {{ employee.support }}, C:{{ employee.account_manager }}, A: {{ employee.advisor }})
+                                                </option>
+                                                {% else %}
+                                                {% if employee.status == 1 %}
+                                                <option value="{{ employee.name }}" data-employee-id="{{ employee.id }}">
+                                                    {{ employee.name }} (B: {{ employee.support }}, C:{{ employee.account_manager }}, A: {{ employee.advisor }})
+                                                </option>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="editable" data-client-id="{{ contract_data.client_id }}" >
+                                        {% for employee_detail in contract_data.employee_details %}
+                                        {% for working_role_detail in contract_data.working_role_details %}
+                                        {% if working_role_detail.working_role_id == employee_detail.employee_id %}
+                                        <div class="employee-role" data-field="employee_role" data-id="{{ forloop.counter }}">
+                                            <select class="short-input2" data-prev-employee-id1="{{ working_role_detail.working_role_id }}" data-editable-field="role_hours"disabled>
+                                                {% if working_role_detail.role_hours != 'B' %}
+                                                <option value="B">B</option>
+                                                {% endif %}
+                                                {% if working_role_detail.role_hours != 'C' %}
+                                                <option value="C">C</option>
+                                                {% endif %}
+                                                {% if working_role_detail.role_hours != 'A' %}
+                                                <option value="A">A</option>
+                                                {% endif %}
+                                                <!-- Add other options here -->
+                                                <option value="{{ working_role_detail.role_hours }}" selected>{{ working_role_detail.role_hours }}</option>
+                                            </select>
+                                            <input type="number" value="{{ employee_detail.contracted_time }}" class="short-input2" data-prev-employee-id1="{{ working_role_detail.working_role_id }}" data-contracted-time="{{ employee_detail.contracted_time }}" data-editable-field="contracted_time"disabled>
+                                            <a href="#" class=""><i class="fa-solid fa-circle-minus" style="color:#fc133d;"></i></a>
+                                        </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endfor %}
+
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="#" class=""><i class="fa-solid fa-circle-plus" style="color:#36ba45;"></i></a>
+
+                                        <!-- <div class="dropdown dropdown-action">
+                                            <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item delete-leave" href="{% url 'delete_client_contract_work' contract_data.id %}"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+                                            </div>
+                                        </div> -->
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div id="add_new" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add_client_contract_work' %}" method="post" enctype="multipart/form-data" id="add_new_form">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-sm-11">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Client <span class="text-danger">*</span></label>
+                                <select class="select form-control" name="client_id" id="client_select">
+                                    <option value="">Select Client</option>
+                                    {% for client in client_list %}
+                                        <!-- <option value="{{ client.id }}">{{ client.client_name }}</option> -->
+                                        <option value="{{ client.id }}" {% if client.id in contract_ids %}disabled{% endif %}>
+                                          {{ client.client_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a client.</div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-1">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label"></label>
+                                <button type="button" class="btn btn-primary add-new-client" data-bs-toggle="tooltip" aria-label="Add New Client" data-bs-original-title="Add New Client" id="add_new_client_button" style="line-height:32px; background-color: #009efb!important;border-color: #009efb!important;">
+                                    <i class="la la-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="new_client_fields" style="display: none;">
+                        <input type="hidden" id="add_new_client" name="add_new_client" value="false">
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Client Name <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="client_name" id="client_name">
+                                <div class="invalid-feedback">Client Name cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Company <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="company_name" id="company_name">
+                                <div class="invalid-feedback">Company Name cannot be blank.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Email</label>
+                                <input class="form-control floating" type="email" name="email">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Address</label>
+                                <input class="form-control" type="text" name="address">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="col-form-label col-md-2">Gender</label>
+                            <div class="col-md-10">
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="male"> Male
+                                    </label>
+                                </div>
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="female"> Female
+                                    </label>
+                                </div>
+                                <div class="radio" style="display: inline-block; margin-right: 10px;">
+                                    <label class="col-form-label">
+                                        <input type="radio" name="gender" value="other"> Other
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Date of Birth </label>
+                                <input type="date" class="form-control" name="dob" placeholder="YYYY-MM-DD">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Phone </label>
+                                <input class="form-control" type="text" name="phone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Designation</label>
+                                <input class="form-control" type="text" name="designation">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Company Size</label>
+                                <input class="form-control" type="text" name="company_size">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Country</label>
+                                <input class="form-control" type="text" name="country">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Industry</label>
+                                <input class="form-control" type="text" name="industry">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Level</label>
+                                <input class="form-control" type="text" name="level">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Location</label>
+                                <input class="form-control" type="text" name="location">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Region</label>
+                                <input class="form-control" type="text" name="region">
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Monthly Amount in USD <span class="text-danger">*</span></label>
+                                <input class="form-control" type="text" name="monthly_cost" id="monthly_cost">
+                                <div class="invalid-feedback">Amount cannot be blank.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3 form-focus">
+                                <label class="col-form-label">Year <span class="text-danger">*</span></label>
+                                <select class="select floating" name="year" id="year">
+                                    <option value="2024" {% if current_year == 2024 %}selected{% endif %}>2024</option>
+                                    <option value="2025" {% if current_year == 2025 %}selected{% endif %}>2025</option>
+                                    <option value="2026" {% if current_year == 2026 %}selected{% endif %}>2026</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+
+                            <div class="input-block mb-3" >
+                                <label class="col-form-label">Month <span class="text-danger">*</span></label>
+                                <select class="select form-control" name="month" id="month">
+                                    <option value="1" {% if selected_month == 1 %}selected{% endif %}>January</option>
+                                    <option value="2" {% if selected_month == 2 %}selected{% endif %}>February</option>
+                                    <option value="3" {% if selected_month == 3 %}selected{% endif %}>March</option>
+                                    <option value="4" {% if selected_month == 4 %}selected{% endif %}>April</option>
+                                    <option value="5" {% if selected_month == 5 %}selected{% endif %}>May</option>
+                                    <option value="6" {% if selected_month == 6 %}selected{% endif %}>June</option>
+                                    <option value="7" {% if selected_month == 7 %}selected{% endif %}>July</option>
+                                    <option value="8" {% if selected_month == 8 %}selected{% endif %}>August</option>
+                                    <option value="9" {% if selected_month == 9 %}selected{% endif %}>September</option>
+                                    <option value="10" {% if selected_month == 10 %}selected{% endif %}>October</option>
+                                    <option value="11" {% if selected_month == 11 %}selected{% endif %}>November</option>
+                                    <option value="12" {% if selected_month == 12 %}selected{% endif %}>December</option>
+                                </select>
+                                <div class="invalid-feedback">Please select month.</div>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Buddy</label>
+                                <select class="select form-control" multiple name="buddy">
+                                    <option value="" disabled>Select an Employee</option>
+                                    {% for employee in employee_list %}
+                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select at least one leader.</div>
+
+                            </div>
+                        </div>                        
+                        <div class="col-sm-6">
+                            <div class="input-block mb-3">
+                                <label class="col-form-label">Advisor</label>
+                                <select class="select form-control" multiple name="advisor">
+                                    <option value="" disabled>Select an Employee</option>
+                                    {% for employee in employee_list %}
+                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                        {{ employee.first_name }} {{ employee.last_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="buddy-row-container">
+                        <div class="row ">
+                            <div class="col-sm-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Buddy</label>
+                                    <select class="select form-control" name="buddy">
+                                        <option value="">Select an Employee</option>
+                                        {% for employee in employee_list %}
+                                        <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                            {{ employee.first_name }} {{ employee.last_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-5">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Time</label>
+                                    <input class="form-control" type="text" name="buddy_time">
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-1">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label"></label>
+                                    <button type="button" class="btn btn-primary add-another" data-bs-toggle="tooltip" aria-label="Add Another Buddy" data-bs-original-title="Add Another Buddy" style="line-height:32px; background-color: #009efb!important;border-color: #009efb!important;"> <i class="la la-plus"></i> </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="advisor-row-container">
+                        <div class="row ">
+                            <div class="col-sm-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Advisor</label>
+                                    <select class="select form-control" name="advisor">
+                                        <option value="">Select an Employee</option>
+                                        {% for employee in employee_list %}
+                                        <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                            {{ employee.first_name }} {{ employee.last_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-5">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Time</label>
+                                    <input class="form-control" type="text" name="advisor_time">
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-1">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label"></label>
+                                    <button type="button" class="btn btn-primary add-another" data-bs-toggle="tooltip" aria-label="Add Another Advisor" data-bs-original-title="Add Another Advisor" style="line-height:32px; background-color: #009efb!important;border-color: #009efb!important;"> <i class="la la-plus"></i> </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <div class="consultant-row-container">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Consultant</label>
+                                    <select class="select form-control" name="consultant[]">
+                                        <option value="">Select an Employee</option>
+                                        {% for employee in employee_list %}
+                                        <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                            {{ employee.first_name }} {{ employee.last_name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-5">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label">Time</label>
+                                    <input class="form-control" type="text" name="consultant_time[]" value="0">
+                                    
+                                </div>
+                            </div>
+                            <div class="col-sm-1">
+                                <div class="input-block mb-3">
+                                    <label class="col-form-label"></label>
+                                    <button type="button" class="btn btn-primary add-another" data-bs-toggle="tooltip" aria-label="Add Another Consultant" data-bs-original-title="Add Another Consultant" style="line-height:32px; background-color: #009efb!important;border-color: #009efb!important;"> <i class="la la-plus"></i> </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $('.add-another').on('click', function() {
+                                var fieldType = $(this).closest('.row').find('label').first().text().toLowerCase();
+
+                                var fieldName = fieldType + '[]';
+                                var fieldTimeName = fieldType + '_time[]';
+
+                                var newRow = `
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label">${capitalizeFirstLetter(fieldType)}</label>
+                                                <select class="select form-control add_select" name="${fieldName}">
+                                                    <option value="">Select an Employee</option>
+                                                    {% for employee in employee_list %}
+                                                    <option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
+                                                        {{ employee.first_name }} {{ employee.last_name }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label">Time</label>
+                                                <input class="form-control" type="text" name="${fieldTimeName}" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-1">
+                                            <div class="input-block mb-3">
+                                                <label class="col-form-label"></label>
+                                                <button type="button" class="btn btn-danger delete-row" data-bs-toggle="tooltip" aria-label="Delete ${capitalizeFirstLetter(fieldType)}" data-bs-original-title="Delete ${capitalizeFirstLetter(fieldType)}">
+                                                    <i class="la la-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+
+                                $(`.${fieldType}-row-container`).append(newRow);
+
+                                $(`.${fieldType}-row-container`).find('.add_select').last().select2();
+                            });
+
+                            $(document).on('click', '.delete-row', function() {
+                                $(this).closest('.row').remove();
+                            });
+                            
+                            function capitalizeFirstLetter(string) {
+                                return string.charAt(0).toUpperCase() + string.slice(1);
+                            }
+                        });
+
+
+                        $(document).ready(function() {
+                            $('#add_new_client_button').on('click', function() {
+                                $('#new_client_fields').toggle();
+
+                                if ($('#new_client_fields').is(':visible')) {
+                                    $('#add_new_client').val('true');
+                                } else {
+                                    $('#add_new_client').val('false');
+                                }
+
+                                if ($('#new_client_fields').is(':visible')) {
+                                    $('#client_select').val('');
+                                    $('#client_select').prop('disabled', true);
+                                } else {
+                                    $('#client_select').prop('disabled', false);
+                                }
+                                $('#client_select').trigger('change');
+
+                                $('#add_new_client_button i').toggleClass('la-plus la-minus');
+
+                                if ($('#add_new_client_button i').hasClass('la-minus')) {
+                                    $('#add_new_client_button').css({
+                                        'background-color': '#36ba45',
+                                        'border-color': '#36ba45'
+                                    });
+
+                                    $('#add_new_client_button').attr('data-bs-original-title', 'Remove Client');
+                                } else {
+                                    $('#add_new_client_button').css({
+                                        'background-color': '#009efb',
+                                        'border-color': '#009efb'
+                                    });
+
+                                    $('#add_new_client_button').attr('data-bs-original-title', 'Add New Client');
+                                }
+
+                                var tooltip = bootstrap.Tooltip.getInstance($('#add_new_client_button')[0]); 
+                                if (tooltip) {
+                                    tooltip.dispose();
+                                }
+                                new bootstrap.Tooltip($('#add_new_client_button')[0]);
+                            });
+
+                            $('#client_select').on('change', function() {
+                                if ($(this).val() !== '') {
+                                    $('#new_client_fields').hide();
+                                    $('#client_select').prop('disabled', false);
+                                }
+                            });
+
+                            $('#client_select').trigger('change');
+                        });
+                    </script>
+
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn"id="saveBtn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal custom-modal fade" id="remove_employee" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Remove Employee</h3>
+                    <p>Are you sure want to remove this employee?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="hidden" name="delete_leave_id" id="delete_leave_id" value="">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn" id="confirmRemove">Remove</a>
+                        </div>
+                        <div class="col-6">
+                            <a href="javascript:void(0);" data-bs-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+
+        $(document).on("blur", ".editable select.employee-dropdown, .editable .short-input2", function () {
+
+            let row = $(this).closest("tr");
+            let client_id = row.find(".editable").data("client-id");
+            let employee_data = [];
+
+            row.find(".employee-details").each(function () {
+                let data_id = $(this).data("id");
+                let employee_select = $(this).find(".employee-dropdown");
+                let employee_id = employee_select.find(":selected").data("employee-id");
+
+                let employee_role_div = row.find('.employee-role').filter(function () {
+                    return $(this).data("id") == data_id;
+                });
+
+                let role_select = employee_role_div.find("select");
+                let role = role_select.length ? role_select.val() : '';
+
+                let contracted_hours_input = employee_role_div.find('input[data-editable-field="contracted_time"]');
+                let contracted_hours = contracted_hours_input.length ? contracted_hours_input.val() : 0;
+
+                if (employee_id) {
+                    employee_data.push({
+                        employee_id: employee_id,
+                        role: role,
+                        contracted_hours: contracted_hours
+                    });
+                }
+            });
+
+            console.log("Client ID:", client_id);
+            console.log("Employee Data:", employee_data);
+
+            let data = {
+                client_id: client_id,
+                month: {{selected_month}},
+                year: {{current_year}},
+                employees: employee_data,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                url: '{% url "update_client_data2" %}',
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                success: function (response) {
+                    if (response.status === "success") {
+                        console.log("Employee hours updated successfully!");
+                    } else {
+                        console.error("Failed to update employee hours.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+        $('.editable input.short-input, .editable select.short-input').on('blur',function(){
+
+            const clientId = $(this).closest('td').data('client-id');
+            const field = $(this).data('editable-field');
+            const value = $(this).val();
+            const prevEmployeeId1 = $(this).attr('data-prev-employee-id1');
+            let employeeId;
+            let prevEmployeeId;
+            const selectedMonth = "{{ month_view }}";
+
+            if ($(this).is('select.employee-dropdown')) {
+                const employeeId = $(this).find(':selected').data('employee-id');
+                const prevEmployeeId = $(this).attr('data-prev-employee-id');
+                const roleHours = $(this).find(':selected').data('role-hours');
+                const contractedTime = $(this).find(':selected').data('contracted-time');
+
+                $(this).closest('td').find('.contracted-time').val(contractedTime);
+
+                $('#employee-username-display').text($(this).find(':selected').val());
+
+
+                $.ajax({
+                    url: '{% url "update_client_data" %}',
+                    method: 'POST',
+                    data: {
+                        client_id: clientId,
+                        field: field,
+                        value: value,
+                        prev_employee_id: prevEmployeeId,
+                        employee_id: employeeId,
+                        role_hours: roleHours,
+                        contracted_time: contractedTime,
+                        selected_month: selectedMonth,
+                        year: {{current_year}},
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                    }
+                });
+
+                console.log("kkkkkkkkkkkkkkkkkkkkk"+selectedMonth);
+                console.log("llll"+prevEmployeeId);
+                console.log("eeeeeeeeeeeeeel"+employeeId);
+
+                $(this).attr('data-prev-employee-id',employeeId);
+                var prev = $(this).attr('data-prev-employee-id');
+                console.log("kkkk"+prev);
+                $(`select[data-prev-employee-id1=${prevEmployeeId}]`).attr('data-prev-employee-id1', prev);
+                $(`input[data-prev-employee-id1=${prevEmployeeId}]`).attr('data-prev-employee-id1', prev);
+
+            } else {
+
+                $.ajax({
+                    url: '{% url "update_client_data" %}',
+                    method: 'POST',
+                    data: {
+                        client_id: clientId,
+                        field: field,
+                        value: value,
+                        employee_id: prevEmployeeId1,
+                        selected_month: selectedMonth,
+                        year: {{current_year}},
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        console.log(response);
+                    },
+                    error: function(error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function(){
+        $('#monthSelect1').on('change', function()  {
+            var month1 = $("#monthSelect1").val();
+            if(month1 !=''){
+                $.ajax({
+                    url: '{% url "update_month_sheet" %}',
+                    data: {'month1': month1},
+                    success: function(response) {
+                        window.location.reload();
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }else{
+                alert("Please select category");
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#editButton').on('click', function() {
+            $('.editable input, .editable select.employee-dropdown,.editable select.short-input,.editable select.short-input2').prop('disabled', function(i, val) {
+                return !val;
+            });
+            $('.fa-circle-minus').closest('a').addClass('remove_employee_and_role');
+            $('.fa-circle-plus').closest('a').addClass('add_new_employee');
+        });
+
+
+        $('#add_new').on('shown.bs.modal', function() {
+            $('.select').each(function() { 
+                $(this).select2({ dropdownParent: $(this).parent()});
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        /*$('#client_select').on('change', function() {
+            if ($(this).val() !== '') {
+                var client_id = $(this).val();
+                var year = $('#year').val();
+                var month = $('#month').val();
+                $.ajax({
+                    url: '{% url "check_contracted_client" %}',
+                    data: {'year':year,'month':month,'client_id': client_id},
+                    success: function(response) {
+                        if (response.exists) {
+                            alert('Selected client data already exists for the selected month. You can edit it to make any updates.');
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        console.log('Error: ' + errmsg);
+                    }
+                });
+            }
+        });*/
+
+        $("#add_new_form").on("submit", function(e) {
+            e.preventDefault();
+            $('#saveBtn').prop("disabled", true);
+
+            $("#client_select, #client_name, #company_name, #monthly_cost").removeClass('is-invalid');
+            var errorMessages = [];
+
+            var rateSelector = $("#monthly_cost");
+            var rate = parseFloat(rateSelector.val());
+
+            if ($('#new_client_fields').is(':visible')) {
+                var clientSelector = $('#client_name');
+                var companySelector = $('#company_name');
+                var clientName = clientSelector.val().trim();
+                var clientCompany = companySelector.val().trim();
+
+                if (clientName === '') {
+                    clientSelector.addClass('is-invalid');
+                    clientSelector.siblings(".invalid-feedback").text('Client name cannot be blank.');
+                    errorMessages.push("Client Name cannot be blank.");
+                }
+
+                if (clientCompany === '') {
+                    companySelector.addClass('is-invalid');
+                    companySelector.siblings(".invalid-feedback").text('Company name cannot be blank.');
+                    errorMessages.push("Company Name cannot be blank.");
+                }
+
+            }else {
+                var clientDropdown = $("#client_select");
+                var selectedClient = clientDropdown.val();
+                if (selectedClient === '') {
+                    clientDropdown.addClass('is-invalid');
+                    clientDropdown.siblings(".invalid-feedback").text('Please select a client.');
+                    errorMessages.push("Please select a client.");
+                }
+            }
+
+            if (isNaN(rate) || rate <= 0) {
+                rateSelector.addClass('is-invalid');
+                errorMessages.push("Amount must be a positive value.");
+            }
+
+            if (errorMessages.length > 0) {
+                $('#saveBtn').prop("disabled", false);
+                return false;
+            }
+
+            var subForm = this;
+
+            subForm.submit();
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(document).on("click", ".add_new_employee", function (e) {
+            e.preventDefault();
+
+            var $tr = $(this).closest('tr');
+
+            var $employeeDetailsColumn = $tr.find('td:nth-child(6)');
+            var $roleDetailsColumn = $tr.find('td:nth-child(7)');
+
+            var $lastEmployeeDropdown = $employeeDetailsColumn.find('.employee-details:last select');
+            var lastDataId = $employeeDetailsColumn.find('.employee-details:last').attr('data-id');
+            var newDataId = parseInt(lastDataId, 10) + 1;
+            
+            if ($lastEmployeeDropdown.length) {
+                var $newEmployeeDropdown = $lastEmployeeDropdown.clone();
+                $newEmployeeDropdown.val("");
+                $employeeDetailsColumn.append(
+                    $('<div class="employee-details" data-field="employee_name" data-id="'+newDataId+'">').append($newEmployeeDropdown)
+                );
+            }
+
+            var $lastRoleDetails = $roleDetailsColumn.find('.employee-role:last');
+
+            if ($lastRoleDetails.length) {
+                var $newEmployeeDropdown = $lastRoleDetails.children().clone();
+                // $newEmployeeDropdown.val("");
+                $roleDetailsColumn.append(
+                    $('<div class="employee-role dynamic-employee-role" data-field="employee_role" data-id="'+newDataId+'">').append($newEmployeeDropdown)
+                );
+            }
+        });
+        $(document).on("click", ".remove_employee_and_role", function (e) {
+            e.preventDefault();
+            // $("#delete_leave_id").val(leave_id);
+            // $("#remove_employee").modal('show');
+            
+            let row = $(this).closest("tr");
+            if(confirm("Are you sure you want to remove this employee?")){
+                let data_id = $(this).parent('div').data("id");
+                let employee_role_div = row.find('.employee-role').filter(function () {
+                    return $(this).data("id") == data_id;
+                });
+
+                let employee_select_div = row.find('.employee-details').filter(function () {
+                    return $(this).data("id") == data_id;
+                });
+                employee_role_div.remove();
+                employee_select_div.remove();
+
+
+                let client_id = row.find(".editable").data("client-id");
+                let employee_data = [];
+
+                row.find(".employee-details").each(function () {
+                    let data_id = $(this).data("id");
+                    let employee_select = $(this).find(".employee-dropdown");
+                    let employee_id = employee_select.find(":selected").data("employee-id");
+
+                    let employee_role_div = row.find('.employee-role').filter(function () {
+                        return $(this).data("id") == data_id;
+                    });
+
+                    let role_select = employee_role_div.find("select");
+                    let role = role_select.length ? role_select.val() : '';
+
+                    let contracted_hours_input = employee_role_div.find('input[data-editable-field="contracted_time"]');
+                    let contracted_hours = contracted_hours_input.length ? contracted_hours_input.val() : 0;
+
+                    if (employee_id) {
+                        employee_data.push({
+                            employee_id: employee_id,
+                            role: role,
+                            contracted_hours: contracted_hours
+                        });
+                    }
+                });
+
+                console.log("Client ID:", client_id);
+                console.log("Employee Data:", employee_data);
+
+                let data = {
+                    client_id: client_id,
+                    month: {{selected_month}},
+                    year: {{current_year}},
+                    employees: employee_data,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                };
+
+                $.ajax({
+                    url: '{% url "update_client_data2" %}',
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            console.log("Employee hours updated successfully!");
+                        } else {
+                            console.error("Failed to update employee hours.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", error);
+                    }
+                });
+            
+            }
+            
+            return false;
+            // let row = $(this).closest("tr");
+            // let data_id = $(this).parent('div').data("id");
+            // let employee_role_div = row.find('.employee-role').filter(function () {
+            //     return $(this).data("id") == data_id;
+            // });
+            let employee_select = $(this).find(".employee-dropdown");
+            let employee_id = employee_select.find(":selected").data("employee-id");
+
+            // let employee_role_div = row.find('.employee-role').filter(function () {
+            //     return $(this).data("id") == data_id;
+            // });
+            // alert(data_id);
+            return false;
+            let client_id = row.find(".editable").data("client-id");
+            let employee_data = [];
+
+            row.find(".employee-details").each(function () {
+                let data_id = $(this).data("id");
+                let employee_select = $(this).find(".employee-dropdown");
+                let employee_id = employee_select.find(":selected").data("employee-id");
+
+                let employee_role_div = row.find('.employee-role').filter(function () {
+                    return $(this).data("id") == data_id;
+                });
+
+                let role_select = employee_role_div.find("select");
+                let role = role_select.length ? role_select.val() : '';
+
+                let contracted_hours_input = employee_role_div.find('input[data-editable-field="contracted_time"]');
+                let contracted_hours = contracted_hours_input.length ? contracted_hours_input.val() : 0;
+
+                if (employee_id) {
+                    employee_data.push({
+                        employee_id: employee_id,
+                        role: role,
+                        contracted_hours: contracted_hours
+                    });
+                }
+            });
+
+            var $employeeDetailsColumn = $tr.find('td:nth-child(6)');
+            var $roleDetailsColumn = $tr.find('td:nth-child(7)');
+
+            var $lastEmployeeDropdown = $employeeDetailsColumn.find('.employee-details:last select');
+            var lastDataId = $employeeDetailsColumn.find('.employee-details:last').attr('data-id');
+            var $lastRoleDetails = $roleDetailsColumn.find('.employee-role:last');
+            var newDataId = parseInt(lastDataId, 10) + 1;
+            return false;
+
+            var $lastEmployeeDropdown = $employeeDetailsColumn.find('.employee-details:last select');
+            
+            if ($lastEmployeeDropdown.length) {
+                var $newEmployeeDropdown = $lastEmployeeDropdown.clone();
+                $newEmployeeDropdown.val("");
+                $employeeDetailsColumn.append(
+                    $('<div class="employee-details" data-field="employee_name">').append($newEmployeeDropdown)
+                );
+            }
+
+            var $lastRoleDetails = $roleDetailsColumn.find('.employee-role:last');
+
+            if ($lastRoleDetails.length) {
+                var $newEmployeeDropdown = $lastRoleDetails.clone();
+                $newEmployeeDropdown.val("");
+                $roleDetailsColumn.append(
+                    $('<div class="employee-role" data-field="employee_role">').append($newEmployeeDropdown)
+                );
+            }
+        });
+        
+
+        var table = $('.datatable2').DataTable({
+            "columnDefs": [
+                {
+                    "targets": [5, 6, 7],
+                    "orderable": false
+                }
+            ],
+            "order": [[1, 'asc']]
+        });
+    });
+
+    $(document).ready(function () {
+        /*$(document).on("blur", ".employee-dropdown, .short-input", function () {
+            let row = $(this).closest("tr");  // Get the row
+            let client_id = row.find(".editable").data("client-id");
+            let employee_data = [];
+
+            row.find(".employee-details").each(function () {
+                let data_id = $(this).data("id");  // Get the unique data-id
+                let employee_select = $(this).find(".employee-dropdown");
+                let employee_id = employee_select.find(":selected").data("employee-id");
+
+                let employee_role_div = row.find('.employee-role').filter(function () {
+                    return $(this).data("id") == data_id;
+                });
+
+                let role_select = employee_role_div.find("select");
+                let role = role_select.length ? role_select.val() : '';
+
+                let contracted_hours_input = employee_role_div.find('input[data-editable-field="contracted_time"]');
+                let contracted_hours = contracted_hours_input.length ? contracted_hours_input.val() : 0;
+
+                if (employee_id) {
+                    employee_data.push({
+                        employee_id: employee_id,
+                        role: role,
+                        contracted_hours: contracted_hours
+                    });
+                }
+            });
+
+            console.log("Client ID:", client_id);
+            console.log("Employee Data:", employee_data);
+
+
+
+            let data = {
+                client_id: client_id,
+                month: {{selected_month}},
+                year: {{current_year}},
+                employees: employee_data,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                url: '{% url "update_client_data" %}',
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                success: function (response) {
+                    if (response.status === "success") {
+                        console.log("Employee hours updated successfully!");
+                    } else {
+                        console.error("Failed to update employee hours.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            });
+        });*/
+
+        $('.reload_page').on('click', function(){
+            window.location.reload();
+        })
+
+    });
+
+
+</script>
+
+{% endblock %}
