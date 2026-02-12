@@ -35,4 +35,7 @@ static/assets/img/client/
 
 **/assets/plugins/icons/flags/flags/
 
-dec/drive_utils
+**/drive_utils.py
+
+drive_utils.py
+
