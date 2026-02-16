@@ -370,14 +370,14 @@
                                 <ul>
                                     <li><a class="{{ active.1 }}" href="{% url 'employees' %}">All Employees</a></li>
                                     {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                                        {% if user.groups.all.0.name == 'admin' %}
                                     <li><a class="{{ active.2 }}" href="{% url 'old_employees' %}">Old Employees</a></li>
                                       {% endif %}
                                     {% endif %}
                                     <li><a class="{{ active.3 }}" href="{% url 'holidays' %}">Holidays</a></li>
 
                                     {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                                        {% if user.groups.all.0.name == 'admin' %}
                                             <li><a class="{{ active.4 }}" href="{% url 'leave_admin' %}">Leave (Admin)</a></li>
                                             <li><a class="{{ active.5 }}" href="{% url 'leave_employee' %}">Leave (Employee)</a></li>
                                         {% else %}
@@ -385,7 +385,7 @@
                                         {% endif %}
                                     {% endif %}
                                     {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                                        {% if user.groups.all.0.name == 'admin' %}
                                     <li><a class="{{ active.7 }}" href="{% url 'monthly_overview' %}">Monthly Overview</a></li>
                                      {% endif %}
                                     {% endif %}
@@ -400,7 +400,7 @@
                                 <ul>
                                     <li><a class="{{ active.8 }}" href="{% url 'current_clients' %}">Current Clients</a></li>
                                      {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' or request.user.id == 6 %}
+                                        {% if user.groups.all.0.name == 'admin' %}
                                     <li><a class="{{ active.13 }}" href="{% url 'all_clients' %}">All Clients</a></li>
                                     <li><a class="{{ active.9 }}" href="{% url 'archived_clients' %}">Archived Clients</a></li>
                                     {% endif %}
@@ -410,32 +410,39 @@
                             <li class="{{ active.10 }}">
                                 <a href="{% url 'calender' %}"><i class="la la-users"></i> <span>Timer</span></a>
                             </li>
-                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            {% if user.is_authenticated %}
+                                        {% if user.groups.all.0.name == 'super_admin' %}
                                 <li>
                                     <a class="{{ active.11 }}" href="{% url 'excel_sheet' %}"><i class="la la-users"></i> <span>Sheet</span></a>
                                 </li>
                             {% endif %}
+                            {% endif %}
                             <li class="{{ active.12 }}">
                                 <a href="{% url 'report' %}"><i class="la la-rocket"></i> <span>Report</span></a>
                             </li>
-                            {% if request.user.id == 6 %}
+                            {% if user.is_authenticated %}
+                                        {% if user.groups.all.0.name == 'super_admin' %}
                             <li class="{{ active.12 }}">
                                 <a href="{% url 'short_mail' %}"><i class="fas fa-envelope"></i> <span>Email</span></a>
                             </li>
                             {% endif %}
+                            {% endif %}
                             <li class="{{ active.6 }}">
                                 <a href="{% url 'projects' %}"><i class="la la-rocket"></i> <span>Projects</span></a>
                             </li>
-                            {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            {% if user.is_authenticated %}
+                                        {% if user.groups.all.0.name == 'super_admin' %}
                                 <li>
                                     <a class="{{ active.14 }}" href="{% url 'quickbook' %}"><i class="la la-users"></i> <span>Quickbooks</span></a>
                                 </li>
                             {% endif %}
-                            {% if request.user.id == 3 %}
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                                        {% if user.groups.all.0.name == 'super_admin' %}
                                 <li class="submenu">
                                     <a href="#"><i class="la la-files-o"></i> <span> Excel </span> <span class="menu-arrow"></span></a>
                                     <ul>
-                                        <li><a href="{% url 'update_employee' %}">Update Employee </a></li>
+                                        <!-- <li><a href="{% url 'update_employee' %}">Update Employee </a></li>
                                         <li><a href="{% url 'update_client' %}">Update Client </a></li>
                                         <li><a href="{% url 'employees_id' %}">Employee Id</a></li>
                                         <li><a href="{% url 'upload_contracted_hours' %}">Upload Contracted Data </a></li>
@@ -444,11 +451,12 @@
                                         <li><a href="{% url 'final_calculation' %}">Final Calculation </a></li>
                                         <li><a href="{% url 'upload_working_category' %}">Upload Working category </a></li>
                                         <li><a href="{% url 'upload_client_contract_work' %}">Upload Client contract work </a></li>
-                                        <li><a href="{% url 'upload_client_contract_employee' %}">Upload Client contract employee </a></li>
+                                        <li><a href="{% url 'upload_client_contract_employee' %}">Upload Client contract employee </a></li> -->
 
 
                                     </ul>
                                 </li>
+                            {% endif %}
                             {% endif %}
                         </ul>
                     </div>

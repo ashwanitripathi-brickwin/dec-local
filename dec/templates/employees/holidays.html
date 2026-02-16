@@ -16,10 +16,11 @@
 			<div class="col-sm-6 col-md-3">
 	            <div class="form-focus select-focus">
 	                <select class="select floating" id="countryList" name="category">
-	                    <option value="us-holiday">US</option>
+						<option value="ind-holiday">IN</option>
+	                    <!-- <option value="us-holiday">US</option> -->
 	                    <!-- <option value="philippines-holiday">Philippine Holiday</option> -->
-	                    <option value="uk-holiday">UK</option>
-	                    <option value="uk-us-holiday">UK and US</option>
+	                    <!-- <option value="uk-holiday">UK</option> -->
+	                    <!-- <option value="uk-us-holiday">UK and US</option> -->
 	                    <!-- <option value="south-holiday">South Africa Holiday</option> -->
 	                </select>
 <!--					<select class="select floating" id="countryList" name="category">-->
@@ -50,6 +51,17 @@
 							<th>Location</th>
 						</tr>
 					</thead>
+					<tbody id="ind-holiday">
+					{% for ind in ind_holidays %}
+						<tr class="holiday-completed">
+							<!-- <td>{{ forloop.counter }}</td> -->
+							<td>{{ ind.name }}</td>
+							<td>{{ ind.date }}</td>
+							<td>{{ ind.date|date:"D" }}</td>
+							<td>{{ ind.country_code }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
 					<tbody id="us-holiday">
 					{% for us in us_holidays %}
 						<tr class="holiday-completed">
@@ -217,6 +229,12 @@
             		$("#uk-us-holiday").hide();
             	}else if(categoryID == 'uk-holiday'){
             		$("#uk-holiday").show();
+            		$("#us-holiday").hide();
+            		$("#south-holiday").hide();
+            		$("#philippines-holiday").hide();
+            		$("#uk-us-holiday").hide();
+				}else if(categoryID == 'ind-holiday'){
+            		$("#ind-holiday").show();
             		$("#us-holiday").hide();
             		$("#south-holiday").hide();
             		$("#philippines-holiday").hide();

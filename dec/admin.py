@@ -23,8 +23,13 @@ admin.site.register(Buddy_Email)
 admin.site.register(FileManager)
 admin.site.register(File_Category)
 admin.site.register(SocialMedia)
-admin.site.register(Country)
 
+admin.site.register(LeaveType)
+
+
+class Client_Country_Admin(admin.ModelAdmin):
+    search_fields = ['name']
+admin.site.register(Country,Client_Country_Admin)
 
 class Client_contract_workAdmin(admin.ModelAdmin):
     search_fields = ['client_id']

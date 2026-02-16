@@ -96,11 +96,7 @@
                     </div>
                 </form>
             </div>
-            {% if request.user.id == 2 %}
-                <div class="col-auto float-end ms-auto" style="margin-top: -15px;">
-                    <a href="{% url 'dashboard' linkedin_user_url %}" class="btn add-btn" target="_blank"> Airtable</a>
-                </div>
-            {% endif %}
+            
             {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
                 <div class="col-auto float-end ms-auto"  style="margin-top: -15px;">
                     <form action="{% url 'export_client_data' %}" method="post" target="_blank" style="width: 100%">

@@ -7518,14 +7518,31 @@ def holidays(request):
     south_africa_holidays = Holiday.objects.filter(country_id=4)
     philippine_holidays = Holiday.objects.filter(country_id=2)
 
-    us_id = Country.objects.get(code='US').id
-    uk_id = Country.objects.get(code='UK').id    
+    us_id = Country.objects.filter(code='US').first()
+    uk_id = Country.objects.filter(code='UK').first()   
+    in_id = Country.objects.filter(code='IN').first()   
 
+    if us_id:
+        us_id = us_id.id
+    if uk_id:
+        uk_id = uk_id.id
+    if in_id:
+        in_id = in_id.id
     from django.db.models import F, Value
     from django.db.models.functions import Concat
 
     from django.db.models.functions import ExtractYear
 
+    ind_holidays = Holiday.objects.filter(
+        country_id=in_id
+    ).annotate(
+        year=ExtractYear('date')
+    ).filter(
+        year=2026
+    ).annotate(
+        country_code=Value('IN')
+    ).values('id', 'name', 'date', 'country_code')
+    print(ind_holidays)
     # US Holidays for 2026
     us_holidays = Holiday.objects.filter(
         country_id=us_id
@@ -7565,12 +7582,13 @@ def holidays(request):
     uk_us_holidays = sorted(uk_us_holidays, key=lambda x: x['date'])
     us_holidays = sorted(us_holidays, key=lambda x: x['date'])
     uk_holidays = sorted(uk_holidays, key=lambda x: x['date'])
+    ind_holidays = sorted(ind_holidays, key=lambda x: x['date'])
     country_list = Country.objects.all()
     # print(country_list)
     # return HttpResponse(country_list)
 
     return render(request, "employees/holidays.html",
-                  {'country_names': country_name, 'us_holidays': us_holidays, 'uk_holidays': uk_holidays,
+                  {'country_names': country_name, 'us_holidays': us_holidays,'ind_holidays': ind_holidays, 'uk_holidays': uk_holidays,
                    'south_africa_holidays': south_africa_holidays, 'philippine_holidays': philippine_holidays,'uk_us_holidays':uk_us_holidays,'active':active,'country_list':country_list})
 
 @csrf_exempt
@@ -24698,7 +24716,8 @@ def leave_daterange(start_date, end_date):
 @csrf_exempt
 @login_required(login_url='/')
 def short_mail(request):
-    if request.user.id == 6:
+    if request.user.groups.all()[0].name == "admin":
+
         # Get current week range (Monday to Thursday)
         if request.method == 'POST':
 

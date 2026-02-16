@@ -95,9 +95,9 @@ WSGI_APPLICATION = 'Database_Educated_System.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dec_db',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
+        'NAME': 'brickwin_dec',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
         'HOST': 'localhost',
         'PORT': '5432'
     }
