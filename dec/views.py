@@ -110,8 +110,8 @@ def admin_dashboard(request):
     else:
         last_month=current_month-1
 
-    print(current_month)
-    print(last_month)
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
     from datetime import datetime, timedelta
@@ -133,7 +133,7 @@ def admin_dashboard(request):
 
 
     user_name = request.session.get('user_name')
-    print(user_name)
+    logging.info(user_name)
     employee1 = employee.objects.get(user_name=user_name)
     employee_id = employee1.toggl_user_id
 
@@ -158,7 +158,7 @@ def admin_dashboard(request):
                 try:
                     total_working_hours += float(working_data[str(loggedin_employee_id)])
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
     total_working_hours = round(total_working_hours, 2)
 
     # Convert employee_ids to a list
@@ -289,8 +289,8 @@ def admin_dashboard(request):
 
     project_start_date = date(2025, 1, 1)
     project_list2 = project.objects.filter(created_at__gte=project_start_date).order_by('-id')[:5]
-    print("Vinod project_list2")
-    print(project_list2)
+    logging.info("Vinod project_list2")
+    logging.info(project_list2)
 
     project_data_with_employees = []
     import ast
@@ -480,9 +480,9 @@ def admin_dashboard(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            print("ssssssssssssssssssssssssssssssssssssss")
-            print(current_month)
-            print(last_month)
+            logging.info("ssssssssssssssssssssssssssssssssssssss")
+            logging.info(current_month)
+            logging.info(last_month)
 
             selected_year = request.session.get('year')
 
@@ -496,9 +496,9 @@ def admin_dashboard(request):
                 last_year=current_year-1
             else:
                 last_year=current_year
-            print("gggggggggggggggggggggggggggggggggggggg")
-            print(current_year)
-            print(last_year)
+            logging.info("gggggggggggggggggggggggggggggggggggggg")
+            logging.info(current_year)
+            logging.info(last_year)
 
             import calendar
             from datetime import date
@@ -574,10 +574,10 @@ def admin_dashboard(request):
     else:
 
         user_name = request.session.get('user_name')
-        print(user_name)
+        logging.info(user_name)
         employee1 = employee.objects.get(user_name=user_name)
         employee_id = employee1.toggl_user_id
-        print(employee_id)
+        logging.info(employee_id)
         selected_month = request.session.get('month')
 
         if selected_month:
@@ -590,9 +590,9 @@ def admin_dashboard(request):
             last_month=12
         else:
             last_month=current_month-1
-        print("ssssssssssssssssssssssssssssssssssssss")
-        print(current_month)
-        print(last_month)
+        logging.info("ssssssssssssssssssssssssssssssssssssss")
+        logging.info(current_month)
+        logging.info(last_month)
 
         selected_year = request.session.get('year')
 
@@ -611,13 +611,13 @@ def admin_dashboard(request):
         project_ids = toggl_user_detail.objects.filter(user_id=employee_id).values_list('project_id', flat=True).distinct()
         # Query to get the unique client IDs for the projects
         unique_client_ids = project.objects.filter(toggl_project_id__in=project_ids).values('toggl_client_id').distinct()
-        print(unique_client_ids)
+        logging.info(unique_client_ids)
         # Count the number of unique clients
         total_unique_clients = unique_client_ids.count()
-        print(f"Total Unique Clients for Employee {user_name}: {total_unique_clients}")
+        logging.info(f"Total Unique Clients for Employee {user_name}: {total_unique_clients}")
 
         total_employees = employee.objects.filter(status=1).count()
-        print(f"Total Number of Employees: {total_employees}")
+        logging.info(f"Total Number of Employees: {total_employees}")
                 
 
         start_date = date(current_year, current_month, 1)
@@ -707,9 +707,9 @@ def final_calculation(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
-    print(current_month)
-    print(last_month)
+    logging.info("ssssssssssssssssssssssssssssssssssssss")
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -723,9 +723,9 @@ def final_calculation(request):
         last_year=current_year-1
     else:
         last_year=current_year
-    print("gggggggggggggggggggggggggggggggggggggg")
-    print(current_year)
-    print(last_year)
+    logging.info("gggggggggggggggggggggggggggggggggggggg")
+    logging.info(current_year)
+    logging.info(last_year)
     # from django.http import HttpResponse
     # return HttpResponse(current_month)
      # Calculate the sum of rates for all clients
@@ -742,7 +742,7 @@ def final_calculation(request):
         sum_one_project_rate_previous = float(formatted_sum_one_project_rate_previous)
     except ValueError:
         # Handle the case where conversion fails
-        print("Error: Unable to convert strings to float")
+        logging.info("Error: Unable to convert strings to float")
 
      # Calculate profits for the current month
     profit_current = sum_one_project_rate_current - sum_of_employee_cost_current
@@ -757,15 +757,15 @@ def final_calculation(request):
     profit_previous = "{:.2f}".format(profit_previous)
     contracted_profit_current = "{:.2f}".format(contracted_profit_current)
     contracted_profit_previous = "{:.2f}".format(contracted_profit_previous)
-    print("profit current")
-    print(sum_one_project_rate_current)
-    print(profit_current)
-    print(contracted_profit_current)
+    logging.info("profit current")
+    logging.info(sum_one_project_rate_current)
+    logging.info(profit_current)
+    logging.info(contracted_profit_current)
 
-    print("profit previous")
-    print(sum_one_project_rate_previous)
-    print(profit_previous)
-    print(contracted_profit_previous)
+    logging.info("profit previous")
+    logging.info(sum_one_project_rate_previous)
+    logging.info(profit_previous)
+    logging.info(contracted_profit_previous)
 
     return HttpResponse("Calculated")
 
@@ -832,12 +832,12 @@ def employees(request):
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
     # if request.user.username == 'Sbhutra' and request.user.id == 6:
-            print("super_admin or superadmin")
+            logging.info("super_admin or superadmin")
             # Admin can see all employees
             employee_list = employee.objects.filter(status=1).all().order_by('image_url')
             # Assuming 'designation' is the field representing designations in your Employee model
@@ -847,13 +847,13 @@ def employees(request):
 
             # Retrieve country names for the unique country IDs
             unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
-            print("sssssssssssss")
-            print(unique_country_names)
+            logging.info("sssssssssssss")
+            logging.info(unique_country_names)
 
             toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-            print(toggl_user_ids)
+            logging.info(toggl_user_ids)
             ids = [employee.id for employee in employee_list]
-            print(ids)
+            logging.info(ids)
             selected_month = request.session.get('month')
 
             if selected_month:
@@ -866,9 +866,9 @@ def employees(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            print("ssssssssssssssssssssssssssssssssssssss")
-            print(current_month)
-            print(last_month)
+            logging.info("ssssssssssssssssssssssssssssssssssssss")
+            logging.info(current_month)
+            logging.info(last_month)
 
             selected_year = request.session.get('year')
 
@@ -883,35 +883,35 @@ def employees(request):
             else:
                 last_year=current_year
 
-            print("gggggggggggggggggggggggggggggggggggggg")
-            print(current_year)
-            print(last_year)
+            logging.info("gggggggggggggggggggggggggggggggggggggg")
+            logging.info(current_year)
+            logging.info(last_year)
             if current_year == 2023 and 9 <= current_month <= 12:
                 contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                print(contracted_employee_dict)
+                logging.info("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-                print(contracted_employee_dict)
+                logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
 
 
             context={
@@ -930,11 +930,11 @@ def employees(request):
 
     # if request.user.groups.exists():
     #     group = request.user.groups.all()
-    #     print("exist group")
-    #     print(group)
+    #     logging.info("exist group")
+    #     logging.info(group)
 
     #     if group[0].name == 'admin' or group[0].name == 'super_admin':
-    print("admin")
+    logging.info("admin")
     # Admin can see all employees
     employee_list = employee.objects.filter(status=1).all().order_by('image_url')
     # Assuming 'designation' is the field representing designations in your Employee model
@@ -946,9 +946,9 @@ def employees(request):
     unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
 
     toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-    print(toggl_user_ids)
+    logging.info(toggl_user_ids)
     ids = [employee.id for employee in employee_list]
-    print(ids)
+    logging.info(ids)
     selected_month = request.session.get('month')
 
     if selected_month:
@@ -961,9 +961,9 @@ def employees(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
-    print(current_month)
-    print(last_month)
+    logging.info("ssssssssssssssssssssssssssssssssssssss")
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -980,28 +980,28 @@ def employees(request):
     if current_year == 2023 and 9 <= current_month <= 12:
         contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month,month__year=current_year
         )
-        print(contracted_employee_for_month)
+        logging.info(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
 
         for emp in employee_list:
             emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-        print('muskan')
-        print(employee_list)
+        logging.info('muskan')
+        logging.info(employee_list)
     else:
         contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
         )
-        # print(contracted_employee_for_month)
+        # logging.info(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-        print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-        # print(contracted_employee_dict)
+        logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+        # logging.info(contracted_employee_dict)
 
         for emp in employee_list:
             emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-        print("muskan33333333333333333333333333333333333333333333")
-        # print(employee_list)
-        print(current_month)
+        logging.info("muskan33333333333333333333333333333333333333333333")
+        # logging.info(employee_list)
+        logging.info(current_month)
 
     context={
         "employee_list": employee_list,
@@ -1025,12 +1025,12 @@ def old_employees(request):
     active[2] = 'active'
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
         # if request.user.username == 'Sbhutra' and request.user.id == 6:
-            print("super_admin")
+            logging.info("super_admin")
             # Admin can see all employees
             employee_list = employee.objects.filter(status=2).all().order_by('image_url')
             # Assuming 'designation' is the field representing designations in your Employee model
@@ -1041,9 +1041,9 @@ def old_employees(request):
             # Retrieve country names for the unique country IDs
             unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
             toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-            print(toggl_user_ids)
+            logging.info(toggl_user_ids)
             ids = [employee.id for employee in employee_list]
-            print(ids)
+            logging.info(ids)
             selected_month = request.session.get('month')
 
             if selected_month:
@@ -1056,9 +1056,9 @@ def old_employees(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            print("ssssssssssssssssssssssssssssssssssssss")
-            print(current_month)
-            print(last_month)
+            logging.info("ssssssssssssssssssssssssssssssssssssss")
+            logging.info(current_month)
+            logging.info(last_month)
 
             selected_year = request.session.get('year')
 
@@ -1073,35 +1073,35 @@ def old_employees(request):
             else:
                 last_year=current_year
 
-            print("gggggggggggggggggggggggggggggggggggggg")
-            print(current_year)
-            print(last_year)
+            logging.info("gggggggggggggggggggggggggggggggggggggg")
+            logging.info(current_year)
+            logging.info(last_year)
             if current_year == 2023 and 9 <= current_month <= 12:
                 contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                print(contracted_employee_dict)
+                logging.info("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-                print(contracted_employee_dict)
+                logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
 
 
             context={
@@ -1121,11 +1121,11 @@ def old_employees(request):
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
-            print("admin")
+            logging.info("admin")
             # Admin can see all employees
             employee_list = employee.objects.filter(status=2).all().order_by('image_url')
             # Assuming 'designation' is the field representing designations in your Employee model
@@ -1136,9 +1136,9 @@ def old_employees(request):
             # Retrieve country names for the unique country IDs
             unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
             toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-            print(toggl_user_ids)
+            logging.info(toggl_user_ids)
             ids = [employee.id for employee in employee_list]
-            print(ids)
+            logging.info(ids)
             selected_month = request.session.get('month')
 
             if selected_month:
@@ -1151,9 +1151,9 @@ def old_employees(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            print("ssssssssssssssssssssssssssssssssssssss")
-            print(current_month)
-            print(last_month)
+            logging.info("ssssssssssssssssssssssssssssssssssssss")
+            logging.info(current_month)
+            logging.info(last_month)
 
             selected_year = request.session.get('year')
 
@@ -1170,27 +1170,27 @@ def old_employees(request):
             if current_year == 2023 and 9 <= current_month <= 12:
                 contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month,month__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
-                print(contracted_employee_for_month)
+                logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-                print(contracted_employee_dict)
+                logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
 
             context={
                 "employee_list": employee_list,
@@ -1210,12 +1210,12 @@ def old_employees(request):
 @login_required(login_url='/')
 def update_employee_status_2(request):
     if request.method == 'POST':
-        print("iffffffffffffff")
+        logging.info("iffffffffffffff")
         employee_id = request.POST.get('id')
         new_status = request.POST.get('status')
 
-        print(employee_id)
-        print(new_status)
+        logging.info(employee_id)
+        logging.info(new_status)
 
         try:
             employee1 = employee.objects.get(id=employee_id)
@@ -1231,12 +1231,12 @@ def update_employee_status_2(request):
 @login_required(login_url='/')
 def update_employee_status_1(request):
     if request.method == 'POST':
-        print("iffffffffffffff")
+        logging.info("iffffffffffffff")
         employee_id = request.POST.get('id')
         new_status = request.POST.get('status')
 
-        print(employee_id)
-        print(new_status)
+        logging.info(employee_id)
+        logging.info(new_status)
 
         try:
             employee1 = employee.objects.get(id=employee_id)
@@ -1256,7 +1256,7 @@ def update_employee_status_1(request):
 def employees_id(request):
     if request.method == 'GET':
 
-        print("ss")
+        logging.info("ss")
 
         import requests
         from base64 import b64encode
@@ -1277,16 +1277,16 @@ def employees_id(request):
 
         if response.status_code == 200:  # Check if the request was successful (status code 200)
             response_data = response.json()  # Parse the JSON content of the response
-            print(response_data)
+            logging.info(response_data)
 
             for entry in response_data:
                 uid = entry.get('uid')
                 email = entry.get('email')
                 name = entry.get('name')
 
-                print(f"User ID: {uid}")
-                print(f"Email: {email}")
-                print(f"Username: {name}")
+                logging.info(f"User ID: {uid}")
+                logging.info(f"Email: {email}")
+                logging.info(f"Username: {name}")
 
                 # Check if the employee with the same UID exists in the database
                 existing_employee = employee.objects.filter(toggl_user_id=uid).first()
@@ -1297,7 +1297,7 @@ def employees_id(request):
                     new_employee.save()
 
         else:
-            print(f"Failed to fetch data. Status code: {response.status_code}")
+            logging.info(f"Failed to fetch data. Status code: {response.status_code}")
 
     return render(request,"employees_id.html",{})
 
@@ -1309,8 +1309,8 @@ def profile(request, employee_id,my_profile_tab=None):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         action = request.POST.get('action')
-        print(form_type)
-        print(action)
+        logging.info(form_type)
+        logging.info(action)
         # Handle image upload
         if form_type == 'form1':
             profile_picture = request.FILES.get('profile_picture')
@@ -1338,13 +1338,13 @@ def profile(request, employee_id,my_profile_tab=None):
         elif form_type == 'form2':
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
-            print(start_date)
-            print(end_date)
+            logging.info(start_date)
+            logging.info(end_date)
             if action == 'Call API':
                 try:
                     toggl_user_record = employee.objects.get(id=employee_id)
                     toggl_user_id = toggl_user_record.toggl_user_id
-                    print(toggl_user_id)
+                    logging.info(toggl_user_id)
 
                     workspace_id = '4007366'
                     email = 'jharna.agrawal@brickwin.com'
@@ -1372,8 +1372,8 @@ def profile(request, employee_id,my_profile_tab=None):
 
                     # Parse the JSON response and store it in response_data
                     response_data = response.json()
-                    print("response")
-                    print(response_data)
+                    logging.info("response")
+                    logging.info(response_data)
 
                     for entry in response_data:
                         try:
@@ -1393,29 +1393,29 @@ def profile(request, employee_id,my_profile_tab=None):
                             currency = entry['currency']
                             time_entries = entry['time_entries']  # This is a list of time entries
                             #
-                            print(f"User ID: {user_id}")
-                            print(f"Username: {username}")
-                            print(f"Project ID: {project_id}")
-                            print(f"Task ID: {task_id}")
-                            print(f"Billable: {billable}")
-                            print(f"Description: {description}")
-                            print(f"Tag IDs: {tag_ids}")
-                            print(f"Billable Amount (in cents): {billable_amount_in_cents}")
-                            print(f"Hourly Rate (in cents): {hourly_rate_in_cents}")
-                            print(f"Currency: {currency}")
-                            print(time_entries)
+                            logging.info(f"User ID: {user_id}")
+                            logging.info(f"Username: {username}")
+                            logging.info(f"Project ID: {project_id}")
+                            logging.info(f"Task ID: {task_id}")
+                            logging.info(f"Billable: {billable}")
+                            logging.info(f"Description: {description}")
+                            logging.info(f"Tag IDs: {tag_ids}")
+                            logging.info(f"Billable Amount (in cents): {billable_amount_in_cents}")
+                            logging.info(f"Hourly Rate (in cents): {hourly_rate_in_cents}")
+                            logging.info(f"Currency: {currency}")
+                            logging.info(time_entries)
 
                             try:
                                 toggl_project = project.objects.get(toggl_project_id=project_id)
                                 toggl_projectid = toggl_project.toggl_project_id
                                 toggl_client = toggl_project.toggl_client_id
                                 toggl_name = toggl_project.toggl_project_name
-                                # print(toggl_projectid)
-                                # print(toggl_client)
-                                print(toggl_name)
+                                # logging.info(toggl_projectid)
+                                # logging.info(toggl_client)
+                                logging.info(toggl_name)
                                 toggl_client = client.objects.get(toggl_client_id=toggl_client)
                                 toggl_clientname = toggl_client.toggl_client_name
-                                print(toggl_clientname)
+                                logging.info(toggl_clientname)
 
                             except employee.DoesNotExist:
                                 # Handle the case where the toggl_user does not exist
@@ -1448,18 +1448,18 @@ def profile(request, employee_id,my_profile_tab=None):
                                 at_time_zone_offset = at_time.strftime('%z')
                                 at_time_zone_offset = f"{at_time_zone_offset[:-2]}:{at_time_zone_offset[-2:]}"
 
-                                print(f"Time Entry ID: {entry_id}")
-                                print(f"Seconds: {seconds}")
-                                print(f"Start Date: {start_date}")
-                                print(f"Start Time: {start_time_of_day}")
-                                print(f"Start Time Zone Offset: {start_time_zone_offset}")
-                                print(f"Stop Date: {stop_date}")
-                                print(f"Stop Time: {stop_time_of_day}")
-                                print(f"Stop Time Zone Offset: {stop_time_zone_offset}")
-                                print(f"Stop Date: {at_date}")
-                                print(f"Stop Time: {at_time_of_day}")
-                                print(f"Stop Time Zone Offset: {at_time_zone_offset}")
-                                print(f"Project Id: {project_id}")
+                                logging.info(f"Time Entry ID: {entry_id}")
+                                logging.info(f"Seconds: {seconds}")
+                                logging.info(f"Start Date: {start_date}")
+                                logging.info(f"Start Time: {start_time_of_day}")
+                                logging.info(f"Start Time Zone Offset: {start_time_zone_offset}")
+                                logging.info(f"Stop Date: {stop_date}")
+                                logging.info(f"Stop Time: {stop_time_of_day}")
+                                logging.info(f"Stop Time Zone Offset: {stop_time_zone_offset}")
+                                logging.info(f"Stop Date: {at_date}")
+                                logging.info(f"Stop Time: {at_time_of_day}")
+                                logging.info(f"Stop Time Zone Offset: {at_time_zone_offset}")
+                                logging.info(f"Project Id: {project_id}")
 
                                 existing_record = toggl_user_detail.objects.filter(
                                     employee_id=employee_id,
@@ -1485,7 +1485,7 @@ def profile(request, employee_id,my_profile_tab=None):
                                     time_entries_at_time=at_time_of_day,
                                     time_entries_at_time_utc=at_time_zone_offset,
                                 ).first()
-                                print(f"Toggle Details: {project_id}")
+                                logging.info(f"Toggle Details: {project_id}")
                                 if not existing_record:
                                     toggl_user1 = toggl_user_detail.objects.create(
                                         employee_id=employee_id,
@@ -1517,17 +1517,17 @@ def profile(request, employee_id,my_profile_tab=None):
 
                 except Exception as e:
                     # Handle other exceptions, you may want to log the error for debugging
-                    print(f"An error occurred: {str(e)}")
+                    logging.info(f"An error occurred: {str(e)}")
                     return HttpResponse("An error occurred")
                     # Parse the start and end dates into datetime objects
 
             elif action == 'Fetch from Database':
                 start_date = datetime.strptime(start_date, '%Y-%m-%d')
                 end_date = datetime.strptime(end_date, '%Y-%m-%d')
-                print("muksna")
-                print(start_date)
-                print(end_date)
-                print(employee_id)
+                logging.info("muksna")
+                logging.info(start_date)
+                logging.info(end_date)
+                logging.info(employee_id)
 
                 # Filter records based on the selected date range
                 filtered_records = toggl_user_detail.objects.filter(
@@ -1536,8 +1536,8 @@ def profile(request, employee_id,my_profile_tab=None):
                     # time_entries_start_date=start_date.strftime('%Y-%m-%d'),
                     # time_entries_stop_date=end_date.strftime('%Y-%m-%d')
                 )
-                print("filete")
-                print(filtered_records)
+                logging.info("filete")
+                logging.info(filtered_records)
                 # for printing toggl rows
                 # Create a list to store the detailed records
                 detailed_records = []
@@ -1545,19 +1545,19 @@ def profile(request, employee_id,my_profile_tab=None):
                 # Iterate through filtered records
                 for record in filtered_records:
                     project_id = record.project_id
-                    print(project_id)
+                    logging.info(project_id)
                     # project_detail = toggl_project_detail.objects.filter(toggl_project_id=project_id).first()
-                    # print(project_detail)
+                    # logging.info(project_detail)
                     toggl_project = project.objects.get(toggl_project_id=project_id)
                     toggl_projectid = toggl_project.toggl_project_id
                     toggl_client = toggl_project.toggl_client_id
                     toggl_projectname = toggl_project.toggl_project_name
-                    # print(toggl_projectid)
-                    # print(toggl_client)
-                    print(toggl_projectname)
+                    # logging.info(toggl_projectid)
+                    # logging.info(toggl_client)
+                    logging.info(toggl_projectname)
                     toggl_client = client.objects.get(toggl_client_id=toggl_client)
                     toggl_clientname = toggl_client.toggl_client_name
-                    print(toggl_clientname)
+                    logging.info(toggl_clientname)
 
                     # Create a dictionary to store the detailed record
                     detailed_record = {
@@ -1569,7 +1569,7 @@ def profile(request, employee_id,my_profile_tab=None):
                     # Append the detailed record to the list
                     detailed_records.append(detailed_record)
 
-                print(detailed_records)
+                logging.info(detailed_records)
 
                 # Create a dictionary to store the total time spent per client and project
                 total_time_spent = {}
@@ -1601,9 +1601,9 @@ def profile(request, employee_id,my_profile_tab=None):
                             total_time_spent[client_project_key] = time_seconds
                 # Now, total_time_spent dictionary contains the total time spent per client and project
                 # You can iterate through it to display the results
-                print("fghjbnmkl")
-                print(total_time_spent)
-                print(project_rate)
+                logging.info("fghjbnmkl")
+                logging.info(total_time_spent)
+                logging.info(project_rate)
                 #
                 # Convert the total time spent in seconds to hours, minutes, and seconds
                 total_time_spent_formatted = {}
@@ -1614,9 +1614,9 @@ def profile(request, employee_id,my_profile_tab=None):
 
                 # Now, total_time_spent_formatted dictionary contains the total time spent per client and project in HH:MM:SS format
                 # You can iterate through it to display the results
-                print(total_time_spent_formatted)
+                logging.info(total_time_spent_formatted)
                 for key, formatted_time in total_time_spent_formatted.items():
-                    print(f"Project {key}: {formatted_time}")
+                    logging.info(f"Project {key}: {formatted_time}")
                 #
                 # Initialize dictionaries to store results
                 total_time_spent_hours = {}
@@ -1632,7 +1632,7 @@ def profile(request, employee_id,my_profile_tab=None):
                     rate = project_id_2.rate
 
                     if rate:
-                        print("if")
+                        logging.info("if")
                         rate_without_comma = rate.replace(",", "")
                         rate = float(rate_without_comma)
                         hourly_rate = rate / 11
@@ -1641,7 +1641,7 @@ def profile(request, employee_id,my_profile_tab=None):
                         total_rate_formatted = "{:.2f}".format(total_rate)
                         project_rate_per_hour[project_id] = str(total_rate_formatted)
                     else:
-                        print("else")
+                        logging.info("else")
                         rate = 1000.0
                         hourly_rate = rate / 11
                         total_rate = hourly_rate * time_spent_hours
@@ -1650,11 +1650,11 @@ def profile(request, employee_id,my_profile_tab=None):
                         project_rate_per_hour[project_id] = str(total_rate_formatted)
 
                     # Print the results
-                print("Total Time Spent in Hours:")
-                print(total_time_spent_hours)
+                logging.info("Total Time Spent in Hours:")
+                logging.info(total_time_spent_hours)
 
-                print("Project Rate per Hour:")
-                print(project_rate_per_hour)
+                logging.info("Project Rate per Hour:")
+                logging.info(project_rate_per_hour)
 
                 # Initialize a variable to store the sum of rates
                 sum_of_rates = 0.0
@@ -1665,12 +1665,12 @@ def profile(request, employee_id,my_profile_tab=None):
 
                 sum_of_rates = "{:.2f}".format(sum_of_rates)
                 # Print the sum of rates
-                print("Sum of Rates:", sum_of_rates)
+                logging.info("Sum of Rates:", sum_of_rates)
 
                 # new for employee cost on project
                 user = employee.objects.get(id=employee_id)
                 user_salary = user.salary
-                print(user_salary)
+                logging.info(user_salary)
 
                 total_time_spent_employee = {}
                 employee_rate_per_hour = {}
@@ -1692,11 +1692,11 @@ def profile(request, employee_id,my_profile_tab=None):
                     employee_rate_per_hour[project_id] = str(total_rate_formatted)
 
                     # Print the results
-                print("total_time_spent_employee:")
-                print(total_time_spent_employee)
+                logging.info("total_time_spent_employee:")
+                logging.info(total_time_spent_employee)
 
-                print("employee_rate_per_hour:")
-                print(employee_rate_per_hour)
+                logging.info("employee_rate_per_hour:")
+                logging.info(employee_rate_per_hour)
 
                 # Initialize a variable to store the sum of rates
                 sum_of_rates_employee = 0.0
@@ -1708,7 +1708,7 @@ def profile(request, employee_id,my_profile_tab=None):
                 # Format total_rate to have 2 decimal places
                 sum_of_rates_employee = "{:.2f}".format(sum_of_rates_employee)
                 # Print the sum of rates
-                print("Sum of Rates Employee:", sum_of_rates_employee)
+                logging.info("Sum of Rates Employee:", sum_of_rates_employee)
 
                 employee_info = employee.objects.get(pk=employee_id)
                 # # new
@@ -1737,10 +1737,10 @@ def profile(request, employee_id,my_profile_tab=None):
                     client_instance = client.objects.get(toggl_client_id=project_client_id)
                     client_name = client_instance.toggl_client_name
                     client_names.append(client_name)
-                print("kkl")
-                print(project_ids)
-                print(project_names)
-                print(client_names)
+                logging.info("kkl")
+                logging.info(project_ids)
+                logging.info(project_names)
+                logging.info(client_names)
 
                 context = {
                     'employee': employee_info,
@@ -1890,8 +1890,8 @@ def profile(request, employee_id,my_profile_tab=None):
                 'start_date': project_data.start_date,
             })
 
-    print("Vinod project_data_with_employees")
-    print(project_data_with_employees)
+    logging.info("Vinod project_data_with_employees")
+    logging.info(project_data_with_employees)
     working_days = count_working_days_in_month(current_month, current_year)
 
     start_month = start_date.month
@@ -2169,8 +2169,8 @@ def profile(request, employee_id,my_profile_tab=None):
         client_id = data.client_id
         time_spent = data.time_entries_seconds
         total_time_spent[client_id] = total_time_spent.get(client_id, 0) + time_spent
-    print("weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-    print(total_time_spent)
+    logging.info("weeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+    logging.info(total_time_spent)
 
     employee1 = employee.objects.get(id=employee_id)
     # employee_salary= employee1.salary
@@ -2184,11 +2184,11 @@ def profile(request, employee_id,my_profile_tab=None):
         minutes, seconds2 = divmod(remainder, 60)
         client_total_time_spent_formatted[key] = f"{hours:02d}:{minutes:02d}:{seconds2:02d}"
         hourly_working = employee_salary / (working_days * 8)
-        print(seconds1)
+        logging.info(seconds1)
         employee_cost = (seconds1 / 3600) * float(hourly_working)
         employee_cost = "{:.2f}".format(employee_cost)
         client_tab_employee_cost[key]=employee_cost
-    print(client_tab_employee_cost)
+    logging.info(client_tab_employee_cost)
     # Continue with the rest of your existing code, grouping by month and processing accordingly
     result = (
         timeSheet.objects
@@ -2439,7 +2439,7 @@ def profile(request, employee_id,my_profile_tab=None):
 def clients_id(request):
     if request.method == 'GET':
 
-        print("ss")
+        logging.info("ss")
 
         import requests
         from base64 import b64encode
@@ -2460,14 +2460,14 @@ def clients_id(request):
 
         if response.status_code == 200:  # Check if the request was successful (status code 200)
             response_data = response.json()  # Parse the JSON content of the response
-            print(response_data)
+            logging.info(response_data)
 
             for entry in response_data:
                 id = entry.get('id')
                 name = entry.get('name')
 
-                print(f"client ID: {id}")
-                print(f"Client name: {name}")
+                logging.info(f"client ID: {id}")
+                logging.info(f"Client name: {name}")
 
                 # Check if the employee with the same UID exists in the database
                 existing_client = client.objects.filter(toggl_client_id=id).first()
@@ -2478,7 +2478,7 @@ def clients_id(request):
                     new_client.save()
 
         else:
-            print(f"Failed to fetch data. Status code: {response.status_code}")
+            logging.info(f"Failed to fetch data. Status code: {response.status_code}")
 
     return render(request,"clients_id.html",{})
 
@@ -2526,9 +2526,9 @@ def current_clients(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
-    print(current_month)
-    print(last_month)
+    logging.info("ssssssssssssssssssssssssssssssssssssss")
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -2547,11 +2547,11 @@ def current_clients(request):
     end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin'or group[0].name == 'super_user':
-            print("super admin or admin ")
+            logging.info("super admin or admin ")
             if current_year == 2023 and 9 <= current_month <= 12:
                 client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
 
@@ -2601,11 +2601,11 @@ def current_clients(request):
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
-            print("admin")
+            logging.info("admin")
             if current_year == 2023 and 9 <= current_month <= 12:
                 client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
 
@@ -2706,7 +2706,7 @@ def all_clients(request):
      active = [''] * 15
      active[13] = 'active'
      client_list = client.objects.filter(status=1).all()
-     print(client_list)
+     logging.info(client_list)
      return render(request, "all_client.html", {"client_list": client_list,"active":active})
 
 @csrf_exempt
@@ -2728,9 +2728,9 @@ def archived_clients(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
-    print(current_month)
-    print(last_month)
+    logging.info("ssssssssssssssssssssssssssssssssssssss")
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -2747,19 +2747,19 @@ def archived_clients(request):
 
 
     client_list = client.objects.filter(status=2).all().order_by('image_url')
-    print(client_list)
+    logging.info(client_list)
     return render(request, "archived_clients.html", {"client_list": client_list,"active":active})
 
 @csrf_exempt
 @login_required(login_url='/')
 def update_client_status_2(request):
     if request.method == 'POST':
-        print("iffffffffffffffclientstatus2")
+        logging.info("iffffffffffffffclientstatus2")
         client_id = request.POST.get('id')
         new_status = request.POST.get('status')
 
-        print(client_id)
-        print(new_status)
+        logging.info(client_id)
+        logging.info(new_status)
 
         try:
             client1 = client.objects.get(id=client_id)
@@ -2775,12 +2775,12 @@ def update_client_status_2(request):
 @login_required(login_url='/')
 def update_client_status_1(request):
     if request.method == 'POST':
-        print("iffffffffffffff")
+        logging.info("iffffffffffffff")
         client_id = request.POST.get('id')
         new_status = request.POST.get('status')
 
-        print(client_id)
-        print(new_status)
+        logging.info(client_id)
+        logging.info(new_status)
 
         try:
             client1 = client.objects.get(id=client_id)
@@ -2831,8 +2831,8 @@ def client_profile(request, client_id):
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
 
-        print(f"Start date (Monday): {start_date}")
-        print(f"End date (Sunday): {end_date}")
+        logging.info(f"Start date (Monday): {start_date}")
+        logging.info(f"End date (Sunday): {end_date}")
 
         # Extract the year from the datetime objects
         current_month = start_date.month
@@ -2953,10 +2953,10 @@ def client_profile(request, client_id):
         )
 
 
-    print('YEAR AND MONTH', start_year, end_year, start_month, end_month, query)
+    logging.info('YEAR AND MONTH', start_year, end_year, start_month, end_month, query)
     if Client_contract_work.objects.filter(client_id=client_id).filter(query).exists():
         contracts = Client_contract_work.objects.filter(client_id=client_id).filter(query)
-        print(contracts, 'TEST Contract')
+        logging.info(contracts, 'TEST Contract')
         for contract in contracts:
             ui_final_cost = contract.cost
             date = contract.date
@@ -2967,9 +2967,9 @@ def client_profile(request, client_id):
             role_json_str = contract.working_role
             role_dict = json.loads(role_json_str)
             working_week = calculate_month_weeks(start_date, end_date)
-            print("Vinod start_date :", start_date)
-            print("end_date :", end_date)
-            print("working_week :", working_week)
+            logging.info("Vinod start_date :", start_date)
+            logging.info("end_date :", end_date)
+            logging.info("working_week :", working_week)
             try:
                 working_week_count = working_week[target_month]
             except KeyError:
@@ -2982,9 +2982,9 @@ def client_profile(request, client_id):
                 if target_month == 12:
                     working_week_count = working_week[target_month]
                     working_week_count = working_week_count - 1
-            print(work_dict, 'work dict')
+            logging.info(work_dict, 'work dict')
             for employee_id, hours in work_dict.items():
-                print(hours, working_week_count, 'HOURS WORK WEEK')
+                logging.info(hours, working_week_count, 'HOURS WORK WEEK')
                 try:
                     hours = float(hours)
                     employee1 = employee.objects.get(id=int(employee_id))
@@ -3027,7 +3027,7 @@ def client_profile(request, client_id):
                         }
 
                 except ValueError:
-                    print(f"Invalid hours value for employee_id {employee_id}: {hours} in contract {contract.id}")
+                    logging.info(f"Invalid hours value for employee_id {employee_id}: {hours} in contract {contract.id}")
                 except employee.DoesNotExist:
                     employee_details2[int(employee_id)] = {
                         'name': f"Employee {employee_id} not found",
@@ -3046,13 +3046,13 @@ def client_profile(request, client_id):
             else:
                 details['formula'] = ""
 
-        print(f"employee_details2 {employee_details2} ")
+        logging.info(f"employee_details2 {employee_details2} ")
 
     from datetime import date
     project_start_date = date(2025, 1, 1)
     project_list2 = project.objects.filter(client_id=client_id, created_at__gte=project_start_date).order_by('-id')[:5]
-    print("Vinod project_list2")
-    print(project_list2)
+    logging.info("Vinod project_list2")
+    logging.info(project_list2)
 
     project_data_with_employees = []
     import ast
@@ -3102,7 +3102,7 @@ def client_profile(request, client_id):
             work_dict = json.loads(work_json_str)
             role_json_str = first_record.working_role
             role_dict = json.loads(role_json_str)
-            print('SUPER ADMIN', work_dict)
+            logging.info('SUPER ADMIN', work_dict)
             for employee_id, hours in work_dict.items():
                 try:
                     employee1 = employee.objects.get(id=int(employee_id))
@@ -3160,7 +3160,7 @@ def client_profile(request, client_id):
                     # Get the number of days in that month
                     days_in_month = calendar.monthrange(date.year, date.month)[1]
                     ui_total_weeks = round(days_in_month / 7, 2)
-                    # print(days_in_month)
+                    # logging.info(days_in_month)
 
                     if date_difference == days_in_month:
                         # weeks=4.3
@@ -3237,7 +3237,7 @@ def client_profile(request, client_id):
 
                     target_month_start = datetime(target_year, target_month, 1)
                     target_month_end = min(target_month_start - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month == start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days + 1
@@ -3347,10 +3347,10 @@ def client_profile(request, client_id):
             ui_client_data.append(ui_client_data1)
             # Print the employee details
             for employee_id, details in employee_details.items():
-                print(
+                logging.info(
                     f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
     else:
-        print("No contracted hours found for the specified client.")
+        logging.info("No contracted hours found for the specified client.")
 
     unique_category_ids = timeSheet.objects.filter(client_id=client_id,
                                                    time_entries_start_date__range=(start_date, end_date),
@@ -3372,7 +3372,7 @@ def client_profile(request, client_id):
             client_category_list.append({'id': category_id, 'category_name': category_name})
 
         except Work_Category.DoesNotExist:
-            print(f"Category with ID {category_id} does not exist in the WorkCategory table.")
+            logging.info(f"Category with ID {category_id} does not exist in the WorkCategory table.")
 
     # Get unique timeSheet entries for a specific client
     unique_timesheet_entries = timeSheet.objects.filter(client_id=client_id,
@@ -3408,7 +3408,7 @@ def client_profile(request, client_id):
             })
 
         except employee.DoesNotExist:
-            print(f"Employee with ID {employee_id} does not exist in the Employee table.")
+            logging.info(f"Employee with ID {employee_id} does not exist in the Employee table.")
 
     total_time_spent_by_category = timeSheet.objects.filter(client_id=client_id,
                                                             time_entries_start_date__gte=start_date,
@@ -3439,16 +3439,16 @@ def client_profile(request, client_id):
         }
 
     # Print or use the category_time_dict as needed
-    print(category_time_dict)
+    logging.info(category_time_dict)
 
-    print("kiki")
+    logging.info("kiki")
     total_time_spent_by_client = timeSheet.objects.filter(
         client_id=client_id,
         time_entries_start_date__gte=start_date,  # Filter based on start date
         time_entries_stop_date__lte=end_date,  # Filter based on end date
         status=None
     ).values('client_id', 'employee_id').annotate(total_time=Sum('time_entries_seconds'))
-    print(total_time_spent_by_client)
+    logging.info(total_time_spent_by_client)
     # Create a dictionary to store category_id and total time spent
     category_time_dict_client = {}
 
@@ -3471,7 +3471,7 @@ def client_profile(request, client_id):
             'minutes': total_time_spent_minutes,
             'seconds': total_time_spent_seconds
         }
-    print(category_time_dict_client)
+    logging.info(category_time_dict_client)
 
     # if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
     #     all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
@@ -3615,7 +3615,7 @@ def client_profile(request, client_id):
         for contracted_client in contracted_client1:
 
             date1 = contracted_client
-            # print(date)
+            # logging.info(date)
 
             date = date1.date
 
@@ -3716,7 +3716,7 @@ def client_profile(request, client_id):
                     employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
                 else:
-                    print("else")
+                    logging.info("else")
                     # If it doesn't exist, create a new entry
                     employee_salary_dict[int(employee_id)] = total_salary
                     employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
@@ -3737,9 +3737,9 @@ def client_profile(request, client_id):
     employee_list = employee.objects.filter(status=1)
     employee_id_list = list(employee_details2.keys())
     monthly_amount = Client_contract_work.objects.filter(client_id=client_id).values('cost').order_by('-id').first()
-    print('buddy_ids ', buddy_ids)
-    print('advisor_ids ', advisor_ids)
-    print('monthly_amount ', monthly_amount)
+    logging.info('buddy_ids ', buddy_ids)
+    logging.info('advisor_ids ', advisor_ids)
+    logging.info('monthly_amount ', monthly_amount)
 
     files = FileManager.objects.filter(client_id=client_id).order_by('-id').all()
 
@@ -3777,7 +3777,7 @@ def client_profile(request, client_id):
             '-created_at')
         category_key = category.name.replace(' ', '_').lower()
         files_by_category[category_key] = category_files
-    print(files_by_category, 'files_by_category')
+    logging.info(files_by_category, 'files_by_category')
     # END DYNAMIC FILE SHOW
     # all_employee = employee.objects.filter(status = 1)
     auth_user_employee = User.objects.all()
@@ -3861,7 +3861,7 @@ def client_profile(request, client_id):
 def projects_id(request):
     if request.method == 'GET':
 
-        print("ss")
+        logging.info("ss")
 
         import requests
         from base64 import b64encode
@@ -3889,19 +3889,19 @@ def projects_id(request):
                                 params=params)
 
         if response.status_code == 200:
-            # If the request was successful, print the JSON response
-            print("hbjnjnm,")
+            # If the request was successful, logging.info the JSON response
+            logging.info("hbjnjnm,")
             response_data=response.json()
-            print(response.json())
+            logging.info(response.json())
 
             for entry in response_data:
                 id = entry.get('id')
                 client_id = entry.get('client_id')
                 name = entry.get('name')
 
-                print(f"project ID: {id}")
-                print(f"client id: {client_id}")
-                print(f"Projectname: {name}")
+                logging.info(f"project ID: {id}")
+                logging.info(f"client id: {client_id}")
+                logging.info(f"Projectname: {name}")
 
                 # Check if the employee with the same UID exists in the database
                 existing_project = project.objects.filter(toggl_project_id=id).first()
@@ -3911,9 +3911,9 @@ def projects_id(request):
                         new_project = project(toggl_project_id=id, toggl_client_id=client_id, toggl_project_name=name)
                         new_project.save()
         else:
-            # If there was an error, print the status code and response content
-            print(f"Error: {response.status_code}")
-            print(response.content)
+            # If there was an error, logging.info the status code and response content
+            logging.info(f"Error: {response.status_code}")
+            logging.info(response.content)
 
     return render(request,"projects_id.html",{})
 
@@ -3940,8 +3940,8 @@ def projects(request):
             description = request.POST.get('description')
             uploaded_file = request.FILES.get('uploaded_file')
 
-            print("Vinod Jan20")
-            print(request.POST.getlist('leader'))
+            logging.info("Vinod Jan20")
+            logging.info(request.POST.getlist('leader'))
 
             if not project_name:
                 return JsonResponse({"error": "Project name cannot be blank."}, status=400)
@@ -4006,7 +4006,7 @@ def projects(request):
                         for chunk in uploaded_file.chunks():
                             destination.write(chunk)
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
 
             if uploaded_file:
                 uploaded_file = os.path.join(settings.STATIC_URL, 'assets', 'img', 'user', filename)
@@ -4074,12 +4074,12 @@ def projects(request):
         status = ''
     
 
-    print("Vinod project_name")
-    print(project_name)
-    print('employee_ids')
-    print(employee_ids)
-    print('status')
-    print(status)
+    logging.info("Vinod project_name")
+    logging.info(project_name)
+    logging.info('employee_ids')
+    logging.info(employee_ids)
+    logging.info('status')
+    logging.info(status)
     project_start_date = date(2025, 1, 1)
     # project_queryset = project.objects.filter(created_at__gte=project_start_date).order_by('id')
 
@@ -4112,8 +4112,8 @@ def projects(request):
 
     project_list = project_queryset[:100] if isinstance(project_queryset, list) else project_queryset.order_by('id')[:100]
 
-    print("Vinod project_list")
-    print(project_list)
+    logging.info("Vinod project_list")
+    logging.info(project_list)
 
     project_data_with_employees = []
     for project_data in project_list:
@@ -4254,21 +4254,21 @@ def view_project(request, project_id):
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         action = request.POST.get('action')
-        print(form_type)
-        print(action)
+        logging.info(form_type)
+        logging.info(action)
         # Handle image upload
         if form_type == 'form3':
             start_date = request.POST.get('start_date')
             end_date = request.POST.get('end_date')
-            print(start_date)
-            print(end_date)
+            logging.info(start_date)
+            logging.info(end_date)
             if action == 'Call API':
 
                 try:
 
                     toggl_project_record = toggl_project.objects.get(project_id=project_id)
                     toggl_project_id = toggl_project_record.toggl_project_id
-                    print(toggl_project_id)
+                    logging.info(toggl_project_id)
 
                     workspace_id = '4007366'
                     email = 'jharna.agrawal@brickwin.com'
@@ -4310,19 +4310,19 @@ def view_project(request, project_id):
                         currency = entry['currency']
                         time_entries = entry['time_entries']  # This is a list of time entries
 
-                        print(f"User ID: {user_id}")
-                        print(f"Username: {username}")
-                        print(f"Project ID: {project_id}")
-                        print(f"Task ID: {task_id}")
-                        print(f"Billable: {billable}")
-                        print(f"Description: {description}")
-                        print(f"Tag IDs: {tag_ids}")
-                        print(f"Billable Amount (in cents): {billable_amount_in_cents}")
-                        print(f"Hourly Rate (in cents): {hourly_rate_in_cents}")
-                        print(f"Currency: {currency}")
+                        logging.info(f"User ID: {user_id}")
+                        logging.info(f"Username: {username}")
+                        logging.info(f"Project ID: {project_id}")
+                        logging.info(f"Task ID: {task_id}")
+                        logging.info(f"Billable: {billable}")
+                        logging.info(f"Description: {description}")
+                        logging.info(f"Tag IDs: {tag_ids}")
+                        logging.info(f"Billable Amount (in cents): {billable_amount_in_cents}")
+                        logging.info(f"Hourly Rate (in cents): {hourly_rate_in_cents}")
+                        logging.info(f"Currency: {currency}")
                         toggl_user1 = toggl_user.objects.get(toggl_user_id=user_id)
                         employee_id = toggl_user1.employee_id
-                        print(f"employee_id: {employee_id}")
+                        logging.info(f"employee_id: {employee_id}")
 
                         project_data = None  # Initialize project data variable
                         try:
@@ -4344,7 +4344,7 @@ def view_project(request, project_id):
 
                             if project_response.status_code == 200:
                                 project_data = project_response.json()
-                                print(f"Project Data: {project_data}")
+                                logging.info(f"Project Data: {project_data}")
                                 # Assuming you have already fetched and stored project_data as a dictionary
                                 toggl_project_id = project_data['id']
                                 workspace_id = project_data['workspace_id']
@@ -4353,12 +4353,12 @@ def view_project(request, project_id):
                                 is_private = project_data['is_private']
                                 active = project_data['active']
 
-                                print(f"Project ID: {toggl_project_id}")
-                                print(f"Workspace ID: {workspace_id}")
-                                print(f"Client ID: {client_id}")
-                                print(f"Project Name: {name}")
-                                print(f"Is Private: {is_private}")
-                                print(f"Active: {active}")
+                                logging.info(f"Project ID: {toggl_project_id}")
+                                logging.info(f"Workspace ID: {workspace_id}")
+                                logging.info(f"Client ID: {client_id}")
+                                logging.info(f"Project Name: {name}")
+                                logging.info(f"Is Private: {is_private}")
+                                logging.info(f"Active: {active}")
                                 #
                                 at = project_data['at']
                                 created_at = project_data['created_at']
@@ -4374,12 +4374,12 @@ def view_project(request, project_id):
                                 at_time_zone_offset = f"{at_time_zone_offset[:-2]}:{at_time_zone_offset[-2:]}"
                                 created_at_time_zone_offset = created_at_time.strftime('%z')
                                 created_at_time_zone_offset = f"{created_at_time_zone_offset[:-2]}:{created_at_time_zone_offset[-2:]}"
-                                print(f"Startat Date: {at_date}")
-                                print(f"Startat Time: {at_time_of_day}")
-                                print(f"Startat Time Zone Offset: {at_time_zone_offset}")
-                                print(f"Stopcreated at Date: {created_at_date}")
-                                print(f"Stopcreated at Time: {created_at_time_of_day}")
-                                print(f"Stopcreated at Time Zone Offset: {created_at_time_zone_offset}")
+                                logging.info(f"Startat Date: {at_date}")
+                                logging.info(f"Startat Time: {at_time_of_day}")
+                                logging.info(f"Startat Time Zone Offset: {at_time_zone_offset}")
+                                logging.info(f"Stopcreated at Date: {created_at_date}")
+                                logging.info(f"Stopcreated at Time: {created_at_time_of_day}")
+                                logging.info(f"Stopcreated at Time Zone Offset: {created_at_time_zone_offset}")
                                 #
                                 server_deleted_at = project_data['server_deleted_at']
                                 color = project_data['color']
@@ -4398,22 +4398,22 @@ def view_project(request, project_id):
                                 wid = project_data['wid']
                                 cid = project_data['cid']
                                 #
-                                print(f"Server Deleted At: {server_deleted_at}")
-                                print(f"Color: {color}")
-                                print(f"Billable: {billable}")
-                                print(f"Template: {template}")
-                                print(f"Auto Estimates: {auto_estimates}")
-                                print(f"Estimated Hours: {estimated_hours}")
-                                print(f"Rate: {rate}")
-                                print(f"Rate Last Updated: {rate_last_updated}")
-                                print(f"Currency: {currency_1}")
-                                print(f"Recurring: {recurring}")
-                                print(f"Recurring Parameters: {recurring_parameters}")
-                                print(f"Current Period: {current_period}")
-                                print(f"Fixed Fee: {fixed_fee}")
-                                print(f"Actual Hours: {actual_hours}")
-                                print(f"WID: {wid}")
-                                print(f"CID: {cid}")
+                                logging.info(f"Server Deleted At: {server_deleted_at}")
+                                logging.info(f"Color: {color}")
+                                logging.info(f"Billable: {billable}")
+                                logging.info(f"Template: {template}")
+                                logging.info(f"Auto Estimates: {auto_estimates}")
+                                logging.info(f"Estimated Hours: {estimated_hours}")
+                                logging.info(f"Rate: {rate}")
+                                logging.info(f"Rate Last Updated: {rate_last_updated}")
+                                logging.info(f"Currency: {currency_1}")
+                                logging.info(f"Recurring: {recurring}")
+                                logging.info(f"Recurring Parameters: {recurring_parameters}")
+                                logging.info(f"Current Period: {current_period}")
+                                logging.info(f"Fixed Fee: {fixed_fee}")
+                                logging.info(f"Actual Hours: {actual_hours}")
+                                logging.info(f"WID: {wid}")
+                                logging.info(f"CID: {cid}")
 
                                 # Try to fetch the corresponding project_id from the toggl_project table
                                 toggl_project_record = toggl_project.objects.filter(
@@ -4462,10 +4462,10 @@ def view_project(request, project_id):
                                     )
                                     new_project.save()
                             else:
-                                print(f"Failed to retrieve project data. Status code: {project_response.status_code}")
+                                logging.info(f"Failed to retrieve project data. Status code: {project_response.status_code}")
 
                         except Exception as e:
-                            print(f"An error occurred while fetching project data: {str(e)}")
+                            logging.info(f"An error occurred while fetching project data: {str(e)}")
 
                         # Loop through time entries for this entry
 
@@ -4495,17 +4495,17 @@ def view_project(request, project_id):
                             at_time_zone_offset = at_time.strftime('%z')
                             at_time_zone_offset = f"{at_time_zone_offset[:-2]}:{at_time_zone_offset[-2:]}"
 
-                            print(f"Time Entry ID: {entry_id}")
-                            print(f"Seconds: {seconds}")
-                            print(f"Start Date: {start_date}")
-                            print(f"Start Time: {start_time_of_day}")
-                            print(f"Start Time Zone Offset: {start_time_zone_offset}")
-                            print(f"Stop Date: {stop_date}")
-                            print(f"Stop Time: {stop_time_of_day}")
-                            print(f"Stop Time Zone Offset: {stop_time_zone_offset}")
-                            print(f"Stop Date: {at_date}")
-                            print(f"Stop Time: {at_time_of_day}")
-                            print(f"Stop Time Zone Offset: {at_time_zone_offset}")
+                            logging.info(f"Time Entry ID: {entry_id}")
+                            logging.info(f"Seconds: {seconds}")
+                            logging.info(f"Start Date: {start_date}")
+                            logging.info(f"Start Time: {start_time_of_day}")
+                            logging.info(f"Start Time Zone Offset: {start_time_zone_offset}")
+                            logging.info(f"Stop Date: {stop_date}")
+                            logging.info(f"Stop Time: {stop_time_of_day}")
+                            logging.info(f"Stop Time Zone Offset: {stop_time_zone_offset}")
+                            logging.info(f"Stop Date: {at_date}")
+                            logging.info(f"Stop Time: {at_time_of_day}")
+                            logging.info(f"Stop Time Zone Offset: {at_time_zone_offset}")
 
                             existing_record = toggl_user_detail.objects.filter(
                                 employee_id=employee_id,
@@ -4563,27 +4563,27 @@ def view_project(request, project_id):
 
                 except Exception as e:
                     # Handle other exceptions, you may want to log the error for debugging
-                    print(f"An error occurred: {str(e)}")
+                    logging.info(f"An error occurred: {str(e)}")
                     return HttpResponse("An error occurred")
                     # Parse the start and end dates into datetime objects
 
             elif action == 'Fetch from Database':
                 start_date = datetime.strptime(start_date, '%Y-%m-%d')
                 end_date = datetime.strptime(end_date, '%Y-%m-%d')
-                print(start_date)
-                print(end_date)
+                logging.info(start_date)
+                logging.info(end_date)
                 toggl_project_record = project.objects.get(id=project_id)
                 toggl_project_id = toggl_project_record.toggl_project_id
-                print("musan")
-                print(toggl_project_id)
+                logging.info("musan")
+                logging.info(toggl_project_id)
                 # Filter records based on the selected date range
                 filtered_records = toggl_user_detail.objects.filter(
                     project_id=toggl_project_id,
                     time_entries_start_date__range=(start_date, end_date)
 
                 )
-                # print("filete")
-                # print(filtered_records)
+                # logging.info("filete")
+                # logging.info(filtered_records)
                 # Initialize total_work_hours to 0
                 total_work_hours = 0
                 results = []
@@ -4638,8 +4638,8 @@ def view_project(request, project_id):
                         'employee_salary': employee_salary,
                         'earned_salary': "{:.2f}".format(earned_salary)
                     })
-                print("lkjhb")
-                print(results)
+                logging.info("lkjhb")
+                logging.info(results)
                 # # Calculate the total earned salary for all employees
                 # total_earned_salary1 = sum(entry['earned_salary'] for entry in results)
                 # total_earned_salary = "{:.2f}".format(total_earned_salary1)
@@ -4659,26 +4659,26 @@ def view_project(request, project_id):
                 # Format the result as "hours:minutes:seconds"
                 formatted_total_hours_worked = "{:02}:{:02}:{:02}".format(int(total_hours), int(total_minutes),
                                                                           int(total_seconds))
-                print("sahil")
-                print(formatted_total_hours_worked)
+                logging.info("sahil")
+                logging.info(formatted_total_hours_worked)
 
 
                 for entry in results:
-                    print("Name:", entry['name'])
-                    print("Hours Worked:", entry['hours_worked'])
-                    print("Minutes Worked:", entry['minutes_worked'])
-                    print("Seconds Worked:", entry['seconds_worked'])
-                    print("Total hour Worked:", entry['total_hours_worked'])
-                    print("Employee Salary:", entry['employee_salary'])
-                    print()
+                    logging.info("Name:", entry['name'])
+                    logging.info("Hours Worked:", entry['hours_worked'])
+                    logging.info("Minutes Worked:", entry['minutes_worked'])
+                    logging.info("Seconds Worked:", entry['seconds_worked'])
+                    logging.info("Total hour Worked:", entry['total_hours_worked'])
+                    logging.info("Employee Salary:", entry['employee_salary'])
+                    logging.info()
 
-                print("Total Earned Salary for All Employees:", total_earned_salary)
+                logging.info("Total Earned Salary for All Employees:", total_earned_salary)
                 project_detail = project.objects.get(pk=project_id)
                 # Extract project_ids from the queryset
                 project_ids = [project_detail.toggl_project_id]
 
                 # Now project_ids contains the project IDs of the first 200 projects
-                print(project_ids)
+                logging.info(project_ids)
                 # Initialize an empty dictionary to store project_id and corresponding user_ids
                 project_user_dict = {}
 
@@ -4691,7 +4691,7 @@ def view_project(request, project_id):
                     # Assign the user_ids to the dictionary with project_id as the key
                     project_user_dict[project_id] = list(user_ids)
 
-                print(project_user_dict)
+                logging.info(project_user_dict)
 
                 for project_id, user_ids in project_user_dict.items():
                     # Fetch image URLs and full names for each user_id from the Employee model
@@ -4706,7 +4706,7 @@ def view_project(request, project_id):
                          'full_name': f"{data['first_name']} {data['last_name']}"}
                         for data in employees_data]
 
-                print(project_user_dict)
+                logging.info(project_user_dict)
 
                 context = {
                     'project': project_detail,
@@ -4723,15 +4723,15 @@ def view_project(request, project_id):
     end_date = date(current_year, 9, 30)  # October 31st of the current year
     toggl_project_record = project.objects.get(id=project_id)
     toggl_project_id = toggl_project_record.toggl_project_id
-    print("musan")
-    print(toggl_project_id)
+    logging.info("musan")
+    logging.info(toggl_project_id)
     # Filter records based on the selected date range
     filtered_records = toggl_user_detail.objects.filter(
         project_id=toggl_project_id,
         time_entries_start_date__range=(start_date, end_date)
     )
-    # print("filete")
-    # print(filtered_records)
+    # logging.info("filete")
+    # logging.info(filtered_records)
     # Initialize total_work_hours to 0
     total_work_hours = 0
     results = []
@@ -4786,8 +4786,8 @@ def view_project(request, project_id):
             'employee_salary': employee_salary,
             'earned_salary': "{:.2f}".format(earned_salary)
         })
-    print("lkjhb")
-    print(results)
+    logging.info("lkjhb")
+    logging.info(results)
     # # Calculate the total earned salary for all employees
     # total_earned_salary1 = sum(entry['earned_salary'] for entry in results)
     # total_earned_salary = "{:.2f}".format(total_earned_salary1)
@@ -4805,28 +4805,28 @@ def view_project(request, project_id):
     # Format the result as "hours:minutes:seconds"
     formatted_total_hours_worked = "{:02}:{:02}:{:02}".format(int(total_hours), int(total_minutes),
                                                               int(total_seconds))
-    print("sahil")
-    print(formatted_total_hours_worked)
+    logging.info("sahil")
+    logging.info(formatted_total_hours_worked)
 
     for entry in results:
-        print("Name:", entry['name'])
-        print("Hours Worked:", entry['hours_worked'])
-        print("Minutes Worked:", entry['minutes_worked'])
-        print("Seconds Worked:", entry['seconds_worked'])
-        print("Total hour Worked:", entry['total_hours_worked'])
-        print("Employee Salary:", entry['employee_salary'])
-        print()
+        logging.info("Name:", entry['name'])
+        logging.info("Hours Worked:", entry['hours_worked'])
+        logging.info("Minutes Worked:", entry['minutes_worked'])
+        logging.info("Seconds Worked:", entry['seconds_worked'])
+        logging.info("Total hour Worked:", entry['total_hours_worked'])
+        logging.info("Employee Salary:", entry['employee_salary'])
+        logging.info()
 
-    print("Total Earned Salary for All Employees:", total_earned_salary)
+    logging.info("Total Earned Salary for All Employees:", total_earned_salary)
 
-    print("l")
-    print(project_id)
+    logging.info("l")
+    logging.info(project_id)
     project_detail = project.objects.get(pk=project_id)
     # Extract project_ids from the queryset
     project_ids = [project_detail.toggl_project_id]
 
     # Now project_ids contains the project IDs of the first 200 projects
-    print(project_ids)
+    logging.info(project_ids)
     # Initialize an empty dictionary to store project_id and corresponding user_ids
     project_user_dict = {}
 
@@ -4838,7 +4838,7 @@ def view_project(request, project_id):
         # Assign the user_ids to the dictionary with project_id as the key
         project_user_dict[project_id] = list(user_ids)
 
-    print(project_user_dict)
+    logging.info(project_user_dict)
 
     for project_id, user_ids in project_user_dict.items():
         # Fetch image URLs and full names for each user_id from the Employee model
@@ -4851,7 +4851,7 @@ def view_project(request, project_id):
             {'id': data['id'],'image_url': data['image_url'], 'full_name': f"{data['first_name']} {data['last_name']}"}
             for data in employees_data]
 
-    print(project_user_dict)
+    logging.info(project_user_dict)
     context = {
         'project': project_detail,
         'total_earned_salary': total_earned_salary,
@@ -4895,7 +4895,7 @@ def holidays(request):
     ).annotate(
         country_code=Value('IN')
     ).values('id', 'name', 'date', 'country_code')
-    print(ind_holidays)
+    logging.info(ind_holidays)
     # US Holidays for 2026
     us_holidays = Holiday.objects.filter(
         country_id=us_id
@@ -4937,7 +4937,7 @@ def holidays(request):
     uk_holidays = sorted(uk_holidays, key=lambda x: x['date'])
     ind_holidays = sorted(ind_holidays, key=lambda x: x['date'])
     country_list = Country.objects.all()
-    # print(country_list)
+    # logging.info(country_list)
     # return HttpResponse(country_list)
 
     return render(request, "employees/holidays.html",
@@ -4958,7 +4958,7 @@ def update_employee(request):
         # from django.http import HttpResponse
         # return HttpResponse(reader)
         for row in reader:
-            print(row)
+            logging.info(row)
             # user_email = "sbhutra@educatedc.com"
             user_email = row['EC Email'].strip()
             first_name = row['First Name'].strip()
@@ -5026,7 +5026,7 @@ def update_employee(request):
                         # return HttpResponse(new_employee_details)
                         new_employee_details.save()
                 except Exception as e:
-                    print(e)
+                    logging.info(e)
         return redirect("employees")
 
     return render(request, "excel/update_employee.html", {})
@@ -5071,8 +5071,8 @@ def update_client(request):
         reader = csv.DictReader(io_string)
         for row in reader:
             # return HttpResponse(row['Toggl Client ID'])
-            print('Client Id')
-            print(row['Toggl Client ID'])
+            logging.info('Client Id')
+            logging.info(row['Toggl Client ID'])
             try:
                 existing_elient = client.objects.get(toggl_client_id=row['Toggl Client ID'])
                 if existing_elient:
@@ -5179,7 +5179,7 @@ def search_client(request):
         client_ids = [client_info.id for client_info in client_list]
     else:
         client_ids = []
-    print("Vinod client_ids",selected_category)
+    logging.info("Vinod client_ids",selected_category)
     
     if client_id:
         client_list = client.objects.filter(id__in=client_id)
@@ -5240,7 +5240,7 @@ def edit_employee(request):
             existing_employee.phone = phone
             existing_employee.save()
     except Exception as e:
-        print(e)
+        logging.info(e)
 
     return redirect('employees')
 
@@ -5269,8 +5269,8 @@ def get_projects(request, employee_id):
             employee_id=employee_id,
             time_entries_start_date__range=(start_date, end_date)
         )
-        print("filete")
-        print(filtered_records)
+        logging.info("filete")
+        logging.info(filtered_records)
         # for printing toggl rows
         # Create a list to store the detailed records
         detailed_records = []
@@ -5278,19 +5278,19 @@ def get_projects(request, employee_id):
         # Iterate through filtered records
         for record in filtered_records:
             project_id = record.project_id
-            print(project_id)
+            logging.info(project_id)
             # project_detail = toggl_project_detail.objects.filter(toggl_project_id=project_id).first()
-            # print(project_detail)
+            # logging.info(project_detail)
             toggl_project = project.objects.get(toggl_project_id=project_id)
             toggl_projectid = toggl_project.toggl_project_id
             toggl_client = toggl_project.toggl_client_id
             toggl_projectname = toggl_project.toggl_project_name
-            # print(toggl_projectid)
-            # print(toggl_client)
-            print(toggl_projectname)
+            # logging.info(toggl_projectid)
+            # logging.info(toggl_client)
+            logging.info(toggl_projectname)
             toggl_client = client.objects.get(toggl_client_id=toggl_client)
             toggl_clientname = toggl_client.toggl_client_name
-            print(toggl_clientname)
+            logging.info(toggl_clientname)
 
             # Create a dictionary to store the detailed record
             detailed_record = {
@@ -5302,7 +5302,7 @@ def get_projects(request, employee_id):
             # Append the detailed record to the list
             detailed_records.append(detailed_record)
 
-        print(detailed_records)
+        logging.info(detailed_records)
 
         context = {
             'detailed_records': detailed_records,
@@ -5359,7 +5359,7 @@ def leave_admin(request):
                 # from django.http import HttpResponse
                 # return HttpResponse(existing_employee.id)
             except Exception as e:
-                print(e)    
+                logging.info(e)    
         elif request_for == 'search_leave':
             employee_name = request.POST.get('employee_name')
             leave_type = request.POST.get('leave_type')
@@ -5458,7 +5458,7 @@ def leave_admin(request):
         dict_results = [dict(zip(column_names, row)) for row in result_list]
         dict_results = sorted(dict_results, key=lambda x: x['start_date'], reverse=True)
         current_year = datetime.now().year
-        print(current_year)
+        logging.info(current_year)
         dict_results = [
             entry for entry in dict_results
             if entry['start_date'].year == int(current_year) or entry['end_date'].year == int(current_year)
@@ -5508,12 +5508,12 @@ def leave_admin(request):
 
         presents_count = employee_count - planned_leave_count - holiday_employees_count + overlap_count
 
-        print(f"Presents Count: {presents_count}",holiday_employee_ids)
+        logging.info(f"Presents Count: {presents_count}",holiday_employee_ids)
     except Exception as e:
         presents_count = employee_count-planned_leave_count
 
 
-    print('dict_results')
+    logging.info('dict_results')
     
     for dict_result in dict_results:
         all_leaves = leave.objects.filter(
@@ -5543,8 +5543,8 @@ def leave_admin(request):
         remaining_leave = country_detail.paid_leave - total_taken_days
 
         dict_result['remaining_leave'] = remaining_leave
-        print(all_leaves)
-        print(dict_result)
+        logging.info(all_leaves)
+        logging.info(dict_result)
 
     # Pass the leave details to the template
     leaveTypes = LeaveType.objects.all()
@@ -5584,7 +5584,7 @@ def leave_employee(request):
     employee_name = None
     user_id = request.user.id
     employee_detail = employee.objects.get(user_id=user_id)
-    print(employee_detail )
+    logging.info(employee_detail )
     employee_id = employee_detail.id
 
     if employee_detail.country_id:
@@ -5617,7 +5617,7 @@ def leave_employee(request):
 
     # ASHOK ADDED THIS FILTER FOR FILTER CURRENT YEAR LEAVE
     current_year = datetime.now().year
-    print(current_year)
+    logging.info(current_year)
     dict_results = [
         entry for entry in dict_results
         if entry['start_date'].year == int(current_year) or entry['end_date'].year == int(current_year)
@@ -5651,8 +5651,8 @@ def leave_employee(request):
         status='declined'
     )
     
-    # print("muskan")
-    # print(all_leaves)
+    # logging.info("muskan")
+    # logging.info(all_leaves)
     total_taken = 0
     total_count = all_leaves.count()
 
@@ -5696,10 +5696,10 @@ def leave_employee(request):
                         other_leave_count += 0.5  # Assuming a half-day leave
 
     # Print or use the counts as needed
-    print(f"Total Leaves: {total_count}")
-    print(f"Total Taken Days: {total_taken}")
-    print(f"Medical Leave: {medical_leave}")
-    print(f"Other Leave Count: {other_leave_count}")
+    logging.info(f"Total Leaves: {total_count}")
+    logging.info(f"Total Taken Days: {total_taken}")
+    logging.info(f"Medical Leave: {medical_leave}")
+    logging.info(f"Other Leave Count: {other_leave_count}")
     if country_detail.paid_leave:
         remaining=country_detail.paid_leave-medical_leave-other_leave_count
         annual_leaves=country_detail.paid_leave
@@ -5707,7 +5707,7 @@ def leave_employee(request):
         remaining=12-medical_leave-other_leave_count
         annual_leaves=12
 
-    print(remaining)
+    logging.info(remaining)
 
     total_taken_days = 0
     # return HttpResponse(all_leaves)
@@ -5717,7 +5717,7 @@ def leave_employee(request):
         duration = (end_date - start_date).days + 1 if end_date and start_date else 0
         total_taken_days += duration
     remaining_leave = country_detail.paid_leave - total_taken_days
-    # print(duration)
+    # logging.info(duration)
     # return HttpResponse(total_taken_days)
     current_date = date.today()
     context = {
@@ -5749,10 +5749,10 @@ def leave_employee(request):
 @csrf_exempt  # Use this decorator to temporarily disable CSRF protection for testing purposes
 def search(request):
     if request.method == 'GET':
-        print("search")
+        logging.info("search")
         # Retrieve the leave_type from the query parameters
         leave_type = request.GET.get('leave_type', None)
-        print(leave_type)
+        logging.info(leave_type)
 
         if leave_type:
             # Perform your search logic here using leave_type
@@ -5798,7 +5798,7 @@ def search(request):
                 except employee.DoesNotExist:
                     # Handle the case where the employee is not found
                     pass
-            print(search_result)
+            logging.info(search_result)
             # Return the result as JSON
             return JsonResponse({'result': search_result})
         else:
@@ -5848,7 +5848,7 @@ def upload_contracted_hours(request):
                         try:
                             start_date = date(current_year, current_month, 1)  # October 1st of the current year
                             end_date = date(current_year, current_month, 31)
-                            print(current_month)
+                            logging.info(current_month)
                             # start_date = date(current_year, 9, 1)  # October 1st of the current year
                             # end_date = date(current_year, 9, 30)  # October 31st of the current year
 
@@ -5871,7 +5871,7 @@ def upload_contracted_hours(request):
                             new_client_details = contracted_hours(client_id=client_id,client_name=client_name,total_working_hours=total_working_hours,no_of_people_on_account=no_of_people_on_account, working_input=json_data,month=current_date)
                             new_client_details.save()
                     except Exception as e:
-                        print(e)
+                        logging.info(e)
         return redirect("employees")
 
     return render(request, "excel/upload_contracted_hours.html", {})
@@ -5896,10 +5896,10 @@ def upload_client_contract_work(request):
                     employee_list.append(emp_obj.id)
                 except employee.DoesNotExist:
                     # Handle the case where the client with the specified toggl_client_id does not exist
-                    print(f"Client with toggl_client_id {employee_id} does not exist.")
+                    logging.info(f"Client with toggl_client_id {employee_id} does not exist.")
 
             # Now 'client_ids' contains the corresponding client IDs for the employee IDs in 'employee_list'
-            # print(employee_list)
+            # logging.info(employee_list)
             for row in reader:
                 client_id = row[0].strip()
                 client_name = row[1].strip()+','+row[2].strip()
@@ -5921,7 +5921,7 @@ def upload_client_contract_work(request):
 
                 employee_working = row [index:]
                 working_dict = {key: value for key, value in zip(employee_list, employee_working) if value != ''}
-                print(working_dict)
+                logging.info(working_dict)
 
                 json_data = json.dumps(working_dict)
 
@@ -5942,7 +5942,7 @@ def upload_client_contract_work(request):
                         except Exception as e:
                             client_details = ''
 
-                        print(current_date)
+                        logging.info(current_date)
 
                         if client_details:
                             # client_details.total_working_hours = total_working_hours
@@ -5954,7 +5954,7 @@ def upload_client_contract_work(request):
                             new_client_details = Client_contract_work(client_id=client_id,total_working_hours=total_working_hours,no_of_people_on_account=no_of_people_on_account, working_role=json_data,cost=cost,date=current_date,status=1)
                             new_client_details.save()
                     except Exception as e:
-                        print(e)
+                        logging.info(e)
         return redirect("employees")
 
     return render(request, "excel/upload_client_contract_work.html", {})
@@ -5991,7 +5991,7 @@ def upload_attendance(request):
                     else:
                         in_time = None
                 except ValueError as e:
-                    print(f"Error parsing in_time: {e}")
+                    logging.info(f"Error parsing in_time: {e}")
 
                 if out_time:
                     try:
@@ -6006,7 +6006,7 @@ def upload_attendance(request):
                         else:
                             out_time = None
                     except ValueError as e:
-                        print(f"Error parsing out_time: {e}")
+                        logging.info(f"Error parsing out_time: {e}")
                 else:
                     out_time = None # Set out_time to None if it's not provided
 
@@ -6028,13 +6028,13 @@ def upload_attendance(request):
                             attendance_details.status = status
                             attendance_details.save()
                         else:
-                            print(employee_id)
-                            print(current_date)
-                            print(status)
+                            logging.info(employee_id)
+                            logging.info(current_date)
+                            logging.info(status)
                             new_attendance_details = Attendance(employee_id=employee_id,date=current_date,in_time=in_time,status=status, out_time=out_time)
                             new_attendance_details.save()
                     except Exception as e:
-                        print(e)
+                        logging.info(e)
         # return redirect("employees")
 
     return render(request, "excel/upload_attendance.html", {})
@@ -6097,8 +6097,8 @@ def monthly_overview(request):
         
         employee_holiday[emp['id']] = dates_with_weekends
 
-    # print(str(year), str(month), '########', dates_with_weekends)
-    print(str(year), str(month), '########', employee_holiday)
+    # logging.info(str(year), str(month), '########', dates_with_weekends)
+    logging.info(str(year), str(month), '########', employee_holiday)
     context = {'employee_data_list': employee_data_list, 'last_day': last_day, 'numbers': range(1, last_day),
                'dates_with_weekends': dates_with_weekends, 'year': year, 'month': month,
                'employee_holiday': employee_holiday,'active':active}
@@ -6110,7 +6110,7 @@ def search_attendance(request):
     employee_name = request.GET.get('employee_name')
     month = request.GET.getlist('month')
     year = request.GET.getlist('year')
-    print(employee_name)
+    logging.info(employee_name)
 
     import calendar
     from django.db.models import Q
@@ -6175,7 +6175,7 @@ def search_attendance(request):
 
         
         employee_holiday[emp['id']] = dates_with_weekends
-    print(str(year), str(month), '########', employee_holiday)
+    logging.info(str(year), str(month), '########', employee_holiday)
     context = {'employee_data_list': employee_data_list, 'last_day': last_day, 'numbers': range(1, last_day),
                'dates_with_weekends': dates_with_weekends, 'year': str(year), 'month': str(month),
                'employee_holiday': employee_holiday}
@@ -6268,7 +6268,7 @@ def add_leave(request):
                     to_date = parsed_date2.strftime("%Y-%m-%d")
                 else:
                     to_date = None
-                # print(to_date)
+                # logging.info(to_date)
                 # from django.http import HttpResponse
                 if day_type ==1:
                     difference = parsed_date2 - parsed_date
@@ -6299,7 +6299,7 @@ def add_leave(request):
             # from django.http import HttpResponse
             # return HttpResponse(existing_employee.id)
         except Exception as e:
-            print(e)
+            logging.info(e)
 
         # Get the 'next' parameter from the form data
         next_url = request.POST.get('next', 'leaves')  # Default to 'leaves' if 'next' is not present
@@ -6320,7 +6320,7 @@ def add_leave(request):
 
 def update_response(request, buddy_email_id, buddy_id, client_id, response):
     # Get the Buddy_Email record
-    print(response, 'RESPONSE')
+    logging.info(response, 'RESPONSE')
     buddy_email = get_object_or_404(Buddy_Email, id=buddy_email_id)
     client_ob = client.objects.get(id=client_id)
     emp_ob = employee.objects.get(id=buddy_id)
@@ -6444,7 +6444,7 @@ def update_response(request, buddy_email_id, buddy_id, client_id, response):
 
 def update_leave_status(request):
     if request.method == 'GET':
-        print("search")
+        logging.info("search")
         # Retrieve the leave_type from the query parameters
         leave_id = request.GET.get('leave_id', None)
         leave_status = request.GET.get('leave_status', None)
@@ -6473,10 +6473,10 @@ def update_leave_status(request):
                 message = "Failed to update leave status."
             # Return the result as JSON
             if s_ajax:
-                print('YES AJAX')
+                logging.info('YES AJAX')
                 return JsonResponse({'status': status})
             else:
-                print('NO AJAX')
+                logging.info('NO AJAX')
                 context = {
                     'status': status,
                     'message': message,
@@ -6522,12 +6522,12 @@ def get_leave_by_id(request):
             employee_details = employee.objects.get(id=leave_detail.employee_id)
             country_detail = Country.objects.get(id=employee_details.country_id)
             remaining_leave = country_detail.paid_leave - total_taken_days
-            print(remaining_leave)
+            logging.info(remaining_leave)
             # END CODE FOR REMAINING LEAVE 20_1_25
 
 
-            print(leave_id)
-            print(leave_detail)
+            logging.info(leave_id)
+            logging.info(leave_detail)
             status = 1
             leave_detail_data = {
                 "id": leave_detail.id,
@@ -6553,10 +6553,10 @@ def delete_leave(request):
             leave_to_delete = leave.objects.get(id=leave_id)
             leave_to_delete.delete()
             status = 1
-            print("Leave deleted successfully.")
+            logging.info("Leave deleted successfully.")
         except leave.DoesNotExist:
             status = 0
-            print("Leave with the given ID does not exist.")
+            logging.info("Leave with the given ID does not exist.")
 
         return JsonResponse({'status': status})
 
@@ -6568,8 +6568,8 @@ def calender(request):
     active[10] = 'active'
     if request.method == 'POST':
         start_date_str = request.POST.get('calender_date')
-        print(start_date_str)
-        print("muskan")
+        logging.info(start_date_str)
+        logging.info("muskan")
         dt = datetime.strptime(start_date_str, "%B %d, %Y")
         start_date = dt.strftime("%Y-%m-%d")
         end_date = start_date
@@ -6604,7 +6604,7 @@ def calender(request):
 
         if category_id == 'other':
             other_category = request.POST.get('other_category')
-            print(other_category)
+            logging.info(other_category)
 
             # Check if other_category already exists
             existing_category = Work_Category.objects.filter(category__iexact=other_category).first()
@@ -6612,7 +6612,7 @@ def calender(request):
             if existing_category:
                 # Use the existing category
                 category_id = existing_category.id
-                print("Existing Category ID:", category_id)
+                logging.info("Existing Category ID:", category_id)
             else:
                 # Create a new Work_Category instance
                 if len(other_category) > 0:
@@ -6621,7 +6621,7 @@ def calender(request):
 
                     # Get the ID of the newly created instance
                     category_id = new_category_instance.id
-                    print("New Category ID:", category_id)
+                    logging.info("New Category ID:", category_id)
                 else:
                     return JsonResponse({"error": "Please Fill Work Category"}, status=400,safe=False)
 
@@ -6632,11 +6632,11 @@ def calender(request):
 
         if request.user.groups.exists():
             group = request.user.groups.all()
-            print("exist group")
-            print(group)
+            logging.info("exist group")
+            logging.info(group)
 
             if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
-                print("admin")
+                logging.info("admin")
                 employee_id = request.session.get('user_id')
 
 
@@ -6645,16 +6645,16 @@ def calender(request):
 
 
 
-        print("Employee id:",employee_id)
-        print("Client ID:", client_id)
-        print("Category ID:", category_id)
-        print("Project ID:", project_id)
-        print("Description:", description)
-        print("Time Seconds:", time_difference_seconds)
-        print("Start Date:", start_date)
-        print("End Date:", end_date)
-        print("Start Time:", start_time)
-        print("End Time:", end_time)
+        logging.info("Employee id:",employee_id)
+        logging.info("Client ID:", client_id)
+        logging.info("Category ID:", category_id)
+        logging.info("Project ID:", project_id)
+        logging.info("Description:", description)
+        logging.info("Time Seconds:", time_difference_seconds)
+        logging.info("Start Date:", start_date)
+        logging.info("End Date:", end_date)
+        logging.info("Start Time:", start_time)
+        logging.info("End Time:", end_time)
         # return HttpResponse(end_time)
         # Create a new timeSheet entry
         employee_ob = employee.objects.get(id=employee_id)
@@ -6689,7 +6689,7 @@ def calender(request):
 
 
     
-        print(country_city)
+        logging.info(country_city)
         local_tz = pytz.timezone(country_city)  # Replace with your local timezone
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -6704,7 +6704,7 @@ def calender(request):
         local_end_dt = local_tz.localize(local_end_dt)  # Make it timezone-aware
         # Convert to UTC
         end_date = local_end_dt.astimezone(pytz.utc)
-        print(start_date, '###########################', end_date)
+        logging.info(start_date, '###########################', end_date)
         start_time = start_date.time()
         end_time = end_date.time()
 
@@ -6746,7 +6746,7 @@ def calender(request):
         employee_ob = employee.objects.get(id=employee_id)
 
    
-        print(country_city)
+        logging.info(country_city)
 
 
         start_datetime = datetime.combine(new_entry.time_entries_start_date, new_entry.time_entries_start_time)
@@ -6764,21 +6764,21 @@ def calender(request):
         start_formatted = start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
         end_formatted = end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
-        print("muskan ")
-        print(new_entry.client_id)
-        print(start_formatted)
-        print(new_entry.description)
-        print(end_formatted)
+        logging.info("muskan ")
+        logging.info(new_entry.client_id)
+        logging.info(start_formatted)
+        logging.info(new_entry.description)
+        logging.info(end_formatted)
         try:
             client_name = client.objects.get(id=new_entry.client_id)
             client_name = client_name.company_name + ', ' + client_name.client_name  #client_name.toggl_client_name
-            print(client_name)
+            logging.info(client_name)
         except Exception as e:
             client_name = ''
 
         category_name = Work_Category.objects.get(id=new_entry.category_id)
         category_name = category_name.category
-        print(client_name, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', category_name,project_id,type(project_id))
+        logging.info(client_name, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', category_name,project_id,type(project_id))
         events = {
             'title': client_name,
             'start': start_formatted,
@@ -6792,7 +6792,7 @@ def calender(request):
             'color':'#303030',
             'projectId': new_entry.project_id,
         }
-        print(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        logging.info(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         return JsonResponse(events, safe=False)
 
 
@@ -6801,8 +6801,8 @@ def calender(request):
     # category = Work_Category.objects.exclude(id=23)
     category = Work_Category.objects.exclude(id=23).order_by('category')
     employee_id = request.session.get('user_id')
-    print(clients, '##############################################################')
-    print(category)
+    logging.info(clients, '##############################################################')
+    logging.info(category)
 
     # START CODE FOR FREQUENTLY USED EVENTS
     # Get the date 5 months ago
@@ -6839,11 +6839,11 @@ def calender(request):
             top_clients_third = list(clients.filter(id__in=emp_client_with_b))  # Top 5 first
             top_clients_all = emp_client_with_c + emp_client_with_a + emp_client_with_b
             remaining_clients = list(clients.exclude(id__in=top_clients_all))  # Others after
-            print(top_clients_first, top_clients_second, top_clients_third, top_clients_all, "TOP ALL C")
+            logging.info(top_clients_first, top_clients_second, top_clients_third, top_clients_all, "TOP ALL C")
             # Step 4: Combine the two lists without duplicates
             clients = top_clients_first + top_clients_second + top_clients_third + remaining_clients
     except Exception as e:
-        print(e)
+        logging.info(e)
     # End code FREQUENT USED WHERE EMP ID IS C on CLIENT
 
 
@@ -6873,7 +6873,7 @@ def calender(request):
                     "category_id": top_category["category_id"],
                     "category_name": category_name_ob.category,
                 }
-    print("DEBUG: Client-Category Map ->", client_category_map)  # Debugging
+    logging.info("DEBUG: Client-Category Map ->", client_category_map)  # Debugging
 
 
     context = {
@@ -6913,25 +6913,25 @@ def calendar(request):
         # Calculate the time difference in seconds
         time_difference_seconds = (end_time_str - start_time_str).seconds
 
-        # print(f"The user worked for {time_difference_seconds} seconds.")
+        # logging.info(f"The user worked for {time_difference_seconds} seconds.")
 
-        print("Start Date:", start_date)
-        print("End Date:", end_date)
-        print("Start Time:", start_time)
-        print("End Time:", end_time)
-        print("Project ID:", project_id)
-        print("Description:", description)
-        print("Time Seconds:", time_difference_seconds)
+        logging.info("Start Date:", start_date)
+        logging.info("End Date:", end_date)
+        logging.info("Start Time:", start_time)
+        logging.info("End Time:", end_time)
+        logging.info("Project ID:", project_id)
+        logging.info("Description:", description)
+        logging.info("Time Seconds:", time_difference_seconds)
 
         group = None
 
         if request.user.groups.exists():
             group = request.user.groups.all()
-            print("exist group")
-            print(group)
+            logging.info("exist group")
+            logging.info(group)
 
             if group[0].name == 'admin' or group[0].name == 'super_admin'  or group[0].name == 'super_user':
-                print("admin")
+                logging.info("admin")
                 user_name = request.session.get('admin')
         else:
             user_name = request.session.get('user_name')
@@ -6942,18 +6942,18 @@ def calendar(request):
             # Insert NULL into the database
             user_id = None
         employee_id = employee1.id
-        print(user_id)
+        logging.info(user_id)
 
-        print("Employee id:",employee_id)
-        print("User Id:",user_id)
-        print("User name:", user_name)
-        print("Project ID:", project_id)
-        print("Description:", description)
-        print("Time Seconds:", time_difference_seconds)
-        print("Start Date:", start_date)
-        print("End Date:", end_date)
-        print("Start Time:", start_time)
-        print("End Time:", end_time)
+        logging.info("Employee id:",employee_id)
+        logging.info("User Id:",user_id)
+        logging.info("User name:", user_name)
+        logging.info("Project ID:", project_id)
+        logging.info("Description:", description)
+        logging.info("Time Seconds:", time_difference_seconds)
+        logging.info("Start Date:", start_date)
+        logging.info("End Date:", end_date)
+        logging.info("Start Time:", start_time)
+        logging.info("End Time:", end_time)
 
         # Create a new timeSheet entry
         new_entry = timeSheet(
@@ -6995,7 +6995,7 @@ def get_client_id_api(request):
                 return JsonResponse({"error": "ev_summary and employee_id are required"}, status=400)
 
             # Normalize input summary
-            print(ev_summary)
+            logging.info(ev_summary)
             ev_summary = re.sub(r"'s\b", "", ev_summary)  # Remove "'s" at word boundaries
             ev_summary = re.sub(r'[^a-zA-Z\s]', '', ev_summary)
             ev_summary = ev_summary.lower().strip()
@@ -7014,7 +7014,7 @@ def get_client_id_api(request):
                     matched_clients[c.client_name] = c.id
 
             client_name_set = ev_words & clients_dict
-            print(client_name_set, 'ONLY NAMES')
+            logging.info(client_name_set, 'ONLY NAMES')
 
             if not matched_clients:
                 return JsonResponse({"client_id": None}, status=200)
@@ -7033,7 +7033,7 @@ def get_client_id_api(request):
                     .order_by("-client_count")
             )
             top_client_ids = [client1["client_id"] for client1 in top_clients]
-            print(matched_clients, top_clients)
+            logging.info(matched_clients, top_clients)
 
             matched_client_ids = []
             for name in client_name_set:
@@ -7041,7 +7041,7 @@ def get_client_id_api(request):
                     if name.lower() in c.client_name.lower().split():
                         matched_client_ids.append(c.id)
 
-            print("Matched Client IDs:", matched_client_ids)
+            logging.info("Matched Client IDs:", matched_client_ids)
 
             if matched_client_ids:
                 most_common_id = Counter(matched_client_ids).most_common(1)[0][0]
@@ -7061,7 +7061,7 @@ def get_client_id_api(request):
 
 def get_client_id(ev_summary, employee_id):
     # Normalize input summary and split into words
-    print(ev_summary)
+    logging.info(ev_summary)
     ev_summary = re.sub(r"'s\b", "", ev_summary)  # Remove "'s" at word boundaries
     ev_summary = re.sub(r'[^a-zA-Z\s]', '', ev_summary)
     ev_summary = ev_summary.lower().strip()
@@ -7075,16 +7075,16 @@ def get_client_id(ev_summary, employee_id):
     clients_dict = set()
     for c in clients:
         client_words = set(c.client_name.lower().split())
-        # print('CLIENT ERROR')
+        # logging.info('CLIENT ERROR')
         clients_dict.update(c.client_name.lower().split())
-        # print(ev_words, client_words, 'EV CLIENT')
+        # logging.info(ev_words, client_words, 'EV CLIENT')
         if ev_words & client_words:  # Check if there's a word match
             matched_clients[c.client_name] = c.id
     # clients_dict = {c.client_name.lower() for c in client.objects.all()}
     # Print the complete dictionary once (for debugging)
-    # print(clients_dict, "ALL CLIENTS")
+    # logging.info(clients_dict, "ALL CLIENTS")
     client_name_set = ev_words & clients_dict
-    print(client_name_set, 'ONLY NAMES')
+    logging.info(client_name_set, 'ONLY NAMES')
     if not matched_clients:
         return 227  # No matching client found
 
@@ -7103,7 +7103,7 @@ def get_client_id(ev_summary, employee_id):
     )
 
     top_client_ids = [client1["client_id"] for client1 in top_clients]
-    print(matched_clients, top_clients)
+    logging.info(matched_clients, top_clients)
 
     matched_client_ids = []
     # Step 3: Iterate over each name in client_name_set
@@ -7113,11 +7113,11 @@ def get_client_id(ev_summary, employee_id):
             if name.lower() in c.client_name.lower().split():
                 matched_client_ids.append(c.id)  # Store client_id
 
-    print("Matched Client IDs:", matched_client_ids)
+    logging.info("Matched Client IDs:", matched_client_ids)
 
     # Step 4: Find the most frequently occurring client_id
     if matched_client_ids:
-        print(Counter(matched_client_ids), 'MOST COMMON')
+        logging.info(Counter(matched_client_ids), 'MOST COMMON')
         most_common_id = Counter(matched_client_ids).most_common(1)[0][0]
         return most_common_id
 
@@ -7136,17 +7136,17 @@ def calender_events(request):
     group = None
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'super_admin' or group[0].name == 'super_user':
-            print("super admin")
+            logging.info("super admin")
             employee_id = request.session.get('user_id')
         else:
             employee_id = request.session.get('user_id')
     else:
         employee_id = request.session.get('user_id')
-    # print(employee_id, '%%%%%%%%%%%%%%%%55')
+    # logging.info(employee_id, '%%%%%%%%%%%%%%%%55')
     # Fetch timeSheet data
 
     emp_ob = employee.objects.get(id=int(employee_id))
@@ -7182,17 +7182,17 @@ def calender_events(request):
 
 
 
-    print(emp_ob.calender_status, 'KKK1111122222222')
+    logging.info(emp_ob.calender_status, 'KKK1111122222222')
     if emp_ob.calender_status == 0:
         time_entries = timeSheet.objects.filter(employee_id=employee_id).exclude(is_google=1)
-        print(time_entries, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa', len(time_entries))
+        logging.info(time_entries, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa', len(time_entries))
     else:
         # time_entries = timeSheet.objects.filter(employee_id=employee_id)
-        # print(time_entries, 'AAAAAAA', len(time_entries))
+        # logging.info(time_entries, 'AAAAAAA', len(time_entries))
         global CLIENT_SECRETS_FILE
         # Check if there are already stored credentials in the session
         employee_ob = employee.objects.get(id=int(employee_id))
-        print(employee_ob.token, 'ASHOK')
+        logging.info(employee_ob.token, 'ASHOK')
 
         if employee_ob.token:
             google_credentials = json.loads(employee_ob.token)
@@ -7219,7 +7219,7 @@ def calender_events(request):
                 else:
                     start_date_time = datetime(2024, 12, 31)
             except Exception as e:
-                print(e,'HAS GOOGLE ENTRY ERROR')
+                logging.info(e,'HAS GOOGLE ENTRY ERROR')
                 start_date_time = datetime(2024, 12, 31)
 
 
@@ -7266,10 +7266,10 @@ def calender_events(request):
                             calender_eid=calender_eid
                         ).first()
                         if existing_entry:
-                            print('THIS ENTRY ALREADY EXIST')
+                            logging.info('THIS ENTRY ALREADY EXIST')
                             continue
                     except Exception as e:
-                        print('EXISTING ENTRY CHECK ERROR')
+                        logging.info('EXISTING ENTRY CHECK ERROR')
 
                     attendees = ev.get('attendees', [])
                     # # Skip the event if any attendee has a 'declined' status
@@ -7294,7 +7294,7 @@ def calender_events(request):
                         continue
                     title_lower = title.lower()
                     title_lower = title_lower.split()
-                    print(title_lower,'TEST')
+                    logging.info(title_lower,'TEST')
                     if "al" in title_lower or "holiday" in title_lower or "ooo" in title_lower:  # Checks for exact "AL"
                         continue
 
@@ -7311,29 +7311,29 @@ def calender_events(request):
                         # category_id = 23
                         ev_summary = ev['summary']
                         client_id = get_client_id(ev_summary, employee_id)
-                        print(client_id)
+                        logging.info(client_id)
                         if not client_id:
                             client_id = 227
                         if client_id == '':
                             client_id = 227
                         category_id = 23
                     except Exception as e:
-                        print(e, 'Name Error')
+                        logging.info(e, 'Name Error')
                         client_id = 227
                         category_id = 23
-                    print("Employee id:", employee_id)
-                    print("Client ID:", client_id)
-                    print("Category ID:", category_id)
-                    # print("Category ID:", events)
+                    logging.info("Employee id:", employee_id)
+                    logging.info("Client ID:", client_id)
+                    logging.info("Category ID:", category_id)
+                    # logging.info("Category ID:", events)
                     try:
                         # gmail = ev['creator']['email']
                         calender_eid = ev['htmlLink']
-                        print("Description:", ev['summary'])
-                        # print("Time Seconds:", time_difference_seconds)
+                        logging.info("Description:", ev['summary'])
+                        # logging.info("Time Seconds:", time_difference_seconds)
                         start_date = ev['start']['dateTime']
                         end_date = ev['end']['dateTime']
-                        print("Start Date:", ev['start']['dateTime'])
-                        print("End Date:", ev['end']['dateTime'])
+                        logging.info("Start Date:", ev['start']['dateTime'])
+                        logging.info("End Date:", ev['end']['dateTime'])
 
 
                         try:
@@ -7349,8 +7349,8 @@ def calender_events(request):
                             start_date = ev['start'].get('dateTime', ev['start'].get('date'))
                             end_date = ev['end'].get('dateTime', ev['end'].get('date'))
 
-                            print("Start Date:", start_date)
-                            print("End Date:", end_date)
+                            logging.info("Start Date:", start_date)
+                            logging.info("End Date:", end_date)
 
                             # Convert 'Z' format to compatible format
                             if start_date.endswith("Z"):
@@ -7366,16 +7366,16 @@ def calender_events(request):
                             end_date = dt_obj2.date()
                             end_time = dt_obj2.time()
 
-                        print(end_date, end_time, "End Date:", start_date, start_time)
+                        logging.info(end_date, end_time, "End Date:", start_date, start_time)
 
                         employee_ob = employee.objects.get(id=employee_id)
     
-                        print(country_city)
+                        logging.info(country_city)
 
                         #GET TIMEZONE FROM GOOGLE AND CONVERT IT INTO UTC
                         calender_id = emp_ob.auth_gmail
                         calendar_info_timezone = service.calendars().get(calendarId=calender_id).execute()
-                        print(calendar_info_timezone.get("timeZone"),'EMPLOYEE TIMEZONE')
+                        logging.info(calendar_info_timezone.get("timeZone"),'EMPLOYEE TIMEZONE')
                         country_city_timezone = calendar_info_timezone.get("timeZone")
 
                         local_tz = pytz.timezone(country_city_timezone)  # Replace with your local timezone
@@ -7389,10 +7389,10 @@ def calender_events(request):
                         local_end_dt = local_tz.localize(local_end_dt)  # Make it timezone-aware
                         # Convert to UTC
                         end_date = local_end_dt.astimezone(pytz.utc)
-                        print(start_date, '###########################', end_date)
+                        logging.info(start_date, '###########################', end_date)
                         start_time = start_date.time()
                         end_time = end_date.time()
-                        print(start_time, '###########################', end_time)
+                        logging.info(start_time, '###########################', end_time)
 
                         sd = datetime.strptime(f"{start_date.date()} {start_time}", "%Y-%m-%d %H:%M:%S")
                         ed = datetime.strptime(f"{end_date.date()} {end_time}", "%Y-%m-%d %H:%M:%S")
@@ -7403,7 +7403,7 @@ def calender_events(request):
                         # Convert time difference to seconds
                         time_difference_seconds = time_difference.total_seconds()
                         # Create a new timeSheet entry
-                        print(time_difference, 'PRAKASH2')
+                        logging.info(time_difference, 'PRAKASH2')
 
 
                         try:
@@ -7435,7 +7435,7 @@ def calender_events(request):
                             }
                         )
 
-                        print('GOOGLE CALENDAR DATA SAVED')
+                        logging.info('GOOGLE CALENDAR DATA SAVED')
                     except Exception as e:
                         pass
                 # END CALENDAR DATA SAVED 20_1_25
@@ -7457,7 +7457,7 @@ def calender_events(request):
 
     for entry in time_entries:
         if entry.status == 'declined':
-            print(entry.status)
+            logging.info(entry.status)
             # continue
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -7475,15 +7475,15 @@ def calender_events(request):
         start_formatted = start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
         end_formatted = end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
 
-        # print("muskan ", entry.time_entries_start_date)
-        # print(entry.client_id)
-        print(start_formatted, 'kkkkkkkkkkkkk')
-        # print(entry.description)
-        # print(end_formatted)
+        # logging.info("muskan ", entry.time_entries_start_date)
+        # logging.info(entry.client_id)
+        logging.info(start_formatted, 'kkkkkkkkkkkkk')
+        # logging.info(entry.description)
+        # logging.info(end_formatted)
         try:
             client_name = client.objects.get(id=entry.client_id)
             client_name = client_name.company_name + ', ' + client_name.client_name #client_name.toggl_client_name
-            # print(client_name)
+            # logging.info(client_name)
         except Exception as e:
             client_name = ''
         try:
@@ -7491,7 +7491,7 @@ def calender_events(request):
             category_name = category_name.category
         except Exception as e:
             category_name = ''
-        # print(client_name, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', category_name)
+        # logging.info(client_name, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', category_name)
         class_name = 'border-0 bg-primary text-white ff-heading fs-18 fw-semibold'
         calender_eid = '#'
 
@@ -7512,7 +7512,7 @@ def calender_events(request):
             client_name = entry.description
             class_name = 'border-0 bg-success text-white ff-heading fs-18 fw-semibold'
             calender_eid = entry.calender_eid
-            print(calender_eid, 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
+            logging.info(calender_eid, 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
             if entry.status == 'declined':
                 class_name = 'border-0 bg-grey text-dark ff-heading fs-18 fw-semibold declined-event'
 
@@ -7557,17 +7557,17 @@ def calender_events(request):
                 return JsonResponse({'status': False}, safe=False)
 
             events_data = events_result.get('items', [])
-            print(events_data, 'APPOINTMENT')
+            logging.info(events_data, 'APPOINTMENT')
             for ev in events_data:
                 try:
-                    print("Start Date:", ev['start']['dateTime']) #THIS PRINT IS IMPORTANT FOR SKIP EVENT WHEN DATETIME NOT FOUND
-                    print("End Date:", ev['end']['dateTime'])
+                    logging.info("Start Date:", ev['start']['dateTime']) #THIS PRINT IS IMPORTANT FOR SKIP EVENT WHEN DATETIME NOT FOUND
+                    logging.info("End Date:", ev['end']['dateTime'])
                     start_date = ev['start'].get('dateTime', ev['start'].get('date'))
                     end_date = ev['end'].get('dateTime', ev['end'].get('date'))
 
                     # START LOCAL TZ
                     try:
-                        print(start_date, end_date, 'UPCOMING EVENT TIME')
+                        logging.info(start_date, end_date, 'UPCOMING EVENT TIME')
                         # Convert string to datetime object
                         start_date = datetime.fromisoformat(start_date)
                         # Convert to UTC
@@ -7586,9 +7586,9 @@ def calender_events(request):
                         end_date_local_tz = end_date.astimezone(end_date_local_tz)
                         # Format in required format
                         end_date = end_date_local_tz.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-                        print(start_date, end_date, 'UPCOMING EVENT TIME CHANGED')
+                        logging.info(start_date, end_date, 'UPCOMING EVENT TIME CHANGED')
                     except Exception as e:
-                        print(e,'FUTURE ENTRY TIME ERROR')
+                        logging.info(e,'FUTURE ENTRY TIME ERROR')
                         
                     # END LOCAL TZ
 
@@ -7598,7 +7598,7 @@ def calender_events(request):
                         if running_event:
                             continue
                     except Exception as e:
-                        print(e, 'EVENT NOT GET')
+                        logging.info(e, 'EVENT NOT GET')
 
 
                     title = ev.get('summary', 'No Title')
@@ -7617,7 +7617,7 @@ def calender_events(request):
 
                     title_lower = title.lower()
                     title_lower = title_lower.split()
-                    print(title_lower, 'TEST')
+                    logging.info(title_lower, 'TEST')
                     if "al" in title_lower or "holiday" in title_lower or "ooo" in title_lower:  # Checks for exact "AL"
                         continue
 
@@ -7656,15 +7656,15 @@ def calender_events(request):
 
                     })
                 except Exception as e:
-                    print(f"Error processing calendar event: {e}")
+                    logging.info(f"Error processing calendar event: {e}")
                     pass
 
 
         except Exception as e:
-            print(f"Error fetching events and tasks: {e}")
+            logging.info(f"Error fetching events and tasks: {e}")
             return JsonResponse({'error': str(e)}, safe=False)
 
-        # print(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+        # logging.info(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     return JsonResponse(events, safe=False)
 
 
@@ -7674,7 +7674,7 @@ def calender_events(request):
 def delete_calender_events(request):
     if request.method == 'POST':
         entry_id = request.POST.get('entry_id')
-        print(entry_id, '$$$$$$$$$$$$')
+        logging.info(entry_id, '$$$$$$$$$$$$')
         try:
             entry = timeSheet.objects.get(id=entry_id)
             entry.delete()
@@ -7690,7 +7690,7 @@ def delete_calender_events(request):
 def decline_calender_events(request):
     if request.method == 'POST':
         entry_id = request.POST.get('entry_id')
-        print(entry_id, '$$$$$$$$$$$$')
+        logging.info(entry_id, '$$$$$$$$$$$$')
         try:
             entry = timeSheet.objects.get(id=entry_id)
             entry.status = 'declined'
@@ -7705,7 +7705,7 @@ def decline_calender_events(request):
 def accept_calender_events(request):
     if request.method == 'POST':
         entry_id = request.POST.get('entry_id')
-        print(entry_id, '$$$$$$$$$$$$')
+        logging.info(entry_id, '$$$$$$$$$$$$')
         try:
             entry = timeSheet.objects.get(id=entry_id)
             entry.status = None
@@ -7721,7 +7721,7 @@ def accept_calender_events(request):
 def edit_calender_events(request):
 
     if request.method == 'POST':
-        print("muskan------------------")
+        logging.info("muskan------------------")
         entry_id = request.POST.get('entry_id')
         start_time_str = request.POST.get('start_time1')
         end_time_str = request.POST.get('end_time1')
@@ -7731,12 +7731,12 @@ def edit_calender_events(request):
         project_id = request.POST.get('project_id1')
         description = description.strip()
 
-        print(start_time_str)
-        print(end_time_str)
-        print(client_id)
-        print(category_id)
-        print(description)
-        print(project_id)
+        logging.info(start_time_str)
+        logging.info(end_time_str)
+        logging.info(client_id)
+        logging.info(category_id)
+        logging.info(description)
+        logging.info(project_id)
         # Convert the string representations to datetime objects
         # start_time_str = datetime.strptime(start_time, "%H:%M")
         start_time_obj = datetime.strptime(start_time_str, "%I:%M %p")
@@ -7755,11 +7755,11 @@ def edit_calender_events(request):
             if emp_timesheet_ob.time_entries_stop_date == emp_timesheet_ob.time_entries_start_date:
                 end_time_obj += timedelta(days=1)
                 emp_timesheet_ob.time_entries_stop_date += timedelta(days=1)
-                print("End time increased by 1 day due to crossing midnight.")
+                logging.info("End time increased by 1 day due to crossing midnight.")
         else:
             # If end time is now greater, reset stop date to start date
             emp_timesheet_ob.time_entries_stop_date = emp_timesheet_ob.time_entries_start_date
-            print("End time and start time are on the same day.")
+            logging.info("End time and start time are on the same day.")
 
         emp_timesheet_ob.save()
 
@@ -7799,7 +7799,7 @@ def edit_calender_events(request):
             else:
                 country_city = 'America/New_York'
 
-        print(country_city)
+        logging.info(country_city)
         local_tz = pytz.timezone(country_city)  # Replace with your local timezone
         # start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         # end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -7815,7 +7815,7 @@ def edit_calender_events(request):
         end_datetime_utc = local_end_dt.replace(tzinfo=pytz.utc)
         end_date = end_datetime_utc.astimezone(local_tz)
 
-        print(start_date, start_date.date(), '###########################', end_date, end_date.date())
+        logging.info(start_date, start_date.date(), '###########################', end_date, end_date.date())
 
         local_start_dt = datetime.combine(start_date.date(), start_time)
         local_start_dt = local_tz.localize(local_start_dt)  # Make it timezone-aware
@@ -7851,23 +7851,23 @@ def edit_calender_events(request):
    
 
         if emp_timesheet_ob.project_id:
-            print('TEST2')
+            logging.info('TEST2')
             try:
                 if len(project_id) == 0:
-                    print('Test3')
+                    logging.info('Test3')
                     emp_timesheet_ob.project_id = None
                 else:
-                    print('HELLO')
+                    logging.info('HELLO')
                     emp_timesheet_ob.project_id = int(project_id)
             except Exception as e:
-                print(e,'TEST EXCEPTION')
+                logging.info(e,'TEST EXCEPTION')
                 emp_timesheet_ob.project_id = None
         try:
             if len(project_id) > 0:
-                print('TEST4')
+                logging.info('TEST4')
                 emp_timesheet_ob.project_id = int(project_id)
         except Exception as e:
-            print('TEST5')
+            logging.info('TEST5')
             pass
 
         emp_timesheet_ob.save()
@@ -7911,8 +7911,8 @@ def upload_contracted_employee(request):
                 advisor = int(row[5].strip())
                 total = int(row[6].strip())
                 current_year = 2023
-                print(employee_id)
-                print(employee_name)
+                logging.info(employee_id)
+                logging.info(employee_name)
                 import calendar
                 input_dt = datetime(current_year, current_month, 13)
                 res = calendar.monthrange(input_dt.year, input_dt.month)
@@ -7924,7 +7924,7 @@ def upload_contracted_employee(request):
                         try:
                             start_date = date(current_year, current_month, 1)  # October 1st of the current year
                             end_date = date(current_year, current_month, 31)
-                            print(current_month)
+                            logging.info(current_month)
                             # start_date = date(current_year, 9, 1)  # October 1st of the current year
                             # end_date = date(current_year, 9, 30)  # October 31st of the current year
 
@@ -7948,7 +7948,7 @@ def upload_contracted_employee(request):
                             new_employee_details = contracted_employee(employee_id=employee_id,employee_name=employee_name,month=current_date,support=support,account_manager=account_manager,advisor=advisor,total=total)
                             new_employee_details.save()
                     except Exception as e:
-                        print(e)
+                        logging.info(e)
         return redirect("employees")
 
     return render(request, "excel/upload_contracted_employee.html", {})
@@ -7959,23 +7959,23 @@ def add_holidays(request):
         country = request.POST.get('country')
         name = request.POST.get('holiday')
         holiday_date = request.POST.get('date').split('-')
-        print(holiday_date)
+        logging.info(holiday_date)
 
         holiday_date = date(int(holiday_date[2]), int(holiday_date[1]), int(holiday_date[0]))
         # holiday_date = holiday_date.strftime('%Y-%m-%d')
         description = request.POST.get('description', '')
-        print(type(country), type(name), type(holiday_date), type(description))
+        logging.info(type(country), type(name), type(holiday_date), type(description))
         # Validate the data (you can add more validation as needed)
         if not country or not name or not date:
-            print('HELLLLLLL')
+            logging.info('HELLLLLLL')
             messages.error(request, 'Please fill in all required fields.')
             return redirect('holidays')
 
         # Create a new Holiday object and save it to the database
         holiday = Holiday(country_id=country, name=name, date=holiday_date, description=description)
-        print("HEL@@@@@@@@@@@")
+        logging.info("HEL@@@@@@@@@@@")
         holiday.save()
-        print("HEL33333333333333333")
+        logging.info("HEL33333333333333333")
         messages.success(request, 'Holiday added successfully.')
         return redirect('holidays')
 
@@ -8004,7 +8004,7 @@ def get_remaining_leave(request):
     if request.method == 'GET':
         try:
             employee_id = request.GET.get('employee_id')
-            print(employee_id)
+            logging.info(employee_id)
             # leave_details = leave.objects.filter(employee_id=employee_id)
             current_year = datetime.now().year
 
@@ -8031,7 +8031,7 @@ def get_remaining_leave(request):
             employee_details = employee.objects.get(id=employee_id)
             country_detail = Country.objects.get(id=employee_details.country_id)
             remaining_leave = country_detail.paid_leave - total_taken_days
-            print(remaining_leave)
+            logging.info(remaining_leave)
             status = 1
             leave_detail_data = {
                 "remaining_leave": remaining_leave,
@@ -8064,8 +8064,8 @@ def upload_client_contract_employee(request):
                 advisor = int(row[5].strip())
                 total = int(row[6].strip())
                 current_year = 2026
-                print(employee_id1)
-                print(employee_name)
+                logging.info(employee_id1)
+                logging.info(employee_name)
                 import calendar
                 input_dt = datetime(current_year, current_month, 13)
                 res = calendar.monthrange(input_dt.year, input_dt.month)
@@ -8081,7 +8081,7 @@ def upload_client_contract_employee(request):
                         try:
                             start_date = date(current_year, current_month, 1)  # October 1st of the current year
                             end_date = date(current_year, current_month, 28)
-                            print(current_month)
+                            logging.info(current_month)
                             # start_date = date(current_year, 9, 1)  # October 1st of the current year
                             # end_date = date(current_year, 9, 30)  # October 31st of the current year
 
@@ -8105,7 +8105,7 @@ def upload_client_contract_employee(request):
                             new_employee_details = Client_contract_employee(employee_id=employee_id,date=current_date,support=support,account_manager=account_manager,advisor=advisor,total=total)
                             new_employee_details.save()
                     except Exception as e:
-                        print(e)
+                        logging.info(e)
         return redirect("employees")
 
     return render(request, "excel/upload_client_contract_employee.html", {})
@@ -8119,15 +8119,15 @@ def excel_sheet(request):
     if selected_month1:
         # current_month = datetime.strptime(selected_month, "%B").month
         selected_month = int(selected_month1)
-        print("iffffffffffffff")
+        logging.info("iffffffffffffff")
         sl=request.session.get('month_sheet8')
     else:
         selected_month= 2
         request.session['month_sheet8'] = selected_month
         sl=request.session.get('month_sheet8')
-    print("kkkkkkkkkkkkk")
+    logging.info("kkkkkkkkkkkkk")
     del request.session['month_sheet8']
-    print(selected_month)
+    logging.info(selected_month)
 
 
 
@@ -8159,7 +8159,7 @@ def excel_sheet(request):
                 break
 
         employee_list_data.append(employee_data)
-    print(employee_list_data )
+    logging.info(employee_list_data )
 
     contract_ids = []
     for contract in contracts:
@@ -8199,7 +8199,7 @@ def excel_sheet(request):
                 'role_hours': role_hours,
             }
             working_role_details.append(working_role_data)
-        # print(working_role_details)
+        # logging.info(working_role_details)
 
 
         # Create a dictionary with the required fields
@@ -8219,7 +8219,7 @@ def excel_sheet(request):
         data.append(contract_data)
 
         contract_ids.append(contract.client_id)
-    print('contract_ids',contract_ids)
+    logging.info('contract_ids',contract_ids)
 
 
     # Pass the data to the template
@@ -8249,9 +8249,9 @@ def update_client_data2(request):
 
             current_month = int(data.get("month"))
             current_year = int(data.get("year"))
-            print(data)
-            print('current_month ',current_month)
-            print('client_id ',client_id)
+            logging.info(data)
+            logging.info('current_month ',current_month)
+            logging.info('client_id ',client_id)
             # return HttpResponse('pppp')
 
             if not client.objects.filter(id=int(client_id)).exists():
@@ -8298,8 +8298,8 @@ def update_client_data2(request):
                 contract_employee = Client_contract_employee.objects.filter(
                     employee_id=employee_id, date__range=(start_date, end_date)
                 ).first()
-                print(employee_id)
-                print('contract_employee ',contract_employee)
+                logging.info(employee_id)
+                logging.info('contract_employee ',contract_employee)
                 # return HttpResponse('pp')
                 if previous_role:
                     if previous_role == "A":
@@ -8364,13 +8364,13 @@ def update_client_data(request):
         current_year = int(request.POST.get('year'))
         selected_month = int(request.POST.get('selected_month'))
 
-        print(client_id)
-        print(field)
-        print(value)
-        print(employee_id)
-        print(prev_employee_id)
-        print(role_hours)
-        print(selected_month)
+        logging.info(client_id)
+        logging.info(field)
+        logging.info(value)
+        logging.info(employee_id)
+        logging.info(prev_employee_id)
+        logging.info(role_hours)
+        logging.info(selected_month)
 
         if client_id and field == 'no_of_people_on_account':
             try:
@@ -8465,8 +8465,8 @@ def update_month_sheet(request):
 def search_designation(request):
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
        
@@ -8476,30 +8476,30 @@ def search_designation(request):
 
             # Query your database based on the selected designation
             # Example:
-            print("astha222222222222222")
+            logging.info("astha222222222222222")
             
-            print(selected_name)
-            print(selected_country)
-            print(selected_designation)
+            logging.info(selected_name)
+            logging.info(selected_country)
+            logging.info(selected_designation)
 
             if selected_name !='Select Name':
                 employee_list = employee.objects.filter(status=1,id=selected_name)
-                print(employee_list)
+                logging.info(employee_list)
             elif selected_country !='Select Country'and selected_designation !='Select Designation':
                 employee_list = employee.objects.filter(status=1,country_id=selected_country,designation=selected_designation)
-                print(employee_list)
+                logging.info(employee_list)
 
             elif selected_country !='Select Country':
                 employee_list = employee.objects.filter(status=1,country_id=selected_country)
-                print(employee_list)
+                logging.info(employee_list)
             else:
                 employee_list = employee.objects.filter(status=1,designation=selected_designation)
-                print(employee_list)
+                logging.info(employee_list)
 
             toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-            # print(toggl_user_ids)
+            # logging.info(toggl_user_ids)
             ids = [employee.id for employee in employee_list]
-            # print(ids)
+            # logging.info(ids)
             selected_month = request.session.get('month')
 
             if selected_month:
@@ -8512,9 +8512,9 @@ def search_designation(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            # print("ssssssssssssssssssssssssssssssssssssss")
-            # print(current_month)
-            # print(last_month)
+            # logging.info("ssssssssssssssssssssssssssssssssssssss")
+            # logging.info(current_month)
+            # logging.info(last_month)
 
             selected_year = request.session.get('year')
 
@@ -8532,70 +8532,70 @@ def search_designation(request):
             if current_year == 2023 and 9 <= current_month <= 12:
                 contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
                 )
-                # print(contracted_employee_for_month)
+                # logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                # print(contracted_employee_dict)
+                # logging.info("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                # logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-                # print('muskan')
-                # print(employee_list)
+                # logging.info('muskan')
+                # logging.info(employee_list)
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
-                # print(contracted_employee_for_month)
+                # logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-                # print(contracted_employee_dict)
+                # logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                # logging.info(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-                # print('muskan')
-                # print(employee_list)
+                # logging.info('muskan')
+                # logging.info(employee_list)
 
             data = {"employee_list": employee_list,
                     "current_year":current_year,
                     "current_month":current_month,
                     "month_list":[],
                     }
-            # print(data)
+            # logging.info(data)
             return render(request, "employees/search_designation.html", data)
         
     group = None
 
 
-    print("admin")
+    logging.info("admin")
     selected_name = request.GET.get('name')
     selected_country = request.GET.get('country')
     selected_designation = request.GET.get('designation')
 
     # Query your database based on the selected designation
     # Example:
-    print("astha")
-    print(selected_name)
-    print(selected_country)
-    print(selected_designation)
+    logging.info("astha")
+    logging.info(selected_name)
+    logging.info(selected_country)
+    logging.info(selected_designation)
 
     if selected_name !='Select Name':
         employee_list = employee.objects.filter(status=1,id=selected_name)
-        print(employee_list)
+        logging.info(employee_list)
     elif selected_country !='Select Country'and selected_designation !='Select Designation':
         employee_list = employee.objects.filter(status=1,country_id=selected_country,designation=selected_designation)
-        print(employee_list)
+        logging.info(employee_list)
     elif selected_country !='Select Country':
         employee_list = employee.objects.filter(status=1,country_id=selected_country)
-        print(employee_list)
+        logging.info(employee_list)
     else:
         employee_list = employee.objects.filter(status=1,designation=selected_designation)
-        print(employee_list)
+        logging.info(employee_list)
 
     toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-    # print(toggl_user_ids)
+    # logging.info(toggl_user_ids)
     ids = [employee.id for employee in employee_list]
-    # print(ids)
+    # logging.info(ids)
     selected_month = request.session.get('month')
 
     if selected_month:
@@ -8608,9 +8608,9 @@ def search_designation(request):
         last_month=12
     else:
         last_month=current_month-1
-    # print("ssssssssssssssssssssssssssssssssssssss")
-    # print(current_month)
-    # print(last_month)
+    # logging.info("ssssssssssssssssssssssssssssssssssssss")
+    # logging.info(current_month)
+    # logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -8625,42 +8625,42 @@ def search_designation(request):
     else:
         last_year=current_year
 
-    # print("gggggggggggggggggggggggggggggggggggggg")
-    # print(current_year)
-    # print(last_year)
+    # logging.info("gggggggggggggggggggggggggggggggggggggg")
+    # logging.info(current_year)
+    # logging.info(last_year)
     if current_year == 2023 and 9 <= current_month <= 12:
         contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
         )
-        # print(contracted_employee_for_month)
+        # logging.info(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-        # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-        # print(contracted_employee_dict)
+        # logging.info("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+        # logging.info(contracted_employee_dict)
 
         for emp in employee_list:
             emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-        # print('muskan')
-        # print(employee_list)
+        # logging.info('muskan')
+        # logging.info(employee_list)
     else:
         contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
         )
-        # print(contracted_employee_for_month)
+        # logging.info(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-        # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-        # print(contracted_employee_dict)
+        # logging.info("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+        # logging.info(contracted_employee_dict)
 
         for emp in employee_list:
             emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-        print('muskan')
-        print(employee_list)
+        logging.info('muskan')
+        logging.info(employee_list)
 
     data = {"employee_list": employee_list,
             "current_year":current_year,
             "current_month":current_month,
             "month_list":[],
             }
-    # print(data)
+    # logging.info(data)
     return render(request, "employees/search_designation.html", data)
 
 
@@ -8673,28 +8673,28 @@ def old_search_designation(request):
 
         # Query your database based on the selected designation
         # Example:
-        print("astha3333333333333")
-        print(selected_name)
-        print(selected_country)
-        print(selected_designation)
+        logging.info("astha3333333333333")
+        logging.info(selected_name)
+        logging.info(selected_country)
+        logging.info(selected_designation)
 
         if selected_name !='Select Name':
             employee_list = employee.objects.filter(status=2,id=selected_name)
-            print(employee_list)
+            logging.info(employee_list)
         elif selected_country !='Select Country'and selected_designation !='Select Designation':
             employee_list = employee.objects.filter(status=2,country_id=selected_country,designation=selected_designation)
-            print(employee_list)
+            logging.info(employee_list)
         elif selected_country !='Select Country':
             employee_list = employee.objects.filter(status=2,country_id=selected_country)
-            print(employee_list)
+            logging.info(employee_list)
         else:
             employee_list = employee.objects.filter(status=2,designation=selected_designation)
-            print(employee_list)
+            logging.info(employee_list)
 
         toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-        # print(toggl_user_ids)
+        # logging.info(toggl_user_ids)
         ids = [employee.id for employee in employee_list]
-        # print(ids)
+        # logging.info(ids)
         selected_month = request.session.get('month')
 
         if selected_month:
@@ -8742,22 +8742,22 @@ def old_search_designation(request):
             for emp in employee_list:
                 emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-            print('muskan')
-            print(employee_list)
+            logging.info('muskan')
+            logging.info(employee_list)
 
         data = {"employee_list": employee_list,
                 "current_year":current_year,
                 "current_month":current_month,
                 "month_list":[],
                 }
-        # print(data)
+        # logging.info(data)
         return render(request, "employees/search_designation.html", data)
     group = None
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
             selected_name = request.GET.get('name')
@@ -8765,27 +8765,27 @@ def old_search_designation(request):
             selected_designation = request.GET.get('designation')
 
 
-            print(selected_name)
-            print(selected_country)
-            print(selected_designation)
+            logging.info(selected_name)
+            logging.info(selected_country)
+            logging.info(selected_designation)
 
             if selected_name !='Select Name':
                 employee_list = employee.objects.filter(status=2,id=selected_name)
-                print(employee_list)
+                logging.info(employee_list)
             elif selected_country !='Select Country'and selected_designation !='Select Designation':
                 employee_list = employee.objects.filter(status=2,country_id=selected_country,designation=selected_designation)
-                print(employee_list)
+                logging.info(employee_list)
             elif selected_country !='Select Country':
                 employee_list = employee.objects.filter(status=2,country_id=selected_country)
-                print(employee_list)
+                logging.info(employee_list)
             else:
                 employee_list = employee.objects.filter(status=2,designation=selected_designation)
-                print(employee_list)
+                logging.info(employee_list)
 
             toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-            # print(toggl_user_ids)
+            # logging.info(toggl_user_ids)
             ids = [employee.id for employee in employee_list]
-            # print(ids)
+            # logging.info(ids)
             selected_month = request.session.get('month')
 
             if selected_month:
@@ -8825,21 +8825,21 @@ def old_search_designation(request):
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
-                # print(contracted_employee_for_month)
+                # logging.info(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-                print('muskan')
-                print(employee_list)
+                logging.info('muskan')
+                logging.info(employee_list)
 
             data = {"employee_list": employee_list,
                     "current_year":current_year,
                     "current_month":current_month,
                     "month_list":[],
                     }
-            # print(data)
+            # logging.info(data)
             return render(request, "employees/search_designation.html", data)
 
 @csrf_exempt
@@ -8853,13 +8853,13 @@ def report(request):
 
     # Calculate the date range for the last week
     if request.method == 'POST':
-        print("postttttttttttttttttttttttttttttttttttttttttttttttttt")
+        logging.info("postttttttttttttttttttttttttttttttttttttttttttttttttt")
 
 
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -8869,8 +8869,8 @@ def report(request):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -8878,24 +8878,24 @@ def report(request):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
         selected_option = request.POST.get('selected_option')
         auto_submit = request.POST.get('auto_submit')
-        print("selcetddddd")
-        print(selected_option)
+        logging.info("selcetddddd")
+        logging.info(selected_option)
         if auto_submit == '1':
             # Auto submission occurred, handle it here
             # For example, redirect to a different view based on the selected option
             if selected_option == '0':
-                print(selected_option)
+                logging.info(selected_option)
             elif selected_option == '1':
-                print(selected_option)
+                logging.info(selected_option)
 
 
 
@@ -8936,10 +8936,10 @@ def report(request):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
 
         selected_option='0'
 
@@ -8947,7 +8947,7 @@ def report(request):
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if1111111111")
+        logging.info("if1111111111")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -8957,7 +8957,7 @@ def report(request):
         )
 
     elif selected_client_ids :
-        print("if222222222222")
+        logging.info("if222222222222")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -8966,7 +8966,7 @@ def report(request):
 
         )
     elif selected_employee_ids:
-        print("if3333333333333")
+        logging.info("if3333333333333")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -8974,7 +8974,7 @@ def report(request):
             status=None
         )
     else:
-        # print("else")
+        # logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -8988,7 +8988,7 @@ def report(request):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    # print(selected_client_names)
+    # logging.info(selected_client_names)
 
     total_selected_clients = len(selected_client_ids)
     total_selected_employees = len(selected_employee_ids)
@@ -9000,7 +9000,7 @@ def report(request):
     entries_with_client_details = []
 
     if selected_option == '0' :
-        print("userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        logging.info("userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         # Iterate over timeSheet entries
         for entry in time_entries_last_week:
             employee_id = entry.employee_id
@@ -9071,8 +9071,8 @@ def report(request):
                 # Set percentage to 0 or handle as appropriate if total_time is not a valid integer
                 data['percentage'] = 0
 
-        print("table1")
-        print(employee_total_time)
+        logging.info("table1")
+        logging.info(employee_total_time)
         # Iterate through each entry in the queryset
         for entry in time_entries_last_week:
             import datetime
@@ -9081,7 +9081,7 @@ def report(request):
 
             # Calculate total time spent by the employee
             total_time_employee = sum(e.time_entries_seconds for e in time_entries_last_week if e.employee_id == entry.employee_id)
-            # print(total_time_employee)
+            # logging.info(total_time_employee)
 
             # Fetch client details
             client1 = client.objects.get(id=entry.client_id)
@@ -9139,8 +9139,8 @@ def report(request):
                 }
                 entries_with_details.append(entry_details)
 
-        print("table2")
-        print(entries_with_details)
+        logging.info("table2")
+        logging.info(entries_with_details)
         entries_with_details = sorted(
             entries_with_details,
             key=lambda entry: entry['percentage_time'],  # Sort by percentage_time
@@ -9162,8 +9162,8 @@ def report(request):
 
 
 
-        print(type(start_date))
-        print(end_date)
+        logging.info(type(start_date))
+        logging.info(end_date)
 
         if start_date==end_date:
            num_days =1
@@ -9183,9 +9183,9 @@ def report(request):
         data = [daily_total_time[label] for label in labels]
 
 
-        print("bar_chart")
-        print(labels)
-        print(data)
+        logging.info("bar_chart")
+        logging.info(labels)
+        logging.info(data)
 
         # Prepare data for the pie chart
 
@@ -9204,7 +9204,7 @@ def report(request):
         )
         employee_total_time = dict(employee_total_time)
         
-        # print(pie_chart_data)
+        # logging.info(pie_chart_data)
         # # Extracting labels and data from pie_chart_data
         pie1= []
         pie2 = []
@@ -9212,14 +9212,14 @@ def report(request):
         for employee_id, data1 in pie_chart_data.items():
             name1 = data1['name']
             percentage1 = data1['percentage']
-            # print(name1)
-            # print(percentage1)
+            # logging.info(name1)
+            # logging.info(percentage1)
             pie1.append(name1)
             pie2.append(percentage1)
         #
-        print("piechart1")
-        print(pie1)
-        print(pie2)
+        logging.info("piechart1")
+        logging.info(pie1)
+        logging.info(pie2)
 
         #2nd pie chart
 
@@ -9262,13 +9262,13 @@ def report(request):
             percentage_time = (total_seconds / total_time_all_categories) * 100
             pie4.append(percentage_time)
 
-        print("piechart2222")
-        print(pie3)
-        print(pie4)
+        logging.info("piechart2222")
+        logging.info(pie3)
+        logging.info(pie4)
 
 
     else:
-        print("clientttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
+        logging.info("clientttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
         # Iterate over timeSheet entries
         for entry in time_entries_last_week:
             client_id = entry.client_id
@@ -9340,8 +9340,8 @@ def report(request):
                 # Set percentage to 0 or handle as appropriate if total_time is not a valid integer
                 data['percentage'] = 0
 
-        print("table1")
-        print(client_total_time)
+        logging.info("table1")
+        logging.info(client_total_time)
         # Iterate through each entry in the queryset
 
         # Iterate through each entry in the queryset
@@ -9355,8 +9355,8 @@ def report(request):
             category_id = Work_Category.objects.get(id=entry.category_id)
             category_id1 = Work_Category.objects.values('id').get(id=entry.category_id)['id']
             category_id1 = int(category_id1)
-            print("myyyyyyyyyyyy")
-            print(type(category_id1))
+            logging.info("myyyyyyyyyyyy")
+            logging.info(type(category_id1))
 
 
             # Calculate total time spent by the client
@@ -9406,8 +9406,8 @@ def report(request):
                 }
                 entries_with_client_details.append(entry_details)
 
-        print("table2")
-        print(entries_with_client_details)
+        logging.info("table2")
+        logging.info(entries_with_client_details)
         entries_with_client_details = sorted(
             entries_with_client_details,
             key=lambda entry: entry['percentage_time'],  # Sort by percentage_time
@@ -9433,8 +9433,8 @@ def report(request):
 
 
 
-        print(type(start_date))
-        print(end_date)
+        logging.info(type(start_date))
+        logging.info(end_date)
 
         if start_date==end_date:
            num_days =1
@@ -9454,9 +9454,9 @@ def report(request):
         data = [daily_total_time[label] for label in labels]
 
 
-        print("bar_chart")
-        print(labels)
-        print(data)
+        logging.info("bar_chart")
+        logging.info(labels)
+        logging.info(data)
 
         # Prepare data for the pie chart
 
@@ -9473,7 +9473,7 @@ def report(request):
             reverse=True  # Descending order
         )
         client_total_time = dict(client_total_time)
-        # print(pie_chart_data)
+        # logging.info(pie_chart_data)
         # # Extracting labels and data from pie_chart_data
         pie1= []
         pie2 = []
@@ -9481,14 +9481,14 @@ def report(request):
         for client_id, data1 in pie_chart_data.items():
             name1 = data1['name']
             percentage1 = data1['percentage']
-            # print(name1)
-            # print(percentage1)
+            # logging.info(name1)
+            # logging.info(percentage1)
             pie1.append(name1)
             pie2.append(percentage1)
         #
-        print("piechart1")
-        print(pie1)
-        print(pie2)
+        logging.info("piechart1")
+        logging.info(pie1)
+        logging.info(pie2)
 
 
         #2nd pie chart
@@ -9532,12 +9532,12 @@ def report(request):
             percentage_time = (total_seconds / total_time_all_categories) * 100
             pie4.append(percentage_time)
 
-        print("piechart2222")
-        print(pie3)
-        print(pie4)
+        logging.info("piechart2222")
+        logging.info(pie3)
+        logging.info(pie4)
 
-    print(selected_option)
-    print('Vinod from_to_date',from_to_date)
+    logging.info(selected_option)
+    logging.info('Vinod from_to_date',from_to_date)
     if from_to_date:
         from datetime import datetime
         try:
@@ -9636,8 +9636,8 @@ def quickbook(request):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -9647,8 +9647,8 @@ def quickbook(request):
         end_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", start_date)
-        print("To date:", end_date)
+        logging.info("From date:", start_date)
+        logging.info("To date:", end_date)
         #
         #
         # from datetime import datetime
@@ -9660,7 +9660,7 @@ def quickbook(request):
         # # Convert start_date_str and end_date_str to datetime objects
 
 
-        print(start_date)
+        logging.info(start_date)
 
     else:
         from datetime import datetime, timedelta
@@ -9669,9 +9669,9 @@ def quickbook(request):
         # for april last
         # end_date = (datetime(2024, 5, 1) - timedelta(days=16)).strftime('%Y-%m-%d')
         end_date = (datetime.now().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-        print(start_date)
-        print(end_date)
+        logging.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logging.info(start_date)
+        logging.info(end_date)
 
     # Initialize a dictionary to store sums for each month
     sums_by_month = {}
@@ -9715,7 +9715,7 @@ def quickbook(request):
                 date__year=current_year
             ).values_list('client_id', flat=True).distinct()
 
-        print(client_ids_for_current_month)
+        logging.info(client_ids_for_current_month)
 
         # Create a list to store data for each client
 
@@ -9735,16 +9735,16 @@ def quickbook(request):
                 one_project_rate = float(one_project_rate)
             except ValueError:
                 # Handle the case where sum_of_rates_client cannot be converted to a float
-                print("Error: Unable to convert sum_of_rates_client to float")
-            print("checkingggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
-            print(one_project_rate)
-            print(sum_of_rates_employee)
+                logging.info("Error: Unable to convert sum_of_rates_client to float")
+            logging.info("checkingggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
+            logging.info(one_project_rate)
+            logging.info(sum_of_rates_employee)
             profit=one_project_rate-sum_of_rates_employee
-            print(profit)
+            logging.info(profit)
             contracted_profit=one_project_rate-contracted_sum_of_rates_employee
 
             # profit=int(profit)
-            # print(profit)
+            # logging.info(profit)
             # contracted_profit=int(contracted_profit)
             # one_project_rate=int(one_project_rate)
 
@@ -9784,8 +9784,8 @@ def quickbook(request):
         profit="{:.2f}".format(profit)
         contracted_profit="{:.2f}".format(contracted_profit)
         #
-        # print("profit")
-        # print(profit)
+        # logging.info("profit")
+        # logging.info(profit)
 
 
 
@@ -9811,10 +9811,10 @@ def quickbook(request):
 
     # Print the sums by month
     for month, sums in sums_by_month.items():
-        print(month)
-        print(sums['sum_of_rates'])
-        print(sums['sum_of_contracted_rates'])
-        print(sums['earning'])
+        logging.info(month)
+        logging.info(sums['sum_of_rates'])
+        logging.info(sums['sum_of_contracted_rates'])
+        logging.info(sums['earning'])
 
         # Calculate totals
         total_earning += float(sums['earning'])
@@ -9844,9 +9844,9 @@ def quickbook(request):
         'profit': str(total_profit),
         'contracted_profit': str(total_contracted_profit)
     })
-    print(data)
+    logging.info(data)
 
-    print(client_data_for_current_month)
+    logging.info(client_data_for_current_month)
 
 
 
@@ -9869,27 +9869,27 @@ def client_profile2(request, client_id,start_date,end_date):
    
 
 
-    print(start_date)
-    print(end_date)
+    logging.info(start_date)
+    logging.info(end_date)
 
     start_date = datetime.strptime(start_date, '%Y-%m-%d')
     end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
-    # print(start_date)
-    # print(end_date)
+    # logging.info(start_date)
+    # logging.info(end_date)
 
 
     # Get the year
     current_year = start_date.year
     current_month=start_date.month
     # month_list = create_month_list(start_date, end_date)
-    # print(month_list)
+    # logging.info(month_list)
 
     # Get the start and end months
     start_month = start_date.month
     end_month = end_date.month
-    # print(start_month)
-    # print(end_month)
+    # logging.info(start_month)
+    # logging.info(end_month)
 
     weeks=0
     ui_final_cost={}
@@ -9903,17 +9903,17 @@ def client_profile2(request, client_id,start_date,end_date):
     client_details={}
     if current_year == 2023 and 9 <= current_month <= 12:
         employee_details = {}
-        print("if")
-        print(start_date)
-        print(end_date)
-        print(current_year)
-        print(toggl_client)
+        logging.info("if")
+        logging.info(start_date)
+        logging.info(end_date)
+        logging.info(current_year)
+        logging.info(toggl_client)
         #contracted employee images
         if contracted_hours.objects.filter(client_id=toggl_client).exists():
             # Use the contracted_hours model to query the database
             all = contracted_hours.objects.filter(client_id=toggl_client, month__month__range=(start_month, end_month),month__year=current_year)
-            print("rekhaaaa")
-            print(all)
+            logging.info("rekhaaaa")
+            logging.info(all)
 
             # Check if any records were found
             for record in all:
@@ -9926,7 +9926,7 @@ def client_profile2(request, client_id,start_date,end_date):
                 date=date1.month
 
                 target_month=date.month
-                print(target_month)
+                logging.info(target_month)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -9962,31 +9962,31 @@ def client_profile2(request, client_id,start_date,end_date):
                 from datetime import datetime
                 # Get the number of days in that month
 
-                # print(target_month)
-                # print(start_date)
-                # print(end_date)
+                # logging.info(target_month)
+                # logging.info(start_date)
+                # logging.info(end_date)
                 #
-                # print(start_date_str)
-                # print(end_date_str)
+                # logging.info(start_date_str)
+                # logging.info(end_date_str)
 
 
                 target_month_start = start_date.replace(month=target_month, day=1)
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
-                print("target")
-                print(target_month)
+                # logging.info(start_date_in_target_month)
+                logging.info("target")
+                logging.info(target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
-                    print(end_date)
-                    print(start_date)
-                    print("iffffffffffffffffff")
+                    # logging.info("end_date")
+                    # logging.info(end_date)
+                    logging.info(end_date)
+                    logging.info(start_date)
+                    logging.info("iffffffffffffffffff")
 
                     if target_month==12:
                         target_month_end = min(start_date.replace(year=start_date.year +1,month= 1, day=1) - datetime.resolution, end_date)
@@ -9994,12 +9994,12 @@ def client_profile2(request, client_id,start_date,end_date):
                     else:
                         target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
 
-                print(target_month_end)
-                # print(target_month_end)
+                logging.info(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -10008,14 +10008,14 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
-                # print(days_in_month)
+                # logging.info(days_in_month)
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
@@ -10028,8 +10028,8 @@ def client_profile2(request, client_id,start_date,end_date):
                 else:
                     client_details['total_time_hours'] = total_hours1
 
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                print(total_hours1)
+                logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                logging.info(total_hours1)
 
                 # Convert total hours to total seconds
                 total_seconds1 = int(client_details['total_time_hours'] * 3600)
@@ -10049,46 +10049,46 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month==12:
                         target_month_end = min(start_date.replace(year=start_date.year +1,month= 1, day=1) - datetime.resolution, end_date)
                     else:
 
                         target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
-                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-                print(start_date_in_target_month)
-                print(target_month_end)
+                logging.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                logging.info(start_date_in_target_month)
+                logging.info(target_month_end)
                 if target_month_end.month==start_date_in_target_month.month:
-                    print("if")
+                    logging.info("if")
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
                 else:
-                    print("else")
+                    logging.info("else")
                     total_days_between = (target_month_end - start_date_in_target_month).days
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
-                print("differneceeeeeee11")
-                print(date_difference)
+                # logging.info(days_in_month)
+                logging.info("differneceeeeeee11")
+                logging.info(date_difference)
 
 
                 if date_difference==days_in_month:
@@ -10099,8 +10099,8 @@ def client_profile2(request, client_id,start_date,end_date):
                     else:
                         cost_new=first_record.rate
 
-                    print("if--------------------------------------------")
-                    print("costtttttttttttttt")
+                    logging.info("if--------------------------------------------")
+                    logging.info("costtttttttttttttt")
                 else:
                     weeks = date_difference / 7
                     weeks=round(weeks,2)
@@ -10112,7 +10112,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 if 'cost' in client_details:
 
-                    print(cost_new)
+                    logging.info(cost_new)
                     client_details['cost'] += cost_new
                     client_details['total_working_hours'] = formatted_time2
                 else:
@@ -10124,38 +10124,38 @@ def client_profile2(request, client_id,start_date,end_date):
                 client_details['cost']=round(client_details['cost'],2)
                 # Print the employee details
                 for employee_id, details in employee_details.items():
-                    print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                    logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
             else:
-                print("No records found for the specified client and month.")
+                logging.info("No records found for the specified client and month.")
         else:
-            print("No contracted hours found for the specified client.")
+            logging.info("No contracted hours found for the specified client.")
 
-        print(employee_details)
-        print(client_details)
+        logging.info(employee_details)
+        logging.info(client_details)
 
 
         # for work category below boxes
         project_list = project.objects.filter(toggl_client_id=toggl_client)
-        print("project_list1")
-        print(project_list)
-        print("datessssssssssssssssssssssssssss")
-        print(start_date)
-        print(end_date)
+        logging.info("project_list1")
+        logging.info(project_list)
+        logging.info("datessssssssssssssssssssssssssss")
+        logging.info(start_date)
+        logging.info(end_date)
         # Iterate through the project_list and get toggl_project_id for each project
         toggl_project_ids = [project.toggl_project_id for project in project_list]
         filtered_records = toggl_user_detail.objects.filter(
         project_id__in=toggl_project_ids,
         time_entries_start_date__range=(start_date, end_date)
         )
-        print(filtered_records)
+        logging.info(filtered_records)
         unique_project_ids = filtered_records.values('project_id').distinct()
-        print(unique_project_ids)
+        logging.info(unique_project_ids)
 
         # Query the Project table to get names of unique project IDs
         project_names = project.objects.filter(toggl_project_id__in=unique_project_ids)
-        print("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+        logging.info("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
         # Now you can display project names on the UI
-        print(project_names)
+        logging.info(project_names)
 
         #working time on toggl
 
@@ -10180,9 +10180,9 @@ def client_profile2(request, client_id,start_date,end_date):
                     total_time_spent[client_project_key] = time_seconds
         # Now, total_time_spent dictionary contains the total time spent per client and project
         # You can iterate through it to display the results
-        print("client revenue")
-        print(total_time_spent)
-        print(project_rate)
+        logging.info("client revenue")
+        logging.info(total_time_spent)
+        logging.info(project_rate)
 
         total_time_spent_formatted = {}
         for key, seconds in total_time_spent.items():
@@ -10192,9 +10192,9 @@ def client_profile2(request, client_id,start_date,end_date):
 
         # Now, total_time_spent_formatted dictionary contains the total time spent per client and project in HH:MM:SS format
         # You can iterate through it to display the results
-        # print(total_time_spent_formatted)
+        # logging.info(total_time_spent_formatted)
         for key, formatted_time in total_time_spent_formatted.items():
-            print(f"Project {key}: {formatted_time}")
+            logging.info(f"Project {key}: {formatted_time}")
 
 
         #project member images on toggl
@@ -10211,8 +10211,8 @@ def client_profile2(request, client_id,start_date,end_date):
             # Assign the user_ids to the dictionary with project_id as the key
             project_user_dict_1[project_id] = list(user_ids)
 
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5")
-        print(project_user_dict_1)
+        logging.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5")
+        logging.info(project_user_dict_1)
 
         project_user_dict={}
 
@@ -10247,7 +10247,7 @@ def client_profile2(request, client_id,start_date,end_date):
                 }
                 for data in employees_data]
 
-        print(project_user_dict)
+        logging.info(project_user_dict)
 
 
         employee_rate_per_hour = {}
@@ -10266,8 +10266,8 @@ def client_profile2(request, client_id,start_date,end_date):
             # Store total project cost in the dictionary
             total_project_cost = "{:.2f}".format(total_project_cost)
             employee_rate_per_hour[project_id] = total_project_cost
-        print("new cost")
-        print(employee_rate_per_hour)
+        logging.info("new cost")
+        logging.info(employee_rate_per_hour)
 
         # Initialize a variable to store the sum of rates
         sum_of_rates_employee = 0.0
@@ -10279,7 +10279,7 @@ def client_profile2(request, client_id,start_date,end_date):
         # Format total_rate to have 2 decimal places
         sum_of_rates_employee = "{:.2f}".format(sum_of_rates_employee)
         # Print the sum of rates
-        print("Sum of Rates Employee:", sum_of_rates_employee)
+        logging.info("Sum of Rates Employee:", sum_of_rates_employee)
 
 
 
@@ -10293,21 +10293,21 @@ def client_profile2(request, client_id,start_date,end_date):
             contracted_hours_for_month = contracted_hours.objects.filter(client_id= toggl_client,month__month__range=[start_month, end_month],month__year=current_year
                 )
 
-            print("88888888888888888888888888888888888888888888888")
-            print(contracted_hours_for_month)
+            logging.info("88888888888888888888888888888888888888888888888")
+            logging.info(contracted_hours_for_month)
             # first_contracted_hour = contracted_hours_for_month.first()
             one_project_rate=0
             for entry in contracted_hours_for_month:
 
                 date1=entry
-                # print(date)
+                # logging.info(date)
 
                 date=date1.month
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
 
                 import calendar
                 from datetime import datetime
@@ -10316,24 +10316,24 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month==12:
                         target_month_end = min(start_date.replace(year=start_date.year +1,month= 1, day=1) - datetime.resolution, end_date)
 
                     else:
                         target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -10345,7 +10345,7 @@ def client_profile2(request, client_id,start_date,end_date):
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
                 if one_project_rate is None:
                     one_project_rate=0
                 elif one_project_rate:
@@ -10356,7 +10356,7 @@ def client_profile2(request, client_id,start_date,end_date):
                             one_project_rate=0
                         else:
                             one_project_rate+=entry.rate
-                        print("if")
+                        logging.info("if")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
@@ -10364,7 +10364,7 @@ def client_profile2(request, client_id,start_date,end_date):
                             one_project_rate=0
                         else:
                             one_project_rate +=round((entry.rate * weeks) / 4.3, 2)
-                        print("else")
+                        logging.info("else")
                 else:
                     if date_difference==days_in_month:
                         weeks=4.3
@@ -10373,7 +10373,7 @@ def client_profile2(request, client_id,start_date,end_date):
                             one_project_rate=0
                         else:
                             one_project_rate=entry.rate
-                        print("ifff2")
+                        logging.info("ifff2")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
@@ -10381,7 +10381,7 @@ def client_profile2(request, client_id,start_date,end_date):
                             one_project_rate=0
                         else:
                             one_project_rate = round((entry.rate * weeks) / 4.3, 2)
-                        print("else222")
+                        logging.info("else222")
 
 
             # one_project_rate = first_contracted_hour.cost
@@ -10390,8 +10390,8 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
         one_project_rate=round(one_project_rate,2)
-        print("kajal")
-        print("Sum of Rates Client revenue:", one_project_rate)
+        logging.info("kajal")
+        logging.info("Sum of Rates Client revenue:", one_project_rate)
         #new contracted
         employee_salary_dict={}
         emp_id=0
@@ -10401,14 +10401,14 @@ def client_profile2(request, client_id,start_date,end_date):
 
             for contracted_client in contracted_client1:
                 date1=contracted_client
-                # print(date)
+                # logging.info(date)
 
                 date=date1.month
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
                 import ast
                 from decimal import Decimal
                 import calendar
@@ -10417,24 +10417,24 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month==12:
                         target_month_end = min(start_date.replace(year=start_date.year +1,month= 1, day=1) - datetime.resolution, end_date)
                     else:
 
                         target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -10443,36 +10443,36 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                print(days_in_month)
+                logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
                 else:
                     weeks = date_difference / 7
-                print(date_difference)
-                print("###########################")
-                print(weeks)
+                logging.info(date_difference)
+                logging.info("###########################")
+                logging.info(weeks)
 
                 contracted_working_hours_1 = contracted_client.working_input
-                print(contracted_working_hours_1)
+                logging.info(contracted_working_hours_1)
                 contracted_hours_for_project=contracted_client.total_working_hours
-                print("contracted")
-                print(contracted_hours_for_project)
+                logging.info("contracted")
+                logging.info(contracted_hours_for_project)
                     # Convert the JSON string to a dictionary
                 contracted_working_hours_1_dict1 = json.loads(contracted_working_hours_1)
-                print('muksn')
-                print(contracted_working_hours_1_dict1)
+                logging.info('muksn')
+                logging.info(contracted_working_hours_1_dict1)
                 contracted_working_hours_1_dict = {key.strip(): value for key, value in contracted_working_hours_1_dict1.items()}
                 # Fetch the hourly rate for the user from the Employee table
                 employee_ids = list(contracted_working_hours_1_dict.keys())
-                print(employee_ids)
+                logging.info(employee_ids)
                 # Fetch hourly rate for each employee
                 hourly_rates = {}
                 hourly_rate=0
@@ -10480,26 +10480,26 @@ def client_profile2(request, client_id,start_date,end_date):
                     try:
                         employee1 = employee.objects.get(toggl_user_id=emp_id)
                         hourly_rates[emp_id] = employee1.salary
-                        print("salary")
-                        print(hourly_rates[emp_id])
+                        logging.info("salary")
+                        logging.info(hourly_rates[emp_id])
 
                     except employee.DoesNotExist:
-                        print(f"Employee with ID {emp_id} not found.")
+                        logging.info(f"Employee with ID {emp_id} not found.")
 
                 # Calculate total salary
                 total_salary = sum(hourly_rates[emp_id] for emp_id in employee_ids)
-                print(total_salary)
+                logging.info(total_salary)
 
 
 
                 if contracted_hours_for_project != 0:
-                    print("calculation")
-                    print(total_salary)
-                    print(contracted_hours_for_project)
+                    logging.info("calculation")
+                    logging.info(total_salary)
+                    logging.info(contracted_hours_for_project)
                     hourly_rate1 = float(total_salary) / (22*8)
-                    print(hourly_rate1)
+                    logging.info(hourly_rate1)
                     hourly_rate=hourly_rate1 * contracted_hours_for_project * weeks
-                    print(hourly_rate)
+                    logging.info(hourly_rate)
 
                 else:
                     contracted_hours_for_project = 0
@@ -10507,13 +10507,13 @@ def client_profile2(request, client_id,start_date,end_date):
                     hourly_rate = 0
 
                 if int(emp_id) in employee_salary_dict:
-                        print("ifff")
+                        logging.info("ifff")
                         # If it exists, add the new salary to the existing one
                         employee_salary_dict[int(emp_id)] += hourly_rate
                         employee_salary_dict[int(emp_id)] = round(employee_salary_dict[int(emp_id)], 2)
 
                 else:
-                    print("else")
+                    logging.info("else")
                     # If it doesn't exist, create a new entry
                     employee_salary_dict[int(emp_id)] = hourly_rate
                     employee_salary_dict[int(emp_id)] = round(employee_salary_dict[int(emp_id)], 2)
@@ -10526,7 +10526,7 @@ def client_profile2(request, client_id,start_date,end_date):
         # Sum the values in employee_salary_dict
         contracted_sum_of_rates_employee = sum(employee_salary_dict.values())
         contracted_sum_of_rates_employee = "{:.2f}".format(contracted_sum_of_rates_employee)
-        print("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
+        logging.info("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
 
 
         client_category_list={}
@@ -10559,17 +10559,17 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Access the current record in the queryset
                 first_record = record
-                # print(first_record)
+                # logging.info(first_record)
 
                 ui_final_cost=first_record.cost
-                # print(ui_final_cost)
+                # logging.info(ui_final_cost)
 
                 date1=first_record
 
                 date=date1.date
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -10609,7 +10609,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                         # Ensure that the start date is within the target month
                         start_date_in_target_month = max(start_date, target_month_start)
-                        # print(start_date_in_target_month)
+                        # logging.info(start_date_in_target_month)
 
                         # Get the end date of the target month
                         if start_date_in_target_month.month == target_month:
@@ -10623,10 +10623,10 @@ def client_profile2(request, client_id,start_date,end_date):
                             target_month_end = min(next_month_date - timedelta(days=1), end_date)
                         
                         else:
-                            # print("else")
+                            # logging.info("else")
                             # If the start date is not in the target month, use the end of the start month
                             target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                        print(target_month_end)
+                        logging.info(target_month_end)
                         # Calculate the total days in the target month between the start and end dates
                         if target_month_end.month==start_date_in_target_month.month:
                             total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -10635,13 +10635,13 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
                         # Print the total number of days in the specified month between the start and end dates
-                        # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                        # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                         date_difference=total_days_between
                         # Get the number of days in that month
                         days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                        # print(days_in_month)
+                        # logging.info(days_in_month)
 
                         if date_difference==days_in_month:
                             weeks=4.3
@@ -10656,8 +10656,8 @@ def client_profile2(request, client_id,start_date,end_date):
 
                         if int(employee_id) in employee_details:
 
-                            # print("777777777777777777777777777777777777")
-                            # print(hours)
+                            # logging.info("777777777777777777777777777777777777")
+                            # logging.info(hours)
 
                             employee_details[int(employee_id)]['total_hours'] += hours
                             total_hours = float(employee_details[int(employee_id)]['total_hours'])  * weeks
@@ -10694,7 +10694,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                     # Ensure that the start date is within the target month
                     start_date_in_target_month = max(start_date, target_month_start)
-                    # print(start_date_in_target_month)
+                    # logging.info(start_date_in_target_month)
 
                     # Get the end date of the target month
                     if start_date_in_target_month.month == target_month:
@@ -10707,10 +10707,10 @@ def client_profile2(request, client_id,start_date,end_date):
                         # Calculate target month end
                         target_month_end = min(next_month_date - timedelta(days=1), end_date)                        
                     else:
-                        # print("else")
+                        # logging.info("else")
                         # If the start date is not in the target month, use the end of the start month
                         target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                    # print(target_month_end)
+                    # logging.info(target_month_end)
                     # Calculate the total days in the target month between the start and end dates
                     if target_month_end.month==start_date_in_target_month.month:
                         total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -10720,9 +10720,9 @@ def client_profile2(request, client_id,start_date,end_date):
                     date_difference=total_days_between
 
                     days_in_month = calendar.monthrange(date.year, date.month)[1]
-                    # print(days_in_month)
+                    # logging.info(days_in_month)
 
-                    # print(days_in_month)
+                    # logging.info(days_in_month)
 
                     if date_difference==days_in_month:
                         weeks=4.3
@@ -10734,7 +10734,7 @@ def client_profile2(request, client_id,start_date,end_date):
                     total_hours1 = 0
                     ui_total_hours=0
 
-                # print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr/////////////////////////////////")
+                # logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr/////////////////////////////////")
 
                 if 'total_time_hours' in client_details:
                     client_details['total_time_hours'] += total_hours1
@@ -10755,7 +10755,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
@@ -10768,15 +10768,15 @@ def client_profile2(request, client_id,start_date,end_date):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
 
                 if target_month_end.month==start_date_in_target_month.month:
-                    # print("if")
+                    # logging.info("if")
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
                 else:
-                    # print("else")
+                    # logging.info("else")
                     total_days_between = (target_month_end - start_date_in_target_month).days
 
 
@@ -10819,12 +10819,12 @@ def client_profile2(request, client_id,start_date,end_date):
                 # client_details = {'cost': cost_new,'total_working_hours':formatted_time2}
                 # Print the employee details
                 # for employee_id, details in employee_details.items():
-                #     print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                #     logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
         else:
-            print("No contracted hours found for the specified client.")
-        # print("ghhhhh")
+            logging.info("No contracted hours found for the specified client.")
+        # logging.info("ghhhhh")
 
-        # print(client_details)
+        # logging.info(client_details)
 
         #new clients tab on client
 
@@ -10857,12 +10857,12 @@ def client_profile2(request, client_id,start_date,end_date):
                 client_category_list.append({'id': category_id, 'category_name': category_name})
 
             except Work_Category.DoesNotExist:
-                print(f"Category with ID {category_id} does not exist in the WorkCategory table.")
+                logging.info(f"Category with ID {category_id} does not exist in the WorkCategory table.")
 
         # Now client_category_list contains client IDs and corresponding category names
         # You can use this list to pass information to your UI or perform further processing
-        # print("client_category_list")
-        # print(client_category_list)
+        # logging.info("client_category_list")
+        # logging.info(client_category_list)
 
        # project member of timer
         # Get unique timeSheet entries for a specific client
@@ -10896,12 +10896,12 @@ def client_profile2(request, client_id,start_date,end_date):
                 })
 
             except employee.DoesNotExist:
-                print(f"Employee with ID {employee_id} does not exist in the Employee table.")
+                logging.info(f"Employee with ID {employee_id} does not exist in the Employee table.")
 
         # Now employee_info_dict contains information about employees in each category
         # You can use this dictionary to look up employees based on the category
-        # print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-        # print(employee_info_dict)
+        # logging.info("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+        # logging.info(employee_info_dict)
 
         #working time for timer
         # Calculate total time spent for all distinct category_id values for the given client_id
@@ -10937,15 +10937,15 @@ def client_profile2(request, client_id,start_date,end_date):
             }
 
         # # Print or use the category_time_dict as needed
-        # print(category_time_dict)
+        # logging.info(category_time_dict)
 
-        # print("kiki")
+        # logging.info("kiki")
         total_time_spent_by_client = timeSheet.objects.filter(
         client_id=client_id,
         time_entries_start_date__gte=start_date,  # Filter based on start date
         time_entries_stop_date__lte=end_date     # Filter based on end date
         ).values('client_id', 'employee_id').annotate(total_time=Sum('time_entries_seconds'))
-        # print(total_time_spent_by_client)
+        # logging.info(total_time_spent_by_client)
         # Create a dictionary to store category_id and total time spent
         category_time_dict_client = {}
 
@@ -10968,21 +10968,21 @@ def client_profile2(request, client_id,start_date,end_date):
                 'minutes': total_time_spent_minutes,
                 'seconds': total_time_spent_seconds
             }
-        # print(category_time_dict_client)
+        # logging.info(category_time_dict_client)
 
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            # print("lllllllllllllllllllllllllllllllll")
-            # print(all)
+            # logging.info("lllllllllllllllllllllllllllllllll")
+            # logging.info(all)
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                # print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                # logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the current record in the queryset
                 first_record = record
-                # print(first_record)
+                # logging.info(first_record)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -10990,8 +10990,8 @@ def client_profile2(request, client_id,start_date,end_date):
                 # Parse the JSON string
                 work_dict = json.loads(work_json_str)
 
-                # print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
-                # print(work_dict)
+                # logging.info("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
+                # logging.info(work_dict)
                 for employee_id in work_dict.keys():
                     if int(employee_id) not in category_time_dict_client:
                         category_time_dict_client[int(employee_id)] = {
@@ -11004,14 +11004,14 @@ def client_profile2(request, client_id,start_date,end_date):
                         }
 
         # Print or use the category_time_dict as needed
-        # print("birth")
-        # print(category_time_dict_client)
-        # print(category_time_dict)
+        # logging.info("birth")
+        # logging.info(category_time_dict_client)
+        # logging.info(category_time_dict)
 
         #employee cost in task tab
 
-        # print("employeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-        # print(employee_info_dict)
+        # logging.info("employeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        # logging.info(employee_info_dict)
         # Create a dictionary to store category_id and total cost
         category_cost_dict = {}
 
@@ -11026,8 +11026,8 @@ def client_profile2(request, client_id,start_date,end_date):
 
             # Calculate cost per hour
             cost_per_hour = total_salary / (22 * 8)
-            # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            # print(cost_per_hour)
+            # logging.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            # logging.info(cost_per_hour)
 
             # Fetch total time spent for the category from category_time_dict
             total_time_seconds = category_time_dict.get(category_id, {}).get('total_time_seconds', 0)
@@ -11035,7 +11035,7 @@ def client_profile2(request, client_id,start_date,end_date):
             # Convert Decimal to float for total_cost calculation and round to 2 decimal places
             # total_cost = round(float((total_time_seconds / 3600) * cost_per_hour), 2)
             yoo=float(total_time_seconds / 3600)
-            # print(yoo)
+            # logging.info(yoo)
 
             total_cost=round(cost_per_hour*yoo,2)
 
@@ -11047,8 +11047,8 @@ def client_profile2(request, client_id,start_date,end_date):
             }
 
         # Print or use the category_cost_dict as needed
-        # print("ppppppppppppppppppppppppppppppppppppppppppppppp")
-        # print(category_cost_dict)
+        # logging.info("ppppppppppppppppppppppppppppppppppppppppppppppp")
+        # logging.info(category_cost_dict)
 
         #employee cost in client tab   $$$$$$$$$$$$$$$$$$$$$$$$$$
         # Get unique timeSheet entries for a specific client
@@ -11072,16 +11072,16 @@ def client_profile2(request, client_id,start_date,end_date):
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            # print("lllllllllllllllllllllllllllllllll")
-            # print(all)
+            # logging.info("lllllllllllllllllllllllllllllllll")
+            # logging.info(all)
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                # print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                # logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the current record in the queryset
                 first_record = record
-                # print(first_record)
+                # logging.info(first_record)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -11117,21 +11117,21 @@ def client_profile2(request, client_id,start_date,end_date):
                         'ui_employee_salary': salary,
                         'ui_working_hours': time_worked_hours
                     }
-            # print("new@@@@@@@@@@@")
-            # print(adjusted_salary)
-            # print(time_worked_hours)
+            # logging.info("new@@@@@@@@@@@")
+            # logging.info(adjusted_salary)
+            # logging.info(time_worked_hours)
             # Multiply adjusted salary and time worked
             total_payment = adjusted_salary * time_worked_hours
             total_payment = round(total_payment,2)
             # Update employee_data with total_payment
             employee_data[employee_id]['total_payment'] = total_payment
-        # print("qqqqqqqqqqqqqqqqqq")
-        # print(employee_data)
+        # logging.info("qqqqqqqqqqqqqqqqqq")
+        # logging.info(employee_data)
 
-        # print(ui)
+        # logging.info(ui)
        # end employee cost in client tab $$$$$$$$$$$$$$$$$$
-       #  print("vedansh")
-       #  print(category_cost_dict)
+       #  logging.info("vedansh")
+       #  logging.info(category_cost_dict)
 
 
        # Initialize a variable to store the sum of rates
@@ -11143,13 +11143,13 @@ def client_profile2(request, client_id,start_date,end_date):
         #     sum_of_rates_employee += category_cost_info['total_cost']
 
         sum_of_rates_employee = sum(employee['total_payment'] for employee in employee_data.values())
-        # print("Total payment sum:",  sum_of_rates_employee)
+        # logging.info("Total payment sum:",  sum_of_rates_employee)
 
         # Format the sum_of_rates_employee as a string with two decimal places when printing
         sum_of_rates_employee= "{:.2f}".format(sum_of_rates_employee)
 
         # Print or use the sum_of_rates_employee_str as needed
-        # print("Sum of all costs:", sum_of_rates_employee)
+        # logging.info("Sum of all costs:", sum_of_rates_employee)
 
 
 
@@ -11157,28 +11157,28 @@ def client_profile2(request, client_id,start_date,end_date):
         #client revenue
         client_detail = client.objects.get(pk=client_id)
         client_id= client_detail.id
-        # print(start_month)
-        # print(end_month)
+        # logging.info(start_month)
+        # logging.info(end_month)
         if Client_contract_work.objects.filter(client_id=client_id,date__month__range=[start_month, end_month],date__year=current_year).exists():
         # Filter contracted hours for the project and current month
             contracted_hours_for_month = Client_contract_work.objects.filter(client_id= client_id,date__month__range=[start_month, end_month],date__year=current_year
                 )
 
-            # print("88888888888888888888888888888888888888888888888")
-            # print(contracted_hours_for_month)
+            # logging.info("88888888888888888888888888888888888888888888888")
+            # logging.info(contracted_hours_for_month)
             # first_contracted_hour = contracted_hours_for_month.first()
             one_project_rate=0
             for entry in contracted_hours_for_month:
 
                 date1=entry
-                # print(date)
+                # logging.info(date)
 
                 date=date1.date
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                # print(target_month)
+                # logging.info(target_month)
 
                 import calendar
                 from datetime import datetime
@@ -11187,14 +11187,14 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                     else:
@@ -11203,10 +11203,10 @@ def client_profile2(request, client_id,start_date,end_date):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -11215,38 +11215,38 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
                 if one_project_rate:
                     if date_difference==days_in_month:
                         weeks=4.3
                         weeks=round(weeks,2)
-                        # print(entry.cost)
+                        # logging.info(entry.cost)
                         one_project_rate+=entry.cost
-                        # print("if")
+                        # logging.info("if")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate +=round((entry.cost * weeks) / 4.3, 2)
-                        # print("else")
+                        # logging.info("else")
                 else:
                     if date_difference==days_in_month:
                         weeks=4.3
                         weeks=round(weeks,2)
-                        # print(entry.cost)
+                        # logging.info(entry.cost)
                         one_project_rate=entry.cost
-                        # print("ifff2")
+                        # logging.info("ifff2")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate = round((entry.cost * weeks) / 4.3, 2)
-                        # print("else222")
+                        # logging.info("else222")
 
 
             # one_project_rate = first_contracted_hour.cost
@@ -11255,8 +11255,8 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
         one_project_rate=round(one_project_rate,2)
-        # print("kajal")
-        # print("Sum of Rates Client revenue:", one_project_rate)
+        # logging.info("kajal")
+        # logging.info("Sum of Rates Client revenue:", one_project_rate)
 
         #contracted employee cost
         employee_salary_dict = {}
@@ -11269,14 +11269,14 @@ def client_profile2(request, client_id,start_date,end_date):
             for contracted_client in contracted_client1:
 
                 date1=contracted_client
-                # print(date)
+                # logging.info(date)
 
                 date=date1.date
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
                 #
-                # print(target_month)
+                # logging.info(target_month)
                 import ast
                 from decimal import Decimal
                 import calendar
@@ -11285,14 +11285,14 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
 
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
@@ -11302,10 +11302,10 @@ def client_profile2(request, client_id,start_date,end_date):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -11314,26 +11314,26 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
                 else:
                     weeks = date_difference / 7
-                # print(date_difference)
-                # print("###########################")
-                # print(weeks)
+                # logging.info(date_difference)
+                # logging.info("###########################")
+                # logging.info(weeks)
 
                 contracted_working_hours_1_str = contracted_client.working_input
                 contracted_working_hours_1 = ast.literal_eval(contracted_working_hours_1_str)
-                # print(contracted_working_hours_1)
+                # logging.info(contracted_working_hours_1)
 
 
                     # Assuming 'working_input' is a dictionary with employee_id as keys
@@ -11376,35 +11376,35 @@ def client_profile2(request, client_id,start_date,end_date):
                     mul=round(working_hours *weeks,2)
 
                     total_salary = round(salary_per_hour * mul,2)
-                    # print("22222222222222222222222222222")
-                    # print(salary_per_hour)
-                    # print(working_hours)
-                    # print(total_salary)
+                    # logging.info("22222222222222222222222222222")
+                    # logging.info(salary_per_hour)
+                    # logging.info(working_hours)
+                    # logging.info(total_salary)
                     # total_salary  = "{:.2f}".format(total_salary)
 
                     total_salary = round(total_salary, 2)
                     # Store the total salary in the dictionary
-                    # print(type(employee_id))
+                    # logging.info(type(employee_id))
                     employee_id=int(employee_id)
-                    # print(type(employee_id))
+                    # logging.info(type(employee_id))
                     if int(employee_id) in employee_salary_dict:
-                        # print("ifff")
+                        # logging.info("ifff")
                         # If it exists, add the new salary to the existing one
                         employee_salary_dict[int(employee_id)] += total_salary
                         employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
                     else:
-                        # print("else")
+                        # logging.info("else")
                         # If it doesn't exist, create a new entry
                         employee_salary_dict[int(employee_id)] = total_salary
                         employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
 
-                    # print(employee_salary_dict)
+                    # logging.info(employee_salary_dict)
 
 
-            # print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
-            # print(employee_salary_dict)
+            # logging.info("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+            # logging.info(employee_salary_dict)
 
 
 
@@ -11415,7 +11415,7 @@ def client_profile2(request, client_id,start_date,end_date):
         # Sum the values in employee_salary_dict
         contracted_sum_of_rates_employee = sum(employee_salary_dict.values())
         contracted_sum_of_rates_employee = "{:.2f}".format(contracted_sum_of_rates_employee)
-        # print("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
+        # logging.info("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
 
 
         total_time_spent_formatted={}
@@ -11425,12 +11425,12 @@ def client_profile2(request, client_id,start_date,end_date):
 
 
 
-    # print("finallllll")
+    # logging.info("finallllll")
     #
-    # print(ui_data)
-    # # print(ui)
-    # # print(weeks)
-    # print(ui_client_data)
+    # logging.info(ui_data)
+    # # logging.info(ui)
+    # # logging.info(weeks)
+    # logging.info(ui_client_data)
 
 
     return sum_of_rates_employee,contracted_sum_of_rates_employee,one_project_rate,client_id
@@ -11456,13 +11456,13 @@ CLIENT_SECRETS_FILE = "credentials.json"
 
 def get_authenticated_service(request):
     global CLIENT_SECRETS_FILE
-    print('1')
+    logging.info('1')
     # Check if there are already stored credentials in the session
     employee_id = request.session.get('user_id')
     employee_ob = employee.objects.get(id=int(employee_id))
     if employee_ob.token:
         google_credentials = json.loads(employee_ob.token)
-        print(google_credentials['refresh_token'])
+        logging.info(google_credentials['refresh_token'])
         revoke_access_token(google_credentials['refresh_token'])
     absolute_url1 = request.build_absolute_uri('/callback')
     if absolute_url1.startswith('http://'):
@@ -11472,13 +11472,13 @@ def get_authenticated_service(request):
         redirect_uri=absolute_url1
         # redirect_uri=request.build_absolute_uri('/callback')
     )
-    print('2')
+    logging.info('2')
     authorization_url, _ = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
         prompt='consent'
     )
-    print('3')
+    logging.info('3')
     return redirect(authorization_url)
 
     # # Build the service using the authenticated credentials
@@ -11495,7 +11495,7 @@ def get_authenticated_service(request):
 
 def callback(request: HttpRequest):
     global CLIENT_SECRETS_FILE
-    print('4')
+    logging.info('4')
     # Build the flow object
     absolute_url = request.build_absolute_uri()
     if absolute_url.startswith('http://'):
@@ -11509,31 +11509,31 @@ def callback(request: HttpRequest):
         # redirect_uri=request.build_absolute_uri('/callback')
         redirect_uri=absolute_url1
     )
-    print('5')
+    logging.info('5')
     # Exchange the authorization code for credentials
     # flow.fetch_token(authorization_response=request.build_absolute_uri())
     flow.fetch_token(authorization_response=absolute_url)
     creds = flow.credentials
-    print('6')
+    logging.info('6')
     employee_id = request.session.get('user_id')
 
     service = build('calendar', 'v3', credentials=creds)
     current_time = datetime.utcnow().isoformat() + 'Z'
     events_result = service.events().list(calendarId='primary', timeMax=current_time).execute()
     events = events_result.get('items', [])
-    print(events, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
-    # print(events[0]['creator']['email'], 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    logging.info(events, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa')
+    # logging.info(events[0]['creator']['email'], 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     # user_email = events[0]['creator']['email']
     # user_email = id_token.verify_oauth2_token(creds.id_token, requests.Request()).get('email', '')
 
     try:
         from google.auth.transport import requests
         user_email = id_token.verify_oauth2_token(creds.id_token, requests.Request(),clock_skew_in_seconds=300).get('email', '')
-        print(user_email, 'LOGIN USER EMAIL')
+        logging.info(user_email, 'LOGIN USER EMAIL')
     except Exception as e:
         employee_ob = employee.objects.get(id=int(employee_id))
         user_email = employee_ob.email
-        print(user_email,e, 'LOGIN PERSONAL EMAIL')
+        logging.info(user_email,e, 'LOGIN PERSONAL EMAIL')
 
 
     if creds.refresh_token != None:
@@ -11549,7 +11549,7 @@ def callback(request: HttpRequest):
 
         # Assuming you have an employee instance
         employee_ob = employee.objects.get(id=int(employee_id))  # Replace employee_id with the actual ID
-        print(google_credentials_json, 'PAWAN')
+        logging.info(google_credentials_json, 'PAWAN')
         # Store the serialized credentials in the token field
         employee_ob.token = google_credentials_json
         employee_ob.auth_gmail = user_email
@@ -11569,7 +11569,7 @@ def remove(request):
     emp_ob = employee.objects.get(id=int(employee_id))
     if emp_ob.token:
         google_credentials = json.loads(emp_ob.token)
-        print(google_credentials['refresh_token'])
+        logging.info(google_credentials['refresh_token'])
         status = revoke_access_token(google_credentials['refresh_token'])
 
         emp_ob.token = None
@@ -11579,7 +11579,7 @@ def remove(request):
 
     url = reverse('profile_with_optional', kwargs={'employee_id': int(employee_id), 'my_profile_tab': '3'})
     # url = reverse('profile', kwargs={'employee_id': int(employee_id)})
-    print(url)
+    logging.info(url)
     response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
     return response  # Redirect user to a login or home page after signout
 
@@ -11588,14 +11588,14 @@ def remove(request):
 def toggle_cookie(request):
     employee_id = request.session.get('user_id')
     emp_ob = employee.objects.get(id=int(employee_id))
-    print(emp_ob.calender_status, 'KKK')
+    logging.info(emp_ob.calender_status, 'KKK')
     if emp_ob.calender_status == 1:
-        print('Hello')
+        logging.info('Hello')
         emp_ob.calender_status = 0
         emp_ob.save()
         response = HttpResponse("Toggle is now off. Cookie deleted.")
     else:
-        print('YYYYYYY')
+        logging.info('YYYYYYY')
         emp_ob.calender_status = 1
         emp_ob.save()
         response = HttpResponse("Toggle is now on. Cookie set.")
@@ -11612,13 +11612,13 @@ def summary(request):
 
     # Calculate the date range for the last week
     if request.method == 'POST':
-        print("postttttttttttttttttttttttttttttttttttttttttttttttttt")
+        logging.info("postttttttttttttttttttttttttttttttttttttttttttttttttt")
 
 
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -11628,8 +11628,8 @@ def summary(request):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -11637,24 +11637,24 @@ def summary(request):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
         selected_option = request.POST.get('selected_option')
         auto_submit = request.POST.get('auto_submit')
-        print("selcetddddd")
-        print(selected_option)
+        logging.info("selcetddddd")
+        logging.info(selected_option)
         if auto_submit == '1':
             # Auto submission occurred, handle it here
             # For example, redirect to a different view based on the selected option
             if selected_option == '0':
-                print(selected_option)
+                logging.info(selected_option)
             elif selected_option == '1':
-                print(selected_option)
+                logging.info(selected_option)
 
 
 
@@ -11695,10 +11695,10 @@ def summary(request):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
 
         selected_option='0'
 
@@ -11706,7 +11706,7 @@ def summary(request):
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if1111111111")
+        logging.info("if1111111111")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -11715,7 +11715,7 @@ def summary(request):
         )
 
     elif selected_client_ids :
-        print("if222222222222")
+        logging.info("if222222222222")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -11723,14 +11723,14 @@ def summary(request):
 
         )
     elif selected_employee_ids:
-        print("if3333333333333")
+        logging.info("if3333333333333")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             employee_id__in=selected_employee_ids
         )
     else:
-        # print("else")
+        # logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date
@@ -11743,7 +11743,7 @@ def summary(request):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    # print(selected_client_names)
+    # logging.info(selected_client_names)
 
     total_selected_clients = len(selected_client_ids)
     total_selected_employees = len(selected_employee_ids)
@@ -11755,7 +11755,7 @@ def summary(request):
     entries_with_client_details = []
 
     if selected_option == '0' :
-        print("userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        logging.info("userrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         # Iterate over timeSheet entries
         for entry in time_entries_last_week:
             employee_id = entry.employee_id
@@ -11826,8 +11826,8 @@ def summary(request):
                 # Set percentage to 0 or handle as appropriate if total_time is not a valid integer
                 data['percentage'] = 0
 
-        print("table1")
-        print(employee_total_time)
+        logging.info("table1")
+        logging.info(employee_total_time)
         # Iterate through each entry in the queryset
         for entry in time_entries_last_week:
             import datetime
@@ -11836,7 +11836,7 @@ def summary(request):
 
             # Calculate total time spent by the employee
             total_time_employee = sum(e.time_entries_seconds for e in time_entries_last_week if e.employee_id == entry.employee_id)
-            # print(total_time_employee)
+            # logging.info(total_time_employee)
 
             # Fetch client details
             client1 = client.objects.get(id=entry.client_id)
@@ -11892,8 +11892,8 @@ def summary(request):
                 }
                 entries_with_details.append(entry_details)
 
-        print("table2")
-        print(entries_with_details)
+        logging.info("table2")
+        logging.info(entries_with_details)
 
 
 
@@ -11905,7 +11905,7 @@ def summary(request):
         #
         #     # Calculate total time spent by the employee
         #     total_time_employee = sum(e.time_entries_seconds for e in time_entries_last_week if e.employee_id == entry.employee_id)
-        #     # print(total_time_employee)
+        #     # logging.info(total_time_employee)
         #
         #     # Fetch client details
         #     client1 = client.objects.get(id=entry.client_id)
@@ -11943,13 +11943,13 @@ def summary(request):
         #     }
         #     entries_with_details.append(entry_details)
         #
-        # print("table2")
+        # logging.info("table2")
         #
-        # print(entries_with_details)
+        # logging.info(entries_with_details)
 
             #for bar graphhhhhhh
 
-        # print(employee_total_time)
+        # logging.info(employee_total_time)
         # Create a dictionary to store total time spent by each day
         from collections import defaultdict
         # Create a dictionary to store total time spent by each day
@@ -11965,8 +11965,8 @@ def summary(request):
 
 
 
-        print(type(start_date))
-        print(end_date)
+        logging.info(type(start_date))
+        logging.info(end_date)
         # Convert start_date and end_date to datetime objects
         # Convert start_date and end_date to datetime objects
         # Convert start_date and end_date to datetime objects
@@ -11989,9 +11989,9 @@ def summary(request):
         data = [daily_total_time[label] for label in labels]
 
 
-        print("bar_chart")
-        print(labels)
-        print(data)
+        logging.info("bar_chart")
+        logging.info(labels)
+        logging.info(data)
 
         # Prepare data for the pie chart
 
@@ -12002,7 +12002,7 @@ def summary(request):
                 'percentage': data1['percentage']
             } for employee_id, data1 in employee_total_time.items()
         }
-        # print(pie_chart_data)
+        # logging.info(pie_chart_data)
         # # Extracting labels and data from pie_chart_data
         pie1= []
         pie2 = []
@@ -12010,14 +12010,14 @@ def summary(request):
         for employee_id, data1 in pie_chart_data.items():
             name1 = data1['name']
             percentage1 = data1['percentage']
-            # print(name1)
-            # print(percentage1)
+            # logging.info(name1)
+            # logging.info(percentage1)
             pie1.append(name1)
             pie2.append(percentage1)
         #
-        print("piechart1")
-        print(pie1)
-        print(pie2)
+        logging.info("piechart1")
+        logging.info(pie1)
+        logging.info(pie2)
 
         #2nd pie chart
 
@@ -12060,13 +12060,13 @@ def summary(request):
             percentage_time = (total_seconds / total_time_all_categories) * 100
             pie4.append(percentage_time)
 
-        print("piechart2222")
-        print(pie3)
-        print(pie4)
+        logging.info("piechart2222")
+        logging.info(pie3)
+        logging.info(pie4)
 
 
     else:
-        print("clientttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
+        logging.info("clientttttttttttttttttttttttttttttttttttttttttttttttttttttttt")
         # Iterate over timeSheet entries
         for entry in time_entries_last_week:
             client_id = entry.client_id
@@ -12138,8 +12138,8 @@ def summary(request):
                 # Set percentage to 0 or handle as appropriate if total_time is not a valid integer
                 data['percentage'] = 0
 
-        print("table1")
-        print(client_total_time)
+        logging.info("table1")
+        logging.info(client_total_time)
         # Iterate through each entry in the queryset
 
         # Iterate through each entry in the queryset
@@ -12153,8 +12153,8 @@ def summary(request):
             category_id = Work_Category.objects.get(id=entry.category_id)
             category_id1 = Work_Category.objects.values('id').get(id=entry.category_id)['id']
             category_id1 = int(category_id1)
-            print("myyyyyyyyyyyy")
-            print(type(category_id1))
+            logging.info("myyyyyyyyyyyy")
+            logging.info(type(category_id1))
 
 
             # Calculate total time spent by the client
@@ -12204,8 +12204,8 @@ def summary(request):
                 }
                 entries_with_client_details.append(entry_details)
 
-        print("table2")
-        print(entries_with_client_details)
+        logging.info("table2")
+        logging.info(entries_with_client_details)
 
 
         #for bar graphhhhhhh
@@ -12226,8 +12226,8 @@ def summary(request):
 
 
 
-        print(type(start_date))
-        print(end_date)
+        logging.info(type(start_date))
+        logging.info(end_date)
         # Convert start_date and end_date to datetime objects
         # Convert start_date and end_date to datetime objects
         # Convert start_date and end_date to datetime objects
@@ -12250,9 +12250,9 @@ def summary(request):
         data = [daily_total_time[label] for label in labels]
 
 
-        print("bar_chart")
-        print(labels)
-        print(data)
+        logging.info("bar_chart")
+        logging.info(labels)
+        logging.info(data)
 
         # Prepare data for the pie chart
 
@@ -12263,7 +12263,7 @@ def summary(request):
                 'percentage': data1['percentage']
             } for client_id, data1 in client_total_time.items()
         }
-        # print(pie_chart_data)
+        # logging.info(pie_chart_data)
         # # Extracting labels and data from pie_chart_data
         pie1= []
         pie2 = []
@@ -12271,14 +12271,14 @@ def summary(request):
         for client_id, data1 in pie_chart_data.items():
             name1 = data1['name']
             percentage1 = data1['percentage']
-            # print(name1)
-            # print(percentage1)
+            # logging.info(name1)
+            # logging.info(percentage1)
             pie1.append(name1)
             pie2.append(percentage1)
         #
-        print("piechart1")
-        print(pie1)
-        print(pie2)
+        logging.info("piechart1")
+        logging.info(pie1)
+        logging.info(pie2)
 
 
         #2nd pie chart
@@ -12322,11 +12322,11 @@ def summary(request):
             percentage_time = (total_seconds / total_time_all_categories) * 100
             pie4.append(percentage_time)
 
-        print("piechart2222")
-        print(pie3)
-        print(pie4)
+        logging.info("piechart2222")
+        logging.info(pie3)
+        logging.info(pie4)
 
-    print(selected_option)
+    logging.info(selected_option)
 
     context={
         "employee_total_time":employee_total_time,
@@ -12365,7 +12365,7 @@ def summary(request):
 @csrf_exempt
 @login_required(login_url='/')
 def weekly(request):
-    print("weekly")
+    logging.info("weekly")
         # Initialize selected_client_ids
     selected_client_ids = []
     selected_employee_ids=[]
@@ -12374,8 +12374,8 @@ def weekly(request):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        # print("companies111")
-        # print(from_to_date)
+        # logging.info("companies111")
+        # logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -12385,8 +12385,8 @@ def weekly(request):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -12394,26 +12394,26 @@ def weekly(request):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
         start_date=from_date
         end_date=to_date
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
         selected_option = request.POST.get('selected_option')
         auto_submit = request.POST.get('auto_submit')
-        print("selcetddddd")
-        print(selected_option)
+        logging.info("selcetddddd")
+        logging.info(selected_option)
         if auto_submit == '1':
             # Auto submission occurred, handle it here
             # For example, redirect to a different view based on the selected option
             if selected_option == '0':
-                print(selected_option)
+                logging.info(selected_option)
             elif selected_option == '1':
-                print(selected_option)
+                logging.info(selected_option)
     else:
 
         from datetime import datetime, timedelta
@@ -12434,20 +12434,20 @@ def weekly(request):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        # print("elsedatw")
-        # print(from_to_date)
+        # logging.info("elsedatw")
+        # logging.info(from_to_date)
         selected_option='0'
 
-    print(start_date)
-    print(end_date)
+    logging.info(start_date)
+    logging.info(end_date)
 
     all_clients = client.objects.all()
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -12457,7 +12457,7 @@ def weekly(request):
         )
 
     elif selected_client_ids :
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -12466,7 +12466,7 @@ def weekly(request):
 
         )
     elif selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -12474,7 +12474,7 @@ def weekly(request):
             status=None
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -12488,11 +12488,11 @@ def weekly(request):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    print(selected_client_names)
+    logging.info(selected_client_names)
     # new eekly
 
-    print(start_date)
-    print(end_date)
+    logging.info(start_date)
+    logging.info(end_date)
     time_data={}
 
 
@@ -12518,12 +12518,12 @@ def weekly(request):
         return total_seconds
 
 
-    # print(dates_increasing_order)
+    # logging.info(dates_increasing_order)
 
     from datetime import datetime, timedelta
 
-    print(start_date)
-    print(end_date)
+    logging.info(start_date)
+    logging.info(end_date)
 
     start_date = datetime.strptime(str(start_date), '%Y-%m-%d').date()
     end_date = datetime.strptime(str(end_date), '%Y-%m-%d').date()
@@ -12540,8 +12540,8 @@ def weekly(request):
 
     # Add a 'Total' entry
     dates_increasing_order['date{}'.format(day_count)] = {'day': 'Total'}
-    print("new datessssssssssssssssss")
-    print(dates_increasing_order)
+    logging.info("new datessssssssssssssssss")
+    logging.info(dates_increasing_order)
 
 
     employee_total_time = {}
@@ -12590,7 +12590,7 @@ def weekly(request):
                     employee_total_time[employee_id][date] = 0
 
 
-        # print(employee_total_time)
+        # logging.info(employee_total_time)
 
         # Create a dictionary to store each employee's total time spent on the first date (date1)
 
@@ -12615,7 +12615,7 @@ def weekly(request):
             # Adding total time until date7 to the dictionary
             employee_date_time[employee_id]['total'] = convert_seconds_to_12_hour_format(total_time_until_date7)
 
-        # print(employee_date_time)
+        # logging.info(employee_date_time)
 
 
 
@@ -12669,7 +12669,7 @@ def weekly(request):
 
 
 
-        print(employee_date_time_with_details)
+        logging.info(employee_date_time_with_details)
 
 
         # Create an empty dictionary to store total time for each date
@@ -12704,9 +12704,9 @@ def weekly(request):
             # If employee_date_time_with_details is empty, create an empty total_time_by_date dictionary
             total_time_by_date = {}
 
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        logging.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-        print(total_time_by_date)
+        logging.info(total_time_by_date)
 
 
         if employee_date_time_with_details:
@@ -12715,7 +12715,7 @@ def weekly(request):
         else:
             total_time='00:00:00'
 
-        print(total_time)
+        logging.info(total_time)
 
 
         #for box click
@@ -12730,7 +12730,7 @@ def weekly(request):
         sorted_dates = sorted(all_dates)
 
         #
-        print("newwwwwwwwwwwwww")
+        logging.info("newwwwwwwwwwwwww")
         time_entries_summary = time_entries_last_week.values(
         'employee_id', 'client_id', 'category_id', 'time_entries_start_date'
         ).annotate(
@@ -12771,7 +12771,7 @@ def weekly(request):
                             result_dict[employee_id][client_id][category_id][date] = 0
 
         # Print the resulting dictionary
-        print(result_dict)
+        logging.info(result_dict)
 
 
 
@@ -12828,12 +12828,12 @@ def weekly(request):
                     client_date_time_with_details[employee_id] = {}
                 client_date_time_with_details[employee_id][client_id] = client_data
 
-        print(client_date_time_with_details)
+        logging.info(client_date_time_with_details)
 
     #end new weekly
     else:
 
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+        logging.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 
         # Create a dictionary to store total time for each client-category combination for each date
 
@@ -12905,7 +12905,7 @@ def weekly(request):
             total_entries[key].add(employee_id)
 
         # Print the total entries dictionary
-        print(total_entries)
+        logging.info(total_entries)
 
         # Dictionary to store the count of unique employee IDs for each client ID and work category combination
         unique_employee_count = {}
@@ -12915,7 +12915,7 @@ def weekly(request):
             # Get the count of unique employee IDs for the current client ID and work category combination
             unique_employee_count[client_category] = len(employees)
 
-        print(unique_employee_count)
+        logging.info(unique_employee_count)
 
 
 
@@ -12950,7 +12950,7 @@ def weekly(request):
             # Adding total time until last date to the dictionary
             client_category_date_time[client_category]['time_entries']['total'] = convert_seconds_to_12_hour_format(total_time_until_date)
 
-        print(client_category_date_time)
+        logging.info(client_category_date_time)
 
 
         #fro last total line
@@ -12984,13 +12984,13 @@ def weekly(request):
         else:
             total_time_by_date_client={}
 
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        logging.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-        print(total_time_by_date_client)
+        logging.info(total_time_by_date_client)
 
         # Store the value of date1_to_date7 in a separate variable
         total_time = total_time_by_date_client.get('date1_to_date7', '00:00:00')
-        print(total_time)
+        logging.info(total_time)
 
 
         # # Create a dictionary to store total time for each employee for each date
@@ -13070,7 +13070,7 @@ def weekly(request):
                 total_time_by_employee_for_client_category[client_category]['employees'][employee_id]['total'] = \
                     convert_seconds_to_12_hour_format(overall_total_time)
 
-        print(total_time_by_employee_for_client_category)
+        logging.info(total_time_by_employee_for_client_category)
 
 
 
@@ -13081,11 +13081,11 @@ def weekly(request):
 
 
 
-    # print(all_clients)
+    # logging.info(all_clients)
 
     total_selected_clients = len(selected_client_ids)
-    print(selected_client_ids)
-    print(total_selected_clients)
+    logging.info(selected_client_ids)
+    logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -13128,8 +13128,8 @@ def detailed(request):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -13139,8 +13139,8 @@ def detailed(request):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -13148,12 +13148,12 @@ def detailed(request):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
 
     else:
@@ -13192,16 +13192,16 @@ def detailed(request):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
 
     all_clients = client.objects.all()
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13211,7 +13211,7 @@ def detailed(request):
         )
 
     elif selected_client_ids :
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13220,7 +13220,7 @@ def detailed(request):
 
         )
     elif selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13228,7 +13228,7 @@ def detailed(request):
             status=None
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13242,12 +13242,12 @@ def detailed(request):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    # print(selected_client_names)
+    # logging.info(selected_client_names)
 
 
     total_selected_clients = len(selected_client_ids)
-    # print(selected_client_ids)
-    # print(total_selected_clients)
+    # logging.info(selected_client_ids)
+    # logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -13294,7 +13294,7 @@ def detailed(request):
                 country_city = 'America/New_York'
         except Exception as e:
             country_city = 'America/New_York'
-        print('country_city ',country_city)
+        logging.info('country_city ',country_city)
         local_tz = pytz.timezone(country_city)
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -13314,7 +13314,7 @@ def detailed(request):
                 project_data = project.objects.get(id=int(entry.project_id))
             except (ValueError, ObjectDoesNotExist):
                 project_data = None
-        print('Vinod project_data', project_data)
+        logging.info('Vinod project_data', project_data)
         # Add additional details to the entry dictionary
         entry_details = {
             'employee_name': employee1.user_name,
@@ -13339,8 +13339,8 @@ def detailed(request):
 
 
 
-    print("Entries with details:")
-    print(entries_with_details)
+    logging.info("Entries with details:")
+    logging.info(entries_with_details)
 
 
 
@@ -13374,8 +13374,8 @@ def client_entries(request, client_id):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -13385,8 +13385,8 @@ def client_entries(request, client_id):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -13394,12 +13394,12 @@ def client_entries(request, client_id):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
 
     else:
@@ -13448,10 +13448,10 @@ def client_entries(request, client_id):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
             # Here, we ensure that the client_id is included in the selected_client_ids list
         if str(client_id) not in selected_client_ids:
             selected_client_ids.append(str(client_id))
@@ -13460,7 +13460,7 @@ def client_entries(request, client_id):
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13470,7 +13470,7 @@ def client_entries(request, client_id):
         )
 
     elif selected_client_ids :
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13479,7 +13479,7 @@ def client_entries(request, client_id):
 
         )
     elif selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13488,7 +13488,7 @@ def client_entries(request, client_id):
 
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13504,12 +13504,12 @@ def client_entries(request, client_id):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    print(selected_client_names)
+    logging.info(selected_client_names)
 
 
     total_selected_clients = len(selected_client_ids)
-    print(selected_client_ids)
-    print(total_selected_clients)
+    logging.info(selected_client_ids)
+    logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -13555,7 +13555,7 @@ def client_entries(request, client_id):
                 country_city = 'America/New_York'
         except Exception as e:
             country_city = 'America/New_York'
-        print('country_city ',country_city)
+        logging.info('country_city ',country_city)
         local_tz = pytz.timezone(country_city)
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -13577,7 +13577,7 @@ def client_entries(request, client_id):
                 project_data = project.objects.get(id=int(entry.project_id))
             except ValueError:
                 project_data = None
-        print('Vinod project_data', project_data)
+        logging.info('Vinod project_data', project_data)
         # Add additional details to the entry dictionary
         entry_details = {
             'employee_name': employee1.user_name,
@@ -13602,11 +13602,11 @@ def client_entries(request, client_id):
     # Format the total duration as desired
     total_duration_formatted = '{:02d}:{:02d}:{:02d}'.format(total_hours, total_minutes, total_seconds)
 
-    print("Entries with details:")
-    print(entries_with_details)
+    logging.info("Entries with details:")
+    logging.info(entries_with_details)
 
-    print(client_id)
-    print(selected_client_ids)
+    logging.info(client_id)
+    logging.info(selected_client_ids)
 
     context={
         'entries_with_details':entries_with_details,
@@ -13638,8 +13638,8 @@ def client_category_details(request, client_id, category_id):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -13649,8 +13649,8 @@ def client_category_details(request, client_id, category_id):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -13658,12 +13658,12 @@ def client_category_details(request, client_id, category_id):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
 
     else:
@@ -13722,11 +13722,11 @@ def client_category_details(request, client_id, category_id):
     all_clients = client.objects.all()
     all_employees =employee.objects.filter(status__in=[1, 2])
 
-    print("client)category_detailssssssssssssssssss")
+    logging.info("client)category_detailssssssssssssssssss")
 
 
     if selected_client_ids and selected_employee_ids:
-        print("if sleected 11")
+        logging.info("if sleected 11")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13738,7 +13738,7 @@ def client_category_details(request, client_id, category_id):
         )
 
     elif selected_client_ids :
-        print("if slecetdddddddddddddddddddddddddddd 222")
+        logging.info("if slecetdddddddddddddddddddddddddddd 222")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13749,7 +13749,7 @@ def client_category_details(request, client_id, category_id):
         )
 
     elif selected_employee_ids:
-        print("if 333333333333")
+        logging.info("if 333333333333")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13760,7 +13760,7 @@ def client_category_details(request, client_id, category_id):
 
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -13779,12 +13779,12 @@ def client_category_details(request, client_id, category_id):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    print(selected_client_names)
+    logging.info(selected_client_names)
 
 
     total_selected_clients = len(selected_client_ids)
-    print(selected_client_ids)
-    print(total_selected_clients)
+    logging.info(selected_client_ids)
+    logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -13829,7 +13829,7 @@ def client_category_details(request, client_id, category_id):
                 country_city = 'America/New_York'
         except Exception as e:
             country_city = 'America/New_York'
-        print('country_city ',country_city)
+        logging.info('country_city ',country_city)
         local_tz = pytz.timezone(country_city)
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -13851,7 +13851,7 @@ def client_category_details(request, client_id, category_id):
                 project_data = project.objects.get(id=int(entry.project_id))
             except ValueError:
                 project_data = None
-        print('Vinod project_data', project_data)
+        logging.info('Vinod project_data', project_data)
         # Add additional details to the entry dictionary
         entry_details = {
             'employee_name': employee1.user_name,
@@ -13876,11 +13876,11 @@ def client_category_details(request, client_id, category_id):
     total_duration_formatted = '{:02d}:{:02d}:{:02d}'.format(total_hours, total_minutes, total_seconds)
     #
     #
-    print(entries_with_details)
+    logging.info(entries_with_details)
 
-    print(client_id)
-    print(category_id)
-    print('Vinod from_to_date',from_to_date)
+    logging.info(client_id)
+    logging.info(category_id)
+    logging.info('Vinod from_to_date',from_to_date)
 
     context={
         'entries_with_details':entries_with_details,
@@ -13913,8 +13913,8 @@ def employee_entries(request, employee_id):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -13924,8 +13924,8 @@ def employee_entries(request, employee_id):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -13933,12 +13933,12 @@ def employee_entries(request, employee_id):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
 
     else:
@@ -13988,10 +13988,10 @@ def employee_entries(request, employee_id):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
             # Here, we ensure that the client_id is included in the selected_client_ids list
         if str(employee_id) not in selected_employee_ids:
             selected_employee_ids.append(str(employee_id))
@@ -14000,7 +14000,7 @@ def employee_entries(request, employee_id):
     all_employees =employee.objects.filter(status__in=[1, 2])
 
     if selected_client_ids and selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14010,7 +14010,7 @@ def employee_entries(request, employee_id):
         )
 
     elif selected_client_ids :
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14019,7 +14019,7 @@ def employee_entries(request, employee_id):
 
         )
     elif selected_employee_ids:
-        print("if")
+        logging.info("if")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14028,7 +14028,7 @@ def employee_entries(request, employee_id):
 
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14044,12 +14044,12 @@ def employee_entries(request, employee_id):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    print(selected_client_names)
+    logging.info(selected_client_names)
 
 
     total_selected_clients = len(selected_client_ids)
-    print(selected_client_ids)
-    print(total_selected_clients)
+    logging.info(selected_client_ids)
+    logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -14095,7 +14095,7 @@ def employee_entries(request, employee_id):
                 country_city = 'America/New_York'
         except Exception as e:
             country_city = 'America/New_York'
-        print('country_city ',country_city)
+        logging.info('country_city ',country_city)
         local_tz = pytz.timezone(country_city)
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -14118,7 +14118,7 @@ def employee_entries(request, employee_id):
                 project_data = project.objects.get(id=int(entry.project_id))
             except ValueError:
                 project_data = None
-        print('Vinod project_data', project_data)
+        logging.info('Vinod project_data', project_data)
         # Add additional details to the entry dictionary
         entry_details = {
             'employee_name': employee1.user_name,
@@ -14142,11 +14142,11 @@ def employee_entries(request, employee_id):
     # Format the total duration as desired
     total_duration_formatted = '{:02d}:{:02d}:{:02d}'.format(total_hours, total_minutes, total_seconds)
 
-    print("Entries with details:")
-    print(entries_with_details)
+    logging.info("Entries with details:")
+    logging.info(entries_with_details)
 
-    print(employee_id)
-    print(selected_client_ids)
+    logging.info(employee_id)
+    logging.info(selected_client_ids)
 
     context={
         'entries_with_details':entries_with_details,
@@ -14177,8 +14177,8 @@ def employee_category_details(request, employee_id, category_id):
     if request.method == 'POST':
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
-        print("companies111")
-        print(from_to_date)
+        logging.info("companies111")
+        logging.info(from_to_date)
 
         # Split the string into "from" and "to" dates
         from_date_str, to_date_str = from_to_date.split(" - ")
@@ -14188,8 +14188,8 @@ def employee_category_details(request, employee_id, category_id):
         to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
         # Print the formatted dates
-        print("From date:", from_date)
-        print("To date:", to_date)
+        logging.info("From date:", from_date)
+        logging.info("To date:", to_date)
 
         # Convert start_date and end_date to datetime objects
         start_date = datetime.combine(from_date, datetime.min.time())
@@ -14197,12 +14197,12 @@ def employee_category_details(request, employee_id, category_id):
 
 
         selected_client_ids = request.POST.getlist('client_id')
-        print("akshay")
-        print(selected_client_ids)
+        logging.info("akshay")
+        logging.info(selected_client_ids)
 
         selected_employee_ids = request.POST.getlist('employee_id')
-        print("akshay33")
-        print(selected_employee_ids)
+        logging.info("akshay33")
+        logging.info(selected_employee_ids)
 
 
     else:
@@ -14253,10 +14253,10 @@ def employee_category_details(request, employee_id, category_id):
         # Concatenate the formatted dates
         formatted_date_range = f"{formatted_start_date} - {formatted_end_date}"
 
-        print(formatted_date_range)
+        logging.info(formatted_date_range)
         from_to_date=formatted_date_range
-        print("elsedatw")
-        print(from_to_date)
+        logging.info("elsedatw")
+        logging.info(from_to_date)
             # Here, we ensure that the client_id is included in the selected_client_ids list
         if str(employee_id) not in selected_employee_ids:
             selected_employee_ids.append(str(employee_id))
@@ -14264,11 +14264,11 @@ def employee_category_details(request, employee_id, category_id):
     all_clients = client.objects.all()
     all_employees =employee.objects.filter(status__in=[1, 2])
 
-    print("client)category_detailssssssssssssssssss")
+    logging.info("client)category_detailssssssssssssssssss")
 
 
     if selected_client_ids and selected_employee_ids:
-        print("if sleected 11")
+        logging.info("if sleected 11")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14280,7 +14280,7 @@ def employee_category_details(request, employee_id, category_id):
         )
 
     elif selected_client_ids :
-        print("if slecetdddddddddddddddddddddddddddd 222")
+        logging.info("if slecetdddddddddddddddddddddddddddd 222")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14291,7 +14291,7 @@ def employee_category_details(request, employee_id, category_id):
         )
 
     elif selected_employee_ids:
-        print("if 333333333333")
+        logging.info("if 333333333333")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14301,7 +14301,7 @@ def employee_category_details(request, employee_id, category_id):
 
         )
     else:
-        print("else")
+        logging.info("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
@@ -14319,12 +14319,12 @@ def employee_category_details(request, employee_id, category_id):
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
-    print(selected_client_names)
+    logging.info(selected_client_names)
 
 
     total_selected_clients = len(selected_client_ids)
-    print(selected_client_ids)
-    print(total_selected_clients)
+    logging.info(selected_client_ids)
+    logging.info(total_selected_clients)
 
     total_selected_employees = len(selected_employee_ids)
 
@@ -14369,7 +14369,7 @@ def employee_category_details(request, employee_id, category_id):
                 country_city = 'America/New_York'
         except Exception as e:
             country_city = 'America/New_York'
-        print('country_city ',country_city)
+        logging.info('country_city ',country_city)
         local_tz = pytz.timezone(country_city)
 
         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
@@ -14391,7 +14391,7 @@ def employee_category_details(request, employee_id, category_id):
                 project_data = project.objects.get(id=int(entry.project_id))
             except ValueError:
                 project_data = None
-        print('Vinod project_data', project_data)
+        logging.info('Vinod project_data', project_data)
         # Add additional details to the entry dictionary
         entry_details = {
             'employee_name': employee1.user_name,
@@ -14416,11 +14416,11 @@ def employee_category_details(request, employee_id, category_id):
     total_duration_formatted = '{:02d}:{:02d}:{:02d}'.format(total_hours, total_minutes, total_seconds)
     #
     #
-    print(entries_with_details)
+    logging.info(entries_with_details)
 
-    print(employee_id)
-    print(category_id)
-    # print(category_id.id)
+    logging.info(employee_id)
+    logging.info(category_id)
+    # logging.info(category_id.id)
 
     context={
         'entries_with_details':entries_with_details,
@@ -14482,8 +14482,8 @@ def client_profile_export(request, client_id):
     start_date_str = start_date.strftime('%Y-%m-%d %H:%M:%S')
     end_date_str = end_date.strftime('%Y-%m-%d %H:%M:%S')
 
-    print("Start date:", start_date_str)
-    print("End date:", end_date_str)
+    logging.info("Start date:", start_date_str)
+    logging.info("End date:", end_date_str)
 
     working_days = count_working_days_in_month(current_month, current_year)
 
@@ -14491,21 +14491,21 @@ def client_profile_export(request, client_id):
     # Print dates as date only
         start_date=start_date.date()
         end_date=end_date.date()
-        print("devu")
-        print(start_date)
-        print(end_date)
+        logging.info("devu")
+        logging.info(start_date)
+        logging.info(end_date)
 
 
 
 
     # month_list = create_month_list(start_date, end_date)
-    # print(month_list)
+    # logging.info(month_list)
 
     # Get the start and end months
     start_month = start_date.month
     end_month = end_date.month
-    print(start_month)
-    print(end_month)
+    logging.info(start_month)
+    logging.info(end_month)
 
     weeks=0
     ui_final_cost={}
@@ -14521,17 +14521,17 @@ def client_profile_export(request, client_id):
     employee_names = {}
     if current_year == 2023 and 9 <= current_month <= 12:
         employee_details = {}
-        print("if")
-        print(start_date)
-        print(end_date)
-        print(current_year)
-        print(toggl_client)
+        logging.info("if")
+        logging.info(start_date)
+        logging.info(end_date)
+        logging.info(current_year)
+        logging.info(toggl_client)
         #contracted employee images
         if contracted_hours.objects.filter(client_id=toggl_client).exists():
             # Use the contracted_hours model to query the database
             all = contracted_hours.objects.filter(client_id=toggl_client, month__month__range=(start_month, end_month),month__year=current_year)
-            print("rekhaaaa")
-            print(all)
+            logging.info("rekhaaaa")
+            logging.info(all)
 
             # Check if any records were found
             for record in all:
@@ -14539,12 +14539,12 @@ def client_profile_export(request, client_id):
                 first_record = record
 
                 date1=first_record
-                print(date)
+                logging.info(date)
 
                 date=date1.month
 
                 target_month=date.month
-                print(target_month)
+                logging.info(target_month)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -14580,33 +14580,33 @@ def client_profile_export(request, client_id):
                 from datetime import datetime
                 # Get the number of days in that month
 
-                # print(target_month)
-                # print(start_date)
-                # print(end_date)
+                # logging.info(target_month)
+                # logging.info(start_date)
+                # logging.info(end_date)
                 #
-                # print(start_date_str)
-                # print(end_date_str)
+                # logging.info(start_date_str)
+                # logging.info(end_date_str)
 
 
                 target_month_start = start_date.replace(month=target_month, day=1)
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
 
                     target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -14615,14 +14615,14 @@ def client_profile_export(request, client_id):
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
-                # print(days_in_month)
+                # logging.info(days_in_month)
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
@@ -14635,8 +14635,8 @@ def client_profile_export(request, client_id):
                 else:
                     client_details['total_time_hours'] = total_hours1
 
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                print(total_hours1)
+                logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                logging.info(total_hours1)
 
                 # Convert total hours to total seconds
                 total_seconds1 = int(client_details['total_time_hours'] * 3600)
@@ -14656,43 +14656,43 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
 
                     target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
-                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-                print(start_date_in_target_month)
-                print(target_month_end)
+                logging.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                logging.info(start_date_in_target_month)
+                logging.info(target_month_end)
                 if target_month_end.month==start_date_in_target_month.month:
-                    print("if")
+                    logging.info("if")
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
                 else:
-                    print("else")
+                    logging.info("else")
                     total_days_between = (target_month_end - start_date_in_target_month).days
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
-                print("differneceeeeeee11")
-                print(date_difference)
+                # logging.info(days_in_month)
+                logging.info("differneceeeeeee11")
+                logging.info(date_difference)
 
 
                 if date_difference==days_in_month:
@@ -14700,8 +14700,8 @@ def client_profile_export(request, client_id):
                     weeks=round(weeks,2)
                     cost_new=first_record.rate
 
-                    print("if--------------------------------------------")
-                    print("costtttttttttttttt")
+                    logging.info("if--------------------------------------------")
+                    logging.info("costtttttttttttttt")
                 else:
                     weeks = date_difference / 7
                     weeks=round(weeks,2)
@@ -14710,7 +14710,7 @@ def client_profile_export(request, client_id):
 
                 if 'cost' in client_details:
 
-                    print(cost_new)
+                    logging.info(cost_new)
                     client_details['cost'] += cost_new
                     client_details['total_working_hours'] = formatted_time2
                 else:
@@ -14722,38 +14722,38 @@ def client_profile_export(request, client_id):
                 client_details['cost']=round(client_details['cost'],2)
                 # Print the employee details
                 for employee_id, details in employee_details.items():
-                    print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                    logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
             else:
-                print("No records found for the specified client and month.")
+                logging.info("No records found for the specified client and month.")
         else:
-            print("No contracted hours found for the specified client.")
+            logging.info("No contracted hours found for the specified client.")
 
-        print(employee_details)
-        print(client_details)
+        logging.info(employee_details)
+        logging.info(client_details)
 
 
         # for work category below boxes
         project_list = project.objects.filter(toggl_client_id=toggl_client)
-        print("project_list1")
-        print(project_list)
-        print("datessssssssssssssssssssssssssss")
-        print(start_date)
-        print(end_date)
+        logging.info("project_list1")
+        logging.info(project_list)
+        logging.info("datessssssssssssssssssssssssssss")
+        logging.info(start_date)
+        logging.info(end_date)
         # Iterate through the project_list and get toggl_project_id for each project
         toggl_project_ids = [project.toggl_project_id for project in project_list]
         filtered_records = toggl_user_detail.objects.filter(
         project_id__in=toggl_project_ids,
         time_entries_start_date__range=(start_date, end_date)
         )
-        print(filtered_records)
+        logging.info(filtered_records)
         unique_project_ids = filtered_records.values('project_id').distinct()
-        print(unique_project_ids)
+        logging.info(unique_project_ids)
 
         # Query the Project table to get names of unique project IDs
         project_names = project.objects.filter(toggl_project_id__in=unique_project_ids)
-        print("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+        logging.info("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
         # Now you can display project names on the UI
-        print(project_names)
+        logging.info(project_names)
 
         #working time on toggl
 
@@ -14778,9 +14778,9 @@ def client_profile_export(request, client_id):
                     total_time_spent[client_project_key] = time_seconds
         # Now, total_time_spent dictionary contains the total time spent per client and project
         # You can iterate through it to display the results
-        print("client revenue")
-        print(total_time_spent)
-        print(project_rate)
+        logging.info("client revenue")
+        logging.info(total_time_spent)
+        logging.info(project_rate)
 
         total_time_spent_formatted = {}
         for key, seconds in total_time_spent.items():
@@ -14790,9 +14790,9 @@ def client_profile_export(request, client_id):
 
         # Now, total_time_spent_formatted dictionary contains the total time spent per client and project in HH:MM:SS format
         # You can iterate through it to display the results
-        # print(total_time_spent_formatted)
+        # logging.info(total_time_spent_formatted)
         for key, formatted_time in total_time_spent_formatted.items():
-            print(f"Project {key}: {formatted_time}")
+            logging.info(f"Project {key}: {formatted_time}")
 
 
         #project member images on toggl
@@ -14810,8 +14810,8 @@ def client_profile_export(request, client_id):
             # Assign the user_ids to the dictionary with project_id as the key
             project_user_dict_1[project_id] = list(user_ids)
 
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5")
-        print(project_user_dict_1)
+        logging.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5")
+        logging.info(project_user_dict_1)
 
         project_user_dict={}
 
@@ -14846,7 +14846,7 @@ def client_profile_export(request, client_id):
                 }
                 for data in employees_data]
 
-        print(project_user_dict)
+        logging.info(project_user_dict)
 
 
         employee_rate_per_hour = {}
@@ -14865,8 +14865,8 @@ def client_profile_export(request, client_id):
             # Store total project cost in the dictionary
             total_project_cost = "{:.2f}".format(total_project_cost)
             employee_rate_per_hour[project_id] = total_project_cost
-        print("new cost")
-        print(employee_rate_per_hour)
+        logging.info("new cost")
+        logging.info(employee_rate_per_hour)
 
         # Initialize a variable to store the sum of rates
         sum_of_rates_employee = 0.0
@@ -14878,7 +14878,7 @@ def client_profile_export(request, client_id):
         # Format total_rate to have 2 decimal places
         sum_of_rates_employee = "{:.2f}".format(sum_of_rates_employee)
         # Print the sum of rates
-        print("Sum of Rates Employee:", sum_of_rates_employee)
+        logging.info("Sum of Rates Employee:", sum_of_rates_employee)
 
 
 
@@ -14899,28 +14899,28 @@ def client_profile_export(request, client_id):
         #     one_project_rate=0
         #
         #
-        # print("Sum of Rates Client revenue:", one_project_rate)
+        # logging.info("Sum of Rates Client revenue:", one_project_rate)
 
         if contracted_hours.objects.filter(client_id=toggl_client,month__month__range=[start_month, end_month],month__year=current_year).exists():
         # Filter contracted hours for the project and current month
             contracted_hours_for_month = contracted_hours.objects.filter(client_id= toggl_client,month__month__range=[start_month, end_month],month__year=current_year
                 )
 
-            print("88888888888888888888888888888888888888888888888")
-            print(contracted_hours_for_month)
+            logging.info("88888888888888888888888888888888888888888888888")
+            logging.info(contracted_hours_for_month)
             # first_contracted_hour = contracted_hours_for_month.first()
             one_project_rate=0
             for entry in contracted_hours_for_month:
 
                 date1=entry
-                # print(date)
+                # logging.info(date)
 
                 date=date1.month
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
 
                 import calendar
                 from datetime import datetime
@@ -14929,21 +14929,21 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
 
                     target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -14952,38 +14952,38 @@ def client_profile_export(request, client_id):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
                 if one_project_rate:
                     if date_difference==days_in_month:
                         weeks=4.3
                         weeks=round(weeks,2)
-                        print(entry.rate)
+                        logging.info(entry.rate)
                         one_project_rate+=entry.rate
-                        print("if")
+                        logging.info("if")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate +=round((entry.rate * weeks) / 4.3, 2)
-                        print("else")
+                        logging.info("else")
                 else:
                     if date_difference==days_in_month:
                         weeks=4.3
                         weeks=round(weeks,2)
-                        print(entry.rate)
+                        logging.info(entry.rate)
                         one_project_rate=entry.rate
-                        print("ifff2")
+                        logging.info("ifff2")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate = round((entry.rate * weeks) / 4.3, 2)
-                        print("else222")
+                        logging.info("else222")
 
 
             # one_project_rate = first_contracted_hour.cost
@@ -14992,8 +14992,8 @@ def client_profile_export(request, client_id):
 
 
         one_project_rate=round(one_project_rate,2)
-        print("kajal")
-        print("Sum of Rates Client revenue:", one_project_rate)
+        logging.info("kajal")
+        logging.info("Sum of Rates Client revenue:", one_project_rate)
         #new contracted
         employee_salary_dict={}
         if contracted_hours.objects.filter(client_id=toggl_client,month__month__range=[start_month, end_month],month__year=current_year).exists():
@@ -15002,14 +15002,14 @@ def client_profile_export(request, client_id):
 
             for contracted_client in contracted_client1:
                 date1=contracted_client
-                # print(date)
+                # logging.info(date)
 
                 date=date1.month
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
                 import ast
                 from decimal import Decimal
                 import calendar
@@ -15018,21 +15018,21 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
 
                     target_month_end = min(start_date.replace(month=target_month + 1, day=1) - datetime.resolution, end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -15041,36 +15041,36 @@ def client_profile_export(request, client_id):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                print(days_in_month)
+                logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
                 else:
                     weeks = date_difference / 7
-                print(date_difference)
-                print("###########################")
-                print(weeks)
+                logging.info(date_difference)
+                logging.info("###########################")
+                logging.info(weeks)
 
                 contracted_working_hours_1 = contracted_client.working_input
-                print(contracted_working_hours_1)
+                logging.info(contracted_working_hours_1)
                 contracted_hours_for_project=contracted_client.total_working_hours
-                print("contracted")
-                print(contracted_hours_for_project)
+                logging.info("contracted")
+                logging.info(contracted_hours_for_project)
                     # Convert the JSON string to a dictionary
                 contracted_working_hours_1_dict1 = json.loads(contracted_working_hours_1)
-                print('muksn')
-                print(contracted_working_hours_1_dict1)
+                logging.info('muksn')
+                logging.info(contracted_working_hours_1_dict1)
                 contracted_working_hours_1_dict = {key.strip(): value for key, value in contracted_working_hours_1_dict1.items()}
                 # Fetch the hourly rate for the user from the Employee table
                 employee_ids = list(contracted_working_hours_1_dict.keys())
-                print(employee_ids)
+                logging.info(employee_ids)
                 # Fetch hourly rate for each employee
                 hourly_rates = {}
                 hourly_rate=0
@@ -15078,26 +15078,26 @@ def client_profile_export(request, client_id):
                     try:
                         employee1 = employee.objects.get(toggl_user_id=emp_id)
                         hourly_rates[emp_id] = employee1.salary
-                        print("salary")
-                        print(hourly_rates[emp_id])
+                        logging.info("salary")
+                        logging.info(hourly_rates[emp_id])
 
                     except employee.DoesNotExist:
-                        print(f"Employee with ID {emp_id} not found.")
+                        logging.info(f"Employee with ID {emp_id} not found.")
 
                 # Calculate total salary
                 total_salary = sum(hourly_rates[emp_id] for emp_id in employee_ids)
-                print(total_salary)
+                logging.info(total_salary)
 
 
 
                 if contracted_hours_for_project != 0:
-                    print("calculation")
-                    print(total_salary)
-                    print(contracted_hours_for_project)
+                    logging.info("calculation")
+                    logging.info(total_salary)
+                    logging.info(contracted_hours_for_project)
                     hourly_rate1 = float(total_salary) / (22*8)
-                    print(hourly_rate1)
+                    logging.info(hourly_rate1)
                     hourly_rate=hourly_rate1 * contracted_hours_for_project * weeks
-                    print(hourly_rate)
+                    logging.info(hourly_rate)
 
                 else:
                     contracted_hours_for_project = 0
@@ -15105,13 +15105,13 @@ def client_profile_export(request, client_id):
                     hourly_rate = 0
 
                 if int(emp_id) in employee_salary_dict:
-                        print("ifff")
+                        logging.info("ifff")
                         # If it exists, add the new salary to the existing one
                         employee_salary_dict[int(employee_id)] += hourly_rate
                         employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
                 else:
-                    print("else")
+                    logging.info("else")
                     # If it doesn't exist, create a new entry
                     employee_salary_dict[int(emp_id)] = hourly_rate
                     employee_salary_dict[int(emp_id)] = round(employee_salary_dict[int(employee_id)], 2)
@@ -15124,7 +15124,7 @@ def client_profile_export(request, client_id):
         # Sum the values in employee_salary_dict
         contracted_sum_of_rates_employee = sum(employee_salary_dict.values())
         contracted_sum_of_rates_employee = "{:.2f}".format(contracted_sum_of_rates_employee)
-        print("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
+        logging.info("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
 
 
         client_category_list={}
@@ -15145,27 +15145,27 @@ def client_profile_export(request, client_id):
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            print("lllllllllllllllllllllllllllllllll")
-            print(all)
+            logging.info("lllllllllllllllllllllllllllllllll")
+            logging.info(all)
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the current record in the queryset
                 first_record = record
-                print(first_record)
+                logging.info(first_record)
 
                 ui_final_cost=first_record.cost
-                print(ui_final_cost)
+                logging.info(ui_final_cost)
 
                 date1=first_record
-                print(date)
+                logging.info(date)
 
                 date=date1.date
 
                 target_month=date.month
-                print(target_month)
+                logging.info(target_month)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -15201,7 +15201,7 @@ def client_profile_export(request, client_id):
                         # Get the role
                         role = role_dict.get(employee_id, "Unknown")
                         #employee time
-                        # print(hours)
+                        # logging.info(hours)
 
 
                         import calendar
@@ -15211,23 +15211,23 @@ def client_profile_export(request, client_id):
                         # # Add 1 to the difference in day
                         # date_difference += 1
 
-                        print(target_month)
-                        print(start_date)
-                        print(end_date)
+                        logging.info(target_month)
+                        logging.info(start_date)
+                        logging.info(end_date)
 
-                        print(start_date_str)
-                        print(end_date_str)
+                        logging.info(start_date_str)
+                        logging.info(end_date_str)
 
 
                         target_month_start = start_date.replace(month=target_month, day=1)
 
                         # Ensure that the start date is within the target month
                         start_date_in_target_month = max(start_date, target_month_start)
-                        print(start_date_in_target_month)
+                        logging.info(start_date_in_target_month)
 
                         # Get the end date of the target month
                         if start_date_in_target_month.month == target_month:
-                            print("if")
+                            logging.info("if")
                             # If the start date is in the target month, use the end of the month
                             
                             if target_month == 12:
@@ -15238,12 +15238,12 @@ def client_profile_export(request, client_id):
                             # Calculate target month end
                             target_month_end = min(next_month_date - timedelta(days=1), end_date)                            
                         else:
-                            print("else")
+                            logging.info("else")
                             # If the start date is not in the target month, use the end of the start month
                             target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                        print('Vinod December target_month_end')
-                        print(start_date_in_target_month.month)
-                        print(target_month)
+                        logging.info('Vinod December target_month_end')
+                        logging.info(start_date_in_target_month.month)
+                        logging.info(target_month)
                         # Calculate the total days in the target month between the start and end dates
                         if target_month_end.month==start_date_in_target_month.month:
                             total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -15252,13 +15252,13 @@ def client_profile_export(request, client_id):
 
 
                         # Print the total number of days in the specified month between the start and end dates
-                        print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                        logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                         date_difference=total_days_between
                         # Get the number of days in that month
                         days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                        # print(days_in_month)
+                        # logging.info(days_in_month)
 
                         if date_difference==days_in_month:
                             # weeks=4.3
@@ -15274,8 +15274,8 @@ def client_profile_export(request, client_id):
 
                         if int(employee_id) in employee_details:
 
-                            print("777777777777777777777777777777777777")
-                            print(hours)
+                            logging.info("777777777777777777777777777777777777")
+                            logging.info(hours)
 
                             employee_details[int(employee_id)]['total_hours'] += hours
                             total_hours = float(employee_details[int(employee_id)]['total_hours'])  * weeks
@@ -15284,9 +15284,9 @@ def client_profile_export(request, client_id):
 
 
 
-                        # print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                        # print("muskannnnnnnnnnnnnnnnnnnnnnnnnn")
-                        # print(total_hours)
+                        # logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                        # logging.info("muskannnnnnnnnnnnnnnnnnnnnnnnnn")
+                        # logging.info(total_hours)
 
                         # Convert total hours to total seconds
                         total_seconds = int(total_hours * 3600)
@@ -15324,26 +15324,26 @@ def client_profile_export(request, client_id):
                     from datetime import datetime
                     # Get the number of days in that month
 
-                    # print(target_month)
-                    # print(start_date)
-                    # print(end_date)
+                    # logging.info(target_month)
+                    # logging.info(start_date)
+                    # logging.info(end_date)
                     #
-                    # print(start_date_str)
-                    # print(end_date_str)
+                    # logging.info(start_date_str)
+                    # logging.info(end_date_str)
 
 
                     target_month_start = start_date.replace(month=target_month, day=1)
 
                     # Ensure that the start date is within the target month
                     start_date_in_target_month = max(start_date, target_month_start)
-                    # print(start_date_in_target_month)
+                    # logging.info(start_date_in_target_month)
 
                     # Get the end date of the target month
                     if start_date_in_target_month.month == target_month:
-                        # print("if")
+                        # logging.info("if")
                         # If the start date is in the target month, use the end of the month
-                        # print("end_date")
-                        # print(end_date)
+                        # logging.info("end_date")
+                        # logging.info(end_date)
                         if target_month == 12:
                             next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                         else:
@@ -15352,10 +15352,10 @@ def client_profile_export(request, client_id):
                         # Calculate target month end
                         target_month_end = min(next_month_date - timedelta(days=1), end_date)
                     else:
-                        # print("else")
+                        # logging.info("else")
                         # If the start date is not in the target month, use the end of the start month
                         target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                    # print(target_month_end)
+                    # logging.info(target_month_end)
                     # Calculate the total days in the target month between the start and end dates
                     if target_month_end.month==start_date_in_target_month.month:
                         total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -15364,14 +15364,14 @@ def client_profile_export(request, client_id):
 
 
                     # # Print the total number of days in the specified month between the start and end dates
-                    # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                    # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                     date_difference=total_days_between
 
                     days_in_month = calendar.monthrange(date.year, date.month)[1]
-                    # print(days_in_month)
+                    # logging.info(days_in_month)
 
-                    # print(days_in_month)
+                    # logging.info(days_in_month)
 
                     if date_difference==days_in_month:
                         # weeks=4.3
@@ -15384,7 +15384,7 @@ def client_profile_export(request, client_id):
                     total_hours1 = 0
                     ui_total_hours=0
 
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr/////////////////////////////////")
+                logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr/////////////////////////////////")
 
                 if 'total_time_hours' in client_details:
                     client_details['total_time_hours'] += total_hours1
@@ -15399,10 +15399,10 @@ def client_profile_export(request, client_id):
                 hoursss1, remainder1 = divmod(total_seconds1, 3600)
                 minutes1, seconds1 = divmod(remainder1, 60)
 
-                # print("qqqqqqqqqqqqqqqqqqqqqqqqq")
-                # print(hoursss1)
-                # print(minutes1)
-                # print(seconds1)
+                # logging.info("qqqqqqqqqqqqqqqqqqqqqqqqq")
+                # logging.info(hoursss1)
+                # logging.info(minutes1)
+                # logging.info(seconds1)
 
                 import calendar
                 from datetime import datetime
@@ -15412,14 +15412,14 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                     else:
@@ -15428,32 +15428,32 @@ def client_profile_export(request, client_id):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    # print("else")
+                    # logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
+                # logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
-                print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-                print(start_date_in_target_month)
-                print(target_month_end)
+                logging.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                logging.info(start_date_in_target_month)
+                logging.info(target_month_end)
                 if target_month_end.month==start_date_in_target_month.month:
-                    print("if")
+                    logging.info("if")
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
                 else:
-                    print("else")
+                    logging.info("else")
                     total_days_between = (target_month_end - start_date_in_target_month).days
 
 
                 # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                # logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
-                print("differneceeeeeee11")
-                print(date_difference)
+                # logging.info(days_in_month)
+                logging.info("differneceeeeeee11")
+                logging.info(date_difference)
 
 
                 if date_difference==days_in_month:
@@ -15461,8 +15461,8 @@ def client_profile_export(request, client_id):
                     weeks = round(days_in_month / 7, 2)
                     cost_new=first_record.cost
 
-                    print("if--------------------------------------------")
-                    print("costtttttttttttttt")
+                    logging.info("if--------------------------------------------")
+                    logging.info("costtttttttttttttt")
                 else:
                     weeks = date_difference / 7
                     weeks=round(weeks,2)
@@ -15472,9 +15472,9 @@ def client_profile_export(request, client_id):
                 # Formatting the time
                 formatted_time2 = f"{hoursss1:02d}:{minutes1:02d}:{seconds1:02d}"
                 ui_formatted_time2=formatted_time2
-                print("time================================")
-                print(formatted_time2)
-                print(cost_new)
+                logging.info("time================================")
+                logging.info(formatted_time2)
+                logging.info(cost_new)
 
                 if 'cost' in client_details:
                     client_details['cost'] += cost_new
@@ -15497,12 +15497,12 @@ def client_profile_export(request, client_id):
                 # client_details = {'cost': cost_new,'total_working_hours':formatted_time2}
                 # Print the employee details
                 for employee_id, details in employee_details.items():
-                    print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                    logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
         else:
-            print("No contracted hours found for the specified client.")
-        print("ghhhhh")
+            logging.info("No contracted hours found for the specified client.")
+        logging.info("ghhhhh")
 
-        print(client_details)
+        logging.info(client_details)
 
         #new clients tab on client
 
@@ -15535,12 +15535,12 @@ def client_profile_export(request, client_id):
                 client_category_list.append({'id': category_id, 'category_name': category_name})
 
             except Work_Category.DoesNotExist:
-                print(f"Category with ID {category_id} does not exist in the WorkCategory table.")
+                logging.info(f"Category with ID {category_id} does not exist in the WorkCategory table.")
 
         # Now client_category_list contains client IDs and corresponding category names
         # You can use this list to pass information to your UI or perform further processing
-        print("client_category_list")
-        print(client_category_list)
+        logging.info("client_category_list")
+        logging.info(client_category_list)
 
        # project member of timer
         # Get unique timeSheet entries for a specific client
@@ -15574,12 +15574,12 @@ def client_profile_export(request, client_id):
                 })
 
             except employee.DoesNotExist:
-                print(f"Employee with ID {employee_id} does not exist in the Employee table.")
+                logging.info(f"Employee with ID {employee_id} does not exist in the Employee table.")
 
         # Now employee_info_dict contains information about employees in each category
         # You can use this dictionary to look up employees based on the category
-        print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-        print(employee_info_dict)
+        logging.info("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+        logging.info(employee_info_dict)
 
         #working time for timer
         # Calculate total time spent for all distinct category_id values for the given client_id
@@ -15615,15 +15615,15 @@ def client_profile_export(request, client_id):
             }
 
         # Print or use the category_time_dict as needed
-        print(category_time_dict)
+        logging.info(category_time_dict)
 
-        print("kiki")
+        logging.info("kiki")
         total_time_spent_by_client = timeSheet.objects.filter(
         client_id=client_id,
         time_entries_start_date__gte=start_date,  # Filter based on start date
         time_entries_stop_date__lte=end_date     # Filter based on end date
         ).values('client_id', 'employee_id').annotate(total_time=Sum('time_entries_seconds'))
-        print(total_time_spent_by_client)
+        logging.info(total_time_spent_by_client)
         # Create a dictionary to store category_id and total time spent
         category_time_dict_client = {}
 
@@ -15646,21 +15646,21 @@ def client_profile_export(request, client_id):
                 'minutes': total_time_spent_minutes,
                 'seconds': total_time_spent_seconds
             }
-        print(category_time_dict_client)
+        logging.info(category_time_dict_client)
 
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            print("lllllllllllllllllllllllllllllllll")
-            print(all)
+            logging.info("lllllllllllllllllllllllllllllllll")
+            logging.info(all)
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the current record in the queryset
                 first_record = record
-                print(first_record)
+                logging.info(first_record)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -15668,8 +15668,8 @@ def client_profile_export(request, client_id):
                 # Parse the JSON string
                 work_dict = json.loads(work_json_str)
 
-                print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
-                print(work_dict)
+                logging.info("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
+                logging.info(work_dict)
                 for employee_id in work_dict.keys():
                     if int(employee_id) not in category_time_dict_client:
                         category_time_dict_client[int(employee_id)] = {
@@ -15682,14 +15682,14 @@ def client_profile_export(request, client_id):
                         }
 
         # Print or use the category_time_dict as needed
-        print("birth")
-        print(category_time_dict_client)
-        print(category_time_dict)
+        logging.info("birth")
+        logging.info(category_time_dict_client)
+        logging.info(category_time_dict)
 
         #employee cost in task tab
 
-        print("employeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
-        print(employee_info_dict)
+        logging.info("employeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+        logging.info(employee_info_dict)
         # Create a dictionary to store category_id and total cost
         category_cost_dict = {}
 
@@ -15704,8 +15704,8 @@ def client_profile_export(request, client_id):
 
             # Calculate cost per hour
             cost_per_hour = total_salary / (working_days * 8)
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            print(cost_per_hour)
+            logging.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            logging.info(cost_per_hour)
 
             # Fetch total time spent for the category from category_time_dict
             total_time_seconds = category_time_dict.get(category_id, {}).get('total_time_seconds', 0)
@@ -15713,7 +15713,7 @@ def client_profile_export(request, client_id):
             # Convert Decimal to float for total_cost calculation and round to 2 decimal places
             # total_cost = round(float((total_time_seconds / 3600) * cost_per_hour), 2)
             yoo=float(total_time_seconds / 3600)
-            print(yoo)
+            logging.info(yoo)
 
             total_cost=round(cost_per_hour*yoo,2)
 
@@ -15725,8 +15725,8 @@ def client_profile_export(request, client_id):
             }
 
         # Print or use the category_cost_dict as needed
-        print("ppppppppppppppppppppppppppppppppppppppppppppppp")
-        print(category_cost_dict)
+        logging.info("ppppppppppppppppppppppppppppppppppppppppppppppp")
+        logging.info(category_cost_dict)
 
         #employee cost in client tab   $$$$$$$$$$$$$$$$$$$$$$$$$$
         # Get unique timeSheet entries for a specific client
@@ -15750,16 +15750,16 @@ def client_profile_export(request, client_id):
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            print("lllllllllllllllllllllllllllllllll")
-            print(all)
+            logging.info("lllllllllllllllllllllllllllllllll")
+            logging.info(all)
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                # print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                # logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the current record in the queryset
                 first_record = record
-                # print(first_record)
+                # logging.info(first_record)
 
                 # Access the 'working_input' attribute
                 work_json_str = first_record.working_input
@@ -15773,8 +15773,8 @@ def client_profile_export(request, client_id):
         for employee_id in employee_data.keys():
             employee1 = employee.objects.get(id=employee_id)
             employee_salary = get_salary_for_date(employee1, start_date)
-            print('Vinod Dec Eveing')
-            print(employee_salary)
+            logging.info('Vinod Dec Eveing')
+            logging.info(employee_salary)
 
             if employee_salary:
                 employee_data[employee_id]['salary'] = employee_salary
@@ -15798,21 +15798,21 @@ def client_profile_export(request, client_id):
                         'ui_employee_salary': salary,
                         'ui_working_hours': time_worked_hours
                     }
-            print("new@@@@@@@@@@@")
-            print(adjusted_salary)
-            print(time_worked_hours)
+            logging.info("new@@@@@@@@@@@")
+            logging.info(adjusted_salary)
+            logging.info(time_worked_hours)
             # Multiply adjusted salary and time worked
             total_payment = adjusted_salary * time_worked_hours
             total_payment = round(total_payment,2)
             # Update employee_data with total_payment
             employee_data[employee_id]['total_payment'] = total_payment
-        print("qqqqqqqqqqqqqqqqqq")
-        print(employee_data)
+        logging.info("qqqqqqqqqqqqqqqqqq")
+        logging.info(employee_data)
 
-        print(ui)
+        logging.info(ui)
         # end employee cost in client tab $$$$$$$$$$$$$$$$$$
-        print("vedansh")
-        print(category_cost_dict)
+        logging.info("vedansh")
+        logging.info(category_cost_dict)
 
 
         # Initialize a variable to store the sum of rates
@@ -15824,13 +15824,13 @@ def client_profile_export(request, client_id):
         #     sum_of_rates_employee += category_cost_info['total_cost']
 
         sum_of_rates_employee = sum(employee['total_payment'] for employee in employee_data.values())
-        print("Total payment sum:",  sum_of_rates_employee)
+        logging.info("Total payment sum:",  sum_of_rates_employee)
 
         # Format the sum_of_rates_employee as a string with two decimal places when printing
         sum_of_rates_employee= "{:.2f}".format(sum_of_rates_employee)
 
         # Print or use the sum_of_rates_employee_str as needed
-        print("Sum of all costs:", sum_of_rates_employee)
+        logging.info("Sum of all costs:", sum_of_rates_employee)
 
 
 
@@ -15838,28 +15838,28 @@ def client_profile_export(request, client_id):
         #client revenue
         client_detail = client.objects.get(pk=client_id)
         client_id= client_detail.id
-        print(start_month)
-        print(end_month)
+        logging.info(start_month)
+        logging.info(end_month)
         if Client_contract_work.objects.filter(client_id=client_id,date__month__range=[start_month, end_month],date__year=current_year).exists():
         # Filter contracted hours for the project and current month
             contracted_hours_for_month = Client_contract_work.objects.filter(client_id= client_id,date__month__range=[start_month, end_month],date__year=current_year
                 )
 
-            print("88888888888888888888888888888888888888888888888")
-            print(contracted_hours_for_month)
+            logging.info("88888888888888888888888888888888888888888888888")
+            logging.info(contracted_hours_for_month)
             # first_contracted_hour = contracted_hours_for_month.first()
             one_project_rate=0
             for entry in contracted_hours_for_month:
 
                 date1=entry
-                # print(date)
+                # logging.info(date)
 
                 date=date1.date
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
 
                 import calendar
                 from datetime import datetime
@@ -15868,14 +15868,14 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                     else:
@@ -15884,10 +15884,10 @@ def client_profile_export(request, client_id):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -15896,40 +15896,40 @@ def client_profile_export(request, client_id):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                # print(days_in_month)
+                # logging.info(days_in_month)
                 if one_project_rate:
                     if date_difference==days_in_month:
                         # weeks=4.3
                         # weeks=round(weeks,2)
                         weeks = round(days_in_month / 7, 2)
-                        print(entry.cost)
+                        logging.info(entry.cost)
                         one_project_rate+=entry.cost
-                        print("if")
+                        logging.info("if")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate +=round((entry.cost * weeks) / weeks, 2)
-                        print("else")
+                        logging.info("else")
                 else:
                     if date_difference==days_in_month:
                         # weeks=4.3
                         # weeks=round(weeks,2)
                         weeks = round(days_in_month / 7, 2)
-                        print(entry.cost)
+                        logging.info(entry.cost)
                         one_project_rate=entry.cost
-                        print("ifff2")
+                        logging.info("ifff2")
                     else:
                         weeks = date_difference / 7
                         weeks=round(weeks,2)
                         one_project_rate = round((entry.cost * weeks) / weeks, 2)
-                        print("else222")
+                        logging.info("else222")
 
 
             # one_project_rate = first_contracted_hour.cost
@@ -15938,8 +15938,8 @@ def client_profile_export(request, client_id):
 
 
         one_project_rate=round(one_project_rate,2)
-        print("kajal")
-        print("Sum of Rates Client revenue:", one_project_rate)
+        logging.info("kajal")
+        logging.info("Sum of Rates Client revenue:", one_project_rate)
 
         #contracted employee cost
         employee_salary_dict = {}
@@ -15952,14 +15952,14 @@ def client_profile_export(request, client_id):
             for contracted_client in contracted_client1:
 
                 date1=contracted_client
-                # print(date)
+                # logging.info(date)
 
                 date=date1.date
 
                 target_month=date.month
-                # print(target_month)
+                # logging.info(target_month)
 
-                print(target_month)
+                logging.info(target_month)
                 import ast
                 from decimal import Decimal
                 import calendar
@@ -15968,14 +15968,14 @@ def client_profile_export(request, client_id):
 
                 # Ensure that the start date is within the target month
                 start_date_in_target_month = max(start_date, target_month_start)
-                # print(start_date_in_target_month)
+                # logging.info(start_date_in_target_month)
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
+                    # logging.info("if")
                     # # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
+                    # logging.info("end_date")
+                    # logging.info(end_date)
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                     else:
@@ -15984,10 +15984,10 @@ def client_profile_export(request, client_id):
                     # Calculate target month end
                     target_month_end = min(next_month_date - timedelta(days=1), end_date)
                 else:
-                    print("else")
+                    logging.info("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                print(target_month_end)
+                logging.info(target_month_end)
                 # Calculate the total days in the target month between the start and end dates
                 if target_month_end.month==start_date_in_target_month.month:
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -15996,27 +15996,27 @@ def client_profile_export(request, client_id):
 
 
                 # Print the total number of days in the specified month between the start and end dates
-                print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
+                logging.info(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
 
-                print(days_in_month)
+                logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     # weeks=4.3
                     weeks = round(days_in_month / 7, 2)
                 else:
                     weeks = date_difference / 7
-                print(date_difference)
-                print("###########################")
-                print(weeks)
+                logging.info(date_difference)
+                logging.info("###########################")
+                logging.info(weeks)
 
                 contracted_working_hours_1_str = contracted_client.working_input
                 contracted_working_hours_1 = ast.literal_eval(contracted_working_hours_1_str)
-                print(contracted_working_hours_1)
+                logging.info(contracted_working_hours_1)
 
 
                     # Assuming 'working_input' is a dictionary with employee_id as keys
@@ -16054,35 +16054,35 @@ def client_profile_export(request, client_id):
                     mul=round(working_hours *weeks,2)
 
                     total_salary = round(salary_per_hour * mul,2)
-                    print("22222222222222222222222222222")
-                    print(salary_per_hour)
-                    print(working_hours)
-                    print(total_salary)
+                    logging.info("22222222222222222222222222222")
+                    logging.info(salary_per_hour)
+                    logging.info(working_hours)
+                    logging.info(total_salary)
                     # total_salary  = "{:.2f}".format(total_salary)
 
                     total_salary = round(total_salary, 2)
                     # Store the total salary in the dictionary
-                    print(type(employee_id))
+                    logging.info(type(employee_id))
                     employee_id=int(employee_id)
-                    print(type(employee_id))
+                    logging.info(type(employee_id))
                     if int(employee_id) in employee_salary_dict:
-                        print("ifff")
+                        logging.info("ifff")
                         # If it exists, add the new salary to the existing one
                         employee_salary_dict[int(employee_id)] += total_salary
                         employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
                     else:
-                        print("else")
+                        logging.info("else")
                         # If it doesn't exist, create a new entry
                         employee_salary_dict[int(employee_id)] = total_salary
                         employee_salary_dict[int(employee_id)] = round(employee_salary_dict[int(employee_id)], 2)
 
 
-                    print(employee_salary_dict)
+                    logging.info(employee_salary_dict)
 
 
-            print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
-            print(employee_salary_dict)
+            logging.info("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+            logging.info(employee_salary_dict)
 
 
 
@@ -16093,7 +16093,7 @@ def client_profile_export(request, client_id):
         # Sum the values in employee_salary_dict
         contracted_sum_of_rates_employee = sum(employee_salary_dict.values())
         contracted_sum_of_rates_employee = "{:.2f}".format(contracted_sum_of_rates_employee)
-        print("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
+        logging.info("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
 
 
 
@@ -16104,12 +16104,12 @@ def client_profile_export(request, client_id):
 
 
 
-    print("finallllll")
+    logging.info("finallllll")
 
-    print(ui_data)
-    # print(ui)
-    # print(weeks)
-    print(ui_client_data)
+    logging.info(ui_data)
+    # logging.info(ui)
+    # logging.info(weeks)
+    logging.info(ui_client_data)
 
 
     context = {
@@ -16146,8 +16146,8 @@ def client_profile_export(request, client_id):
         'ui_client_data':ui_client_data
     }
 
-    print("contextttttttttttt")
-    print(context)
+    logging.info("contextttttttttttt")
+    logging.info(context)
     return context
 
 
@@ -16155,14 +16155,14 @@ def client_profile_export(request, client_id):
 @login_required(login_url='/')
 def export_to_excel(request, client_id):
 
-    print("exporttttttttttttttttttttttt")
+    logging.info("exporttttttttttttttttttttttt")
     # Fetch client data based on the client_id
     client1 = client.objects.get(id=client_id)
 
 
     context = client_profile_export(request, client_id)
-    print("exportttttttttttt")
-    print(context)
+    logging.info("exportttttttttttt")
+    logging.info(context)
 
     # Extract the required values from the context
     sum_of_rates = context.get('sum_of_rates')
@@ -16175,8 +16175,8 @@ def export_to_excel(request, client_id):
     employee_data = context.get('employee_data', {})
 
 
-    print(sum_of_rates)
-    print(sum_of_rates_employee)
+    logging.info(sum_of_rates)
+    logging.info(sum_of_rates_employee)
 
     # Create a new Excel workbook and worksheet
     workbook = openpyxl.Workbook()
@@ -16274,13 +16274,13 @@ def export_all_to_excel(request):
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group)
 
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
 
 
-            print("super admin")
+            logging.info("super admin")
             if current_year == 2023 and 9 <= current_month <= 12:
                 client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
 
@@ -16614,8 +16614,8 @@ def generate_and_open_in_sheets(request):
                 else:
                     merged_ui_employee3[str(hours.client_id)] = {'entries': [new_entry]}
                 merged_ui_employee4.append(new_entry)
-                # print('merged_ui_employee3')
-                # print(merged_ui_employee3)
+                # logging.info('merged_ui_employee3')
+                # logging.info(merged_ui_employee3)
         except (json.JSONDecodeError, ValueError):
             pass
 
@@ -17065,7 +17065,7 @@ def generate_and_open_in_sheets(request):
                     client_id=client_id
                 ).order_by('date')
 
-                # Extract and print the employee role
+                # Extract and logging.info the employee role
                 for work in contract_work_entries:
                     role_dict = json.loads(work.working_role)  # Deserialize the JSON string to a dictionary
                     role_of_employee = role_dict.get(employee_id)
@@ -17596,8 +17596,8 @@ def generate_client_sheet(request):
     to_date = datetime.strptime(to_date_str, "%m/%d/%Y").date()
 
     # Print the formatted dates
-    print("From date:", from_date)
-    print("To date:", to_date)
+    logging.info("From date:", from_date)
+    logging.info("To date:", to_date)
 
 
     from datetime import datetime
@@ -17625,8 +17625,8 @@ def generate_client_sheet(request):
     # Get the start and end months
     start_month = start_date.month
     end_month = end_date.month
-    print(start_month)
-    print(end_month)
+    logging.info(start_month)
+    logging.info(end_month)
 
     weeks=0
     ui_final_cost={}
@@ -17707,10 +17707,10 @@ def generate_client_sheet(request):
 
 
             if target_month_end.month==start_date_in_target_month.month:
-                print("if")
+                logging.info("if")
                 total_days_between = (target_month_end - start_date_in_target_month).days+1
             else:
-                print("else")
+                logging.info("else")
                 total_days_between = (target_month_end - start_date_in_target_month).days
 
             date_difference=total_days_between
@@ -17746,7 +17746,7 @@ def generate_client_sheet(request):
                 # Append this dictionary to the list
             ui_client_data.append(ui_client_data1)
     else:
-        print("No contracted hours found for the specified client.")
+        logging.info("No contracted hours found for the specified client.")
 
     # vinod test end
 
@@ -18703,10 +18703,10 @@ def export_employee_data(request):
                     weeks = round(date_difference / 7, 2)
                 hours_for_employee = float(working_input_dict[str(employee_id1)])
                 role_of_employee = role_dict[str(employee_id1)]
-                print('Test Working Hours')
-                print(hours_for_employee)
-                print(working_input_dict)
-                print(role_of_employee)
+                logging.info('Test Working Hours')
+                logging.info(hours_for_employee)
+                logging.info(working_input_dict)
+                logging.info(role_of_employee)
 
                 client1 = client.objects.get(id=hours.client_id)
 
@@ -18761,8 +18761,8 @@ def export_employee_data(request):
                 else:
                     merged_ui_employee3[str(hours.client_id)] = {'entries': [new_entry]}
                 merged_ui_employee4.append(new_entry)
-                # print('merged_ui_employee3')
-                # print(merged_ui_employee3)
+                # logging.info('merged_ui_employee3')
+                # logging.info(merged_ui_employee3)
         except (json.JSONDecodeError, ValueError):
             pass
 
@@ -18880,7 +18880,7 @@ def export_employee_data(request):
                 client_id=client_id
             ).order_by('date')
 
-            # Extract and print the employee role
+            # Extract and logging.info the employee role
             for work in contract_work_entries:
                 role_dict = json.loads(work.working_role)  # Deserialize the JSON string to a dictionary
                 role_of_employee = role_dict.get(employee_id)
@@ -19077,8 +19077,8 @@ def export_employee_data(request):
 
     # # If the sheet does not exist, create it
     if not sheet:
-        print('Test Sheet Record111')
-        print(spreadsheet_record.spreadsheet_id)
+        logging.info('Test Sheet Record111')
+        logging.info(spreadsheet_record.spreadsheet_id)
         add_sheet_request = {
             "requests": [{
                 "addSheet": {
@@ -19241,8 +19241,8 @@ def export_employee_data(request):
     }
 
     # Execute batch update
-    print('Test Sheet Record')
-    print(spreadsheet_record.spreadsheet_id)
+    logging.info('Test Sheet Record')
+    logging.info(spreadsheet_record.spreadsheet_id)
     # clear_range = f'{sheet_id}!A:Z' 
     # service.spreadsheets().values().clear(
     #     spreadsheetId=spreadsheet_record.spreadsheet_id,
@@ -19587,7 +19587,7 @@ def export_client_data(request):
             ui_client_data.append(ui_client_data1)
             selected_client_data[unique_client_key] = ui_client_data1
     else:
-        print("No contracted hours found for the specified client.")
+        logging.info("No contracted hours found for the specified client.")
 
     # vinod test end
 
@@ -19995,8 +19995,8 @@ def export_client_data(request):
 
     # # If the sheet does not exist, create it
     if not sheet:
-        print('Test Sheet Record111')
-        print(spreadsheet_record.spreadsheet_id)
+        logging.info('Test Sheet Record111')
+        logging.info(spreadsheet_record.spreadsheet_id)
         add_sheet_request = {
             "requests": [{
                 "addSheet": {
@@ -20274,7 +20274,7 @@ def auth_receiver(request):
     """
     Google calls this URL after the user has signed in with their Google account.
     """
-    print('Inside')
+    logging.info('Inside')
     token = request.POST['credential']
     c_id = "338920935761-qo45770jjhdg2q2e80aldv9t1kia578k.apps.googleusercontent.com"
     # return HttpResponse(f'{token}:{id_token}:{requests.Request()} INSIDE')
@@ -20309,7 +20309,7 @@ def auth_receiver(request):
                 request.session['user_image_url'] = employee1.image_url
                 request.session['user_name'] = employee1.user_name
                 request.session['user_id'] = employee1.id
-            print(f"User {user.username} logged in via Google authentication.")
+            logging.info(f"User {user.username} logged in via Google authentication.")
             return redirect('admin-dashboard')  # Redirect to the appropriate dashboard
         except User.DoesNotExist:
             messages.info(request, 'User with this email does not exist Please Register.')
@@ -20353,8 +20353,8 @@ def update_email_view(request):
 def get_project_data(request, project_id):
     import ast
     project_data = project.objects.filter(id=project_id).first()
-    print("Vinod")
-    print(project_data)
+    logging.info("Vinod")
+    logging.info(project_data)
 
     working_role = ast.literal_eval(project_data.working_role)
 
@@ -20395,10 +20395,10 @@ def delete_project(request):
             project_to_delete = project.objects.get(id=project_id)
             project_to_delete.delete()
             status = 1
-            print("project deleted successfully.")
+            logging.info("project deleted successfully.")
         except project.DoesNotExist:
             status = 0
-            print("project with the given ID does not exist.")
+            logging.info("project with the given ID does not exist.")
 
         return JsonResponse({'status': status})
 
@@ -20410,7 +20410,7 @@ def check_project_name(request):
 
 def update_project_status(request):
     if request.method == 'GET':
-        print("search")
+        logging.info("search")
         # Retrieve the project_type from the query parameters
         project_id = request.GET.get('project_id', None)
         project_status = request.GET.get('project_status', None)
@@ -20451,23 +20451,23 @@ def short_mail(request):
             employee_ids = request.POST.getlist('employees')
             message = request.POST.get('message')
 
-            print(employee_ids, message)
+            logging.info(employee_ids, message)
             employee_ids = [int(emp_id) for emp_id in employee_ids]
             today = datetime.now().date()
             start_of_week = today - timedelta(days=today.weekday())  # Monday
             end_of_week = start_of_week + timedelta(days=3)  # Thursday
 
-            print(start_of_week, end_of_week)
+            logging.info(start_of_week, end_of_week)
             # Get all employees
             employees = employee.objects.filter(status=1, id__in=employee_ids)
-            print(employees, 'TEST EMPLOYEE OBJECT')
+            logging.info(employees, 'TEST EMPLOYEE OBJECT')
             for emp in employees:
                 try:
                     emp_status = ShortWorkEmail.objects.get(employee_id=emp.id, start_date=start_of_week,
                                                             end_date=end_of_week, status__gt=0)
                     continue
                 except Exception as e:
-                    print(e, 'ERROR')
+                    logging.info(e, 'ERROR')
                 # Get time entries for the employee within the week
                 time_entries = timeSheet.objects.filter(
                     employee_id=emp.id,
@@ -20498,21 +20498,21 @@ def short_mail(request):
                     leave_days.update(leave_daterange(start_date1, end_date1))
                 leave_days = {date for date in leave_days if start_of_week <= date <= end_of_week}
 
-                print('EMPLOYEE', emp.first_name)
-                print('LEAVE', leave_days)
+                logging.info('EMPLOYEE', emp.first_name)
+                logging.info('LEAVE', leave_days)
                 # Fetch holidays in the employee's country within the week
                 holidays = Holiday.objects.filter(
                     country_id=emp.country_id,  # Assuming employee has a country_id field
                     date__range=(start_of_week, end_of_week)
                 ).values_list('date', flat=True)
-                print('HOLIDAYS', holidays)
+                logging.info('HOLIDAYS', holidays)
                 # Convert to sets for easy comparison
                 leave_days = set(leave_days)
                 holidays = set(holidays)
 
                 # Count unique leave and holiday days (without double counting overlapping days)
                 unique_leave_holiday_days = leave_days | holidays
-                print('UNIQUE', unique_leave_holiday_days)
+                logging.info('UNIQUE', unique_leave_holiday_days)
                 # Calculate minimum required hours
                 minimum_hours = 32 - (len(unique_leave_holiday_days) * 8)
                 # Ensure minimum hours are not negative
@@ -20531,7 +20531,7 @@ def short_mail(request):
                             total_minimum_work_in_sec = int(minimum_hours) * 3600
                         except Exception as e:
                             total_minimum_work_in_sec = 0
-                        print('ASHOKKK')
+                        logging.info('ASHOKKK')
                         ShortWorkEmail.objects.update_or_create(employee_id=emp.id, start_date=start_of_week,
                                                                 end_date=end_of_week,
                                                                 minimum_work=total_minimum_work_in_sec,
@@ -20541,12 +20541,12 @@ def short_mail(request):
                                                                     'total_working': total_working_in_sec,
                                                                 })
 
-                print(emp.id, emp.first_name, minimum_hours, hours_worked)
+                logging.info(emp.id, emp.first_name, minimum_hours, hours_worked)
             # return HttpResponse('OK')
         try:
             # search_date = request.GET.get('search_to_date')
             search_date = request.GET.get('from_to_date')
-            print(search_date, 'DATE CHECK1')
+            logging.info(search_date, 'DATE CHECK1')
 
             if search_date:
                 # Split the date range into start and end dates
@@ -20554,7 +20554,7 @@ def short_mail(request):
                 start_date = datetime.strptime(date_range[0], "%m/%d/%Y").date()
                 end_date = datetime.strptime(date_range[1], "%m/%d/%Y").date()
 
-                print(start_date, end_date, 'DATE CHECK2')
+                logging.info(start_date, end_date, 'DATE CHECK2')
                 today = start_date  # Use the start of the range as the reference date
                 history_data = True
 
@@ -20569,7 +20569,7 @@ def short_mail(request):
                 end_of_week_sunday = start_of_week + timedelta(days=6)  # Sunday
 
             # search_date = datetime.strptime(search_date, "%d-%m-%Y")
-            # print(search_date, 'DATE CHECK2')
+            # logging.info(search_date, 'DATE CHECK2')
             # today = search_date.date()
             # history_data = True
         except Exception as e:
@@ -20584,7 +20584,7 @@ def short_mail(request):
             else:
                 history_data = True
 
-        print(start_of_week, end_of_week,history_data,'history')
+        logging.info(start_of_week, end_of_week,history_data,'history')
 
         working_days_count = 0
 
@@ -20633,21 +20633,21 @@ def short_mail(request):
                 leave_days.update(leave_daterange(start_date1, end_date1))
             leave_days = {date for date in leave_days if start_of_week <= date <= end_of_week}
 
-            # print('EMPLOYEE', emp.first_name)
-            # print('LEAVE', leave_days)
+            # logging.info('EMPLOYEE', emp.first_name)
+            # logging.info('LEAVE', leave_days)
             # Fetch holidays in the employee's country within the week
             holidays = Holiday.objects.filter(
                 country_id=emp.country_id,  # Assuming employee has a country_id field
                 date__range=(start_of_week, end_of_week)
             ).values_list('date', flat=True)
-            # print('HOLIDAYS', holidays)
+            # logging.info('HOLIDAYS', holidays)
             # Convert to sets for easy comparison
             leave_days = set(leave_days)
             holidays = set(holidays)
 
             # Count unique leave and holiday days (without double counting overlapping days)
             unique_leave_holiday_days = leave_days | holidays
-            # print('UNIQUE', unique_leave_holiday_days)
+            # logging.info('UNIQUE', unique_leave_holiday_days)
             # Calculate minimum required hours
             minimum_hours = (working_days_count * 8) - (len(unique_leave_holiday_days) * 8)
             # Ensure minimum hours are not negative
@@ -20659,7 +20659,7 @@ def short_mail(request):
                 status = emp_status.status
             except Exception as e:
                 status = 0
-            print(hours_worked, minimum_hours)
+            logging.info(hours_worked, minimum_hours)
             if hours_worked < minimum_hours / 2:
                 if status == 0:
                     employee_data.append({'id': emp.id, 'name': f"{emp.first_name} {emp.last_name}", 'status': 1})
@@ -20718,7 +20718,7 @@ def send_short_notice_email(employee, total_hours, minimum_hours, message):
             fail_silently=False,
 
         )
-        print(f"Email sent to {employee.first_name} ({recipient})")
+        logging.info(f"Email sent to {employee.first_name} ({recipient})")
 
 
 @csrf_exempt
@@ -20741,7 +20741,7 @@ def email_status(request):
             today = datetime.now().date()
             start_date = today - timedelta(days=today.weekday())  # Monday
             end_date = start_date + timedelta(days=3)  # Thursday
-            print(start_date1,start_date,type(start_date1),type(start_date))
+            logging.info(start_date1,start_date,type(start_date1),type(start_date))
             if start_date1 != start_date:
                 return JsonResponse({'success': False, 'error': 'History Data Can Not Be Changed'})
 
@@ -20758,7 +20758,7 @@ def email_status(request):
             except Exception as e:
                 total_minimum_work_in_sec = 0
 
-            print(emp_id, start_date, minimum_work, total_minimum_work_in_sec)
+            logging.info(emp_id, start_date, minimum_work, total_minimum_work_in_sec)
             # Check if the record exists, update it if found; otherwise, create a new one
             obj, created = ShortWorkEmail.objects.update_or_create(
                 employee_id=emp_id,
@@ -20808,7 +20808,7 @@ def test_notice_email(request):
             [recipient],
             fail_silently=False,
         )
-        print(f"Email sent to")
+        logging.info(f"Email sent to")
     return HttpResponse('OK')
 
 
@@ -20846,7 +20846,7 @@ def update_gmail_in_timesheets(request):
 def get_event_projects(request):
     client_id = request.GET.get('client_id')
     projects = project.objects.filter(client_id=client_id).values('id', 'project_name')
-    print(projects,'TEST HIT')
+    logging.info(projects,'TEST HIT')
     return JsonResponse(list(projects), safe=False)
 
 @csrf_exempt
@@ -20968,8 +20968,8 @@ def add_client_contract_work(request):
 
         total_working_hours = sum(float(value) for value in working_input.values())
 
-        print('working_input ',working_input)
-        print('working_roles ',working_roles)
+        logging.info('working_input ',working_input)
+        logging.info('working_roles ',working_roles)
 
         json_working_input = json.dumps(working_input)
         json_working_roles = json.dumps(working_roles)
@@ -21042,7 +21042,7 @@ def add_client_contract_work(request):
                                     contract_employee_detail.save()
 
             except Exception as e:
-                print(e)
+                logging.info(e)
 
             for employee_id, role in working_roles.items():
                 if not Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).exists():
@@ -21116,7 +21116,7 @@ def delete_client_contract_work(request,contract_work_id):
         return JsonResponse({"success": "Client contract work deleted and employee counts updated."}, status=200)
 
     except Exception as e:
-        print(str(e))
+        logging.info(str(e))
         return JsonResponse({"error": "An error occurred while deleting the contract work."}, status=500)
 
 def check_contracted_client(request):
@@ -21262,8 +21262,8 @@ def add_client(request):
         except ValueError:
             return JsonResponse({"error": "Invalid amount value."}, status=400)
         uploaded_file = request.FILES.get('client_image')
-        print("Vinod 4 March")
-        print(uploaded_file)
+        logging.info("Vinod 4 March")
+        logging.info(uploaded_file)
         # return HttpResponse(uploaded_file)
         if uploaded_file:
             base_filename = os.path.basename(uploaded_file.name)
@@ -21280,7 +21280,7 @@ def add_client(request):
                     for chunk in uploaded_file.chunks():
                         destination.write(chunk)
             except Exception as e:
-                print(e)
+                logging.info(e)
 
         if uploaded_file:
             uploaded_file_path = os.path.join(settings.STATIC_URL, 'assets', 'img', 'client', filename)
@@ -21373,8 +21373,8 @@ def add_client(request):
 
         total_working_hours = sum(float(value) for value in working_input.values())
 
-        print('working_input ',working_input)
-        print('working_roles ',working_roles)
+        logging.info('working_input ',working_input)
+        logging.info('working_roles ',working_roles)
 
         json_working_input = json.dumps(working_input)
         json_working_roles = json.dumps(working_roles)
@@ -21447,7 +21447,7 @@ def add_client(request):
                                     contract_employee_detail.save()
 
             except Exception as e:
-                print(e)
+                logging.info(e)
 
             # for employee_id, role in working_roles.items():
             #     if not Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).exists():
@@ -21545,10 +21545,10 @@ def delete_client(request):
             client_to_delete = client.objects.get(id=client_id)
             client_to_delete.delete()
             status = 1
-            print("Client deleted successfully.")
+            logging.info("Client deleted successfully.")
         except project.DoesNotExist:
             status = 0
-            print("Client with the given ID does not exist.")
+            logging.info("Client with the given ID does not exist.")
 
         return JsonResponse({'status': status})
 
@@ -21611,7 +21611,7 @@ def update_client_with_contracted(request):
                     for chunk in uploaded_file.chunks():
                         destination.write(chunk)
             except Exception as e:
-                print(e)
+                logging.info(e)
 
         if uploaded_file:
             uploaded_file_path = os.path.join(settings.STATIC_URL, 'assets', 'img', 'client', filename)
@@ -21639,8 +21639,8 @@ def update_client_with_contracted(request):
             existing_client.save()
 
             client_id = existing_client.id
-            print('existing_client : ',existing_client)
-            print('existing_client : ',client_id)
+            logging.info('existing_client : ',existing_client)
+            logging.info('existing_client : ',client_id)
             
         
             buddies = request.POST.getlist('buddy')
@@ -21675,8 +21675,8 @@ def update_client_with_contracted(request):
 
             total_working_hours = sum(float(value) for value in working_input.values())
 
-            print('working_input ',working_input)
-            print('working_roles ',working_roles)
+            logging.info('working_input ',working_input)
+            logging.info('working_roles ',working_roles)
 
             json_working_input = json.dumps(working_input)
             json_working_roles = json.dumps(working_roles)
@@ -21684,15 +21684,15 @@ def update_client_with_contracted(request):
             start_date = date(current_year, current_month, 1)
             last_day = calendar.monthrange(current_year, current_month)[1]
             end_date = date(current_year, current_month, last_day)
-            print('start_date ',start_date)
-            print('end_date ',end_date)
+            logging.info('start_date ',start_date)
+            logging.info('end_date ',end_date)
             # return HttpResponse(working_roles)
 
             client_contract = Client_contract_work.objects.filter(
                 client_id=client_id, date__range=(start_date, end_date)
             ).first()
 
-            print('client_contract ',client_contract)
+            logging.info('client_contract ',client_contract)
             if client_contract:
                 previous_employee_role = json.loads(client_contract.working_role)
                 client_contract.working_input = json_working_input
@@ -21719,8 +21719,8 @@ def update_client_with_contracted(request):
                 contract_employee = Client_contract_employee.objects.filter(
                     employee_id=employee_id, date__range=(start_date, end_date)
                 ).first()
-                print(employee_id)
-                print('contract_employee ',contract_employee)
+                logging.info(employee_id)
+                logging.info('contract_employee ',contract_employee)
                 # return HttpResponse('pp')
                 if previous_role:
                     if previous_role == "A":
@@ -21735,7 +21735,7 @@ def update_client_with_contracted(request):
                     contract_employee.save()
 
             # return HttpResponse('pp')
-            print('working_roles ',working_roles)
+            logging.info('working_roles ',working_roles)
             for employee_id, new_role in working_roles.items():
                 contract_employee = Client_contract_employee.objects.filter(
                     employee_id=employee_id, date__range=(start_date, end_date)
@@ -21868,13 +21868,13 @@ def upload_document(request):
                 try:
                     os.makedirs(destination_dir)
                 except Exception as e:
-                    print(f"Error creating directory: {e}")
+                    logging.info(f"Error creating directory: {e}")
                     return
 
             destination_path = os.path.join(destination_dir, new_filename)
 
-            print("Vinod 17 March", destination_path, destination_dir)
-            print(file_type)
+            logging.info("Vinod 17 March", destination_path, destination_dir)
+            logging.info(file_type)
             # return HttpResponse(destination_path)
 
             try:
@@ -21882,7 +21882,7 @@ def upload_document(request):
                     for chunk in uploaded_file.chunks():
                         destination.write(chunk)
             except Exception as e:
-                print(e)
+                logging.info(e)
 
         if uploaded_file:
             if category_id:
@@ -21955,7 +21955,7 @@ def delete_document(request, document_id):
         # file_path = os.path.join(settings.STATICFILES_DIRS[0], file_url)
         # Decode the URL to get the actual file name
         decoded_file_url = urllib.parse.unquote(file_url)
-        print(decoded_file_url)
+        logging.info(decoded_file_url)
         relative_path = decoded_file_url.replace('/static/assets/', '', 1)
 
         # Construct the full absolute file system path
@@ -21964,7 +21964,7 @@ def delete_document(request, document_id):
         try:
             os.remove(file_path)
         except OSError as e:
-            print(e, 'PATH ERROR2')
+            logging.info(e, 'PATH ERROR2')
             pass
 
         document.delete()
@@ -21976,7 +21976,7 @@ def delete_document(request, document_id):
 
 
     except Exception as e:
-        print(e)
+        logging.info(e)
         pass
         # logger.error(f"Failed to delete document: {type(e).__name__}, {str(e)}")
         return JsonResponse({"error": f"Failed to delete document.{e}"}, status=500)
@@ -22000,7 +22000,7 @@ def rename_document(request, document_id):
 
         # Decode URL in case of special characters
         decoded_file_url = urllib.parse.unquote(file_url)
-        print("Decoded file URL:", decoded_file_url)
+        logging.info("Decoded file URL:", decoded_file_url)
 
         # Extract the directory and old file name
         file_dir = os.path.dirname(decoded_file_url)
@@ -22011,7 +22011,7 @@ def rename_document(request, document_id):
 
         new_name_without_extension = os.path.splitext(new_name)[0]
 
-        print(old_file_without_name, new_name, 'CHECK NEW NAME')
+        logging.info(old_file_without_name, new_name, 'CHECK NEW NAME')
         # Generate new file name with the same extension
         new_file_name = f"{old_file_without_name}{new_name_without_extension}.{document.file_type}"
 
@@ -22019,8 +22019,8 @@ def rename_document(request, document_id):
         old_file_path = os.path.join(settings.BASE_DIR, "dec", file_dir.strip('/'), old_file_name)
         new_file_path = os.path.join(settings.BASE_DIR, "dec", file_dir.strip('/'), new_file_name)
 
-        print(f"Old File Path: {old_file_path}")
-        print(f"New File Path: {new_file_path}")
+        logging.info(f"Old File Path: {old_file_path}")
+        logging.info(f"New File Path: {new_file_path}")
 
         # Rename the actual file
         os.rename(old_file_path, new_file_path)
@@ -22066,10 +22066,10 @@ def gd_callback(request):
     flow = get_flow()
 
     absolute_url = request.build_absolute_uri()
-    print(absolute_url, 'CHECK ABSOLUTE URI1')
+    logging.info(absolute_url, 'CHECK ABSOLUTE URI1')
     if absolute_url.startswith('http://'):
         absolute_url = 'https://' + absolute_url[len('http://'):]
-        print(absolute_url, 'CHECK ABSOLUTE URI2')
+        logging.info(absolute_url, 'CHECK ABSOLUTE URI2')
 
     flow.fetch_token(authorization_response=absolute_url)
     # flow.fetch_token(authorization_response=request.build_absolute_uri())
@@ -22079,7 +22079,7 @@ def gd_callback(request):
         user_info_service = build('oauth2', 'v2', credentials=creds)
         user_info = user_info_service.userinfo().get().execute()
         authenticated_email = user_info.get('email')
-        print(authenticated_email, 'EMAIL')
+        logging.info(authenticated_email, 'EMAIL')
     except Exception as e:
         authenticated_email = None
 
@@ -22113,7 +22113,7 @@ def gd_callback(request):
 
     url = reverse('profile_with_optional', kwargs={'employee_id': int(employee_id), 'my_profile_tab': '3'})
     # url = reverse('profile', kwargs={'employee_id': int(employee_id)})
-    print(url)
+    logging.info(url)
     response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
     return response  # Redirect user to a login or home page after signout
 
@@ -22260,7 +22260,7 @@ def upload_from_drive(request):
             else:
                 creds_data = json.loads(employee_ob.gd_token)
         except Exception as e:
-            print(e, 'CRED ERROR')
+            logging.info(e, 'CRED ERROR')
 
         folder_id = extract_folder_id(drive_url)
         if not folder_id:
@@ -22279,21 +22279,21 @@ def upload_from_drive(request):
 
             url = reverse('client-profile', kwargs={'client_id': int(client_id)})
             # url = reverse('profile', kwargs={'employee_id': int(employee_id)})
-            print(url)
+            logging.info(url)
             response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
-            print('UPLOAD HO GYA HE')
+            logging.info('UPLOAD HO GYA HE')
             return response  # Redirect user to a login or home page after signout
         except Exception as e:
-            print('UPLOAD ERROR HE')
+            logging.info('UPLOAD ERROR HE')
             messages.success(request, f"Files not uploaded from Drive. {e}")
             url = reverse('client-profile', kwargs={'client_id': int(client_id)})
             response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
             return response  # Redirect user to a login or home page after signout
             # return JsonResponse({'error': str(e)}, status=500)
 
-    # print(os.path.join(settings.STATICFILES_DIRS[0], 'img', 'client', 'documents'))
-    # print(os.path.join(settings.STATIC_URL, 'img', 'client', 'documents'))
-    # print(os.path.join(settings.BASE_DIR, "dec"))
+    # logging.info(os.path.join(settings.STATICFILES_DIRS[0], 'img', 'client', 'documents'))
+    # logging.info(os.path.join(settings.STATIC_URL, 'img', 'client', 'documents'))
+    # logging.info(os.path.join(settings.BASE_DIR, "dec"))
     return JsonResponse({'error': "GET REQUEST NOT ALLOWED"}, status=500)
 
 
@@ -22343,7 +22343,7 @@ def gd_remove(request):
 
     url = reverse('profile_with_optional', kwargs={'employee_id': int(employee_id), 'my_profile_tab': '3'})
     # url = reverse('profile', kwargs={'employee_id': int(employee_id)})
-    print(url)
+    logging.info(url)
     response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
     return response  # Redirect user to a login or home page after signout
 
@@ -22469,16 +22469,16 @@ def upload_linkedinpost(request):
                 ).first()
 
                 if not airtable_entry:
-                    print(f"[Row {row_num}] No Airtable match for: {client_name}, {company_name}, {reporting_month}, {reporting_year}")
+                    logging.info(f"[Row {row_num}] No Airtable match for: {client_name}, {company_name}, {reporting_month}, {reporting_year}")
                     continue
-                print(f"[Row {row_num}] Airtable data : ")
-                print(row)
+                logging.info(f"[Row {row_num}] Airtable data : ")
+                logging.info(row)
 
                 # Match client
                 client_entry = client.objects.get(id=client_id)
 
                 if not client_entry:
-                    print(f"[Row {row_num}] No Client found")
+                    logging.info(f"[Row {row_num}] No Client found")
                     continue
 
                 published_str = convert_value(row[10], None)
@@ -22504,9 +22504,9 @@ def upload_linkedinpost(request):
                         published_date=published_date,
                         tonality=convert_value(row[11], None),
                     )
-                    print(f"[Row {row_num}] LinkedIn post saved for client: {client_name}")
+                    logging.info(f"[Row {row_num}] LinkedIn post saved for client: {client_name}")
                 except Exception as e:
-                    print(f"[Row {row_num}] Error saving post: {e}")
+                    logging.info(f"[Row {row_num}] Error saving post: {e}")
 
             return render(request, "excel/upload_linkedinpost.html")
         else:
@@ -22765,7 +22765,7 @@ def dashboard(request, linkedin_user):
                     data['impressions'] += record.linkedin_profile_view_count or 0
                     data['profileViews'] += record.linkedin_view_count or 0
 
-    print('data ',data)
+    logging.info('data ',data)
     quarterly_labels = list(quarters.keys())
     quarterly_post_frequency = [quarters[q]['postFrequency'] for q in quarterly_labels]
     quarterly_profile_searches = [quarters[q]['profileSearches'] for q in quarterly_labels]
@@ -22865,10 +22865,10 @@ def dashboard(request, linkedin_user):
     while dt_pointer <= now:
         months.append((dt_pointer.year, dt_pointer.month))
         dt_pointer += timedelta(days=30)
-    print('six_months_ago')
-    print(six_months_ago)
-    print(dt_pointer)
-    print(months)
+    logging.info('six_months_ago')
+    logging.info(six_months_ago)
+    logging.info(dt_pointer)
+    logging.info(months)
 
     post_filter = Q()
     for year, month in months:
@@ -22940,8 +22940,8 @@ def dashboard(request, linkedin_user):
 
     weekly = get_weekly_heatmap_data(client_id)
     monthly, month_labels = get_monthly_heatmap_data(client_id)
-    print('month_labels1')
-    print(month_labels)
+    logging.info('month_labels1')
+    logging.info(month_labels)
 
 
 
@@ -23042,7 +23042,7 @@ def submit_post_generate_data(request):
         data = json.loads(request.body)
 
         # Ensure all required fields are present
-        print(data, 'DATA TEST')
+        logging.info(data, 'DATA TEST')
         required_fields = ['topic_name', 'company_include', 'domain_source']
         for field in required_fields:
             if field not in data or not data[field]:
@@ -23136,19 +23136,19 @@ def submit_post_generate_data(request):
             headers={'Content-Type': 'application/json'}
         )
 
-        print(response.status_code, 'TEST RESPONSE', response)
-        print("Text:", response.text)  # The full body as a string
-        print(response.headers)
+        logging.info(response.status_code, 'TEST RESPONSE', response)
+        logging.info("Text:", response.text)  # The full body as a string
+        logging.info(response.headers)
         #
         # # Check if the webhook call was successful
         if response.status_code in [200, 201, 202]:
-            print(data['topic_name'])
-            print(request.user.id)
-            print(data['client_id1'])
-            print(data['company_include'])
-            print(data['domain_source'])
-            print(data['exclude_content'])
-            print(data['exclude_domain'])
+            logging.info(data['topic_name'])
+            logging.info(request.user.id)
+            logging.info(data['client_id1'])
+            logging.info(data['company_include'])
+            logging.info(data['domain_source'])
+            logging.info(data['exclude_content'])
+            logging.info(data['exclude_domain'])
             SocialMedia.objects.create(topic_name=data['topic_name'], employee_id=request.user.id,
                                        client_id=data['client_id1'], company_include=data['company_include'],
                                        domain_source=data['domain_source'], exclude_content=data['exclude_content'],
@@ -23160,7 +23160,7 @@ def submit_post_generate_data(request):
         })
 
     except Exception as e:
-        print(e)
+        logging.info(e)
         return JsonResponse({
             'success': False,
             'message': f'Invalid JSON data {e}'
@@ -23172,14 +23172,14 @@ def receive_post_data(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body.decode("utf-8"))
-            print("Received data:", data)
+            logging.info("Received data:", data)
             client_id = data.get("client_id")
             date_str = data.get("date")  # e.g., "2026-06-16"
             linkedin_post = data.get("linkedin_post")
             twitter_post = data.get("twitter_post")
 
             social_post = SocialMedia.objects.filter(client_id=int(client_id)).last()
-            print(social_post.id)
+            logging.info(social_post.id)
             if social_post:
                 social_post.selected_linkedin_post = linkedin_post
                 social_post.selected_twitter_post = twitter_post

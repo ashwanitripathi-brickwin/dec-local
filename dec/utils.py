@@ -17,6 +17,7 @@ from django.core.mail import send_mail
 from django.db.models import Max
 from django.utils.html import strip_tags
 import requests
+import logging
 
 from datetime import datetime, timedelta
 from collections import Counter
@@ -57,16 +58,16 @@ def calculate_month_weeks(start_date, end_date) -> dict:
 def calculate_rates_for_employee(request,client_id,current_month,current_year):
 
     start_date = datetime(current_year, current_month, 1).date()
-    print("newwwwwwwwwwwwwwwwwwwww")
-    print(client_id)
+    logging.info("newwwwwwwwwwwwwwwwwwwww")
+    logging.info(client_id)
 
     # Calculate end date
     if current_month == 12:
         end_date = datetime(current_year, 12, 31).date()
     else:
         end_date = (datetime(current_year, current_month + 1, 1) - timedelta(days=1)).date()
-    print(start_date)
-    print(end_date)
+    logging.info(start_date)
+    logging.info(end_date)
 
     toggl_client=client_id
     employee_names = {}
@@ -76,8 +77,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         if contracted_hours.objects.filter(client_id=toggl_client).exists():
             # Use the contracted_hours model to query the database
             all = contracted_hours.objects.filter(client_id=toggl_client, month__range=(start_date, end_date),month__year=current_year)
-            print("rekhaaaa")
-            print(all)
+            logging.info("rekhaaaa")
+            logging.info(all)
 
             # Check if any records were found
             if all.exists():
@@ -114,8 +115,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 #client total time contract
                 client_details={}
                 total_hours1 = float(first_record.total_working_hours) * 4.3
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                print(total_hours1)
+                logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                logging.info(total_hours1)
 
                 # Convert total hours to total seconds
                 total_seconds1 = int(total_hours1 * 3600)
@@ -130,34 +131,34 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 client_details = {'cost': first_record.rate,'total_working_hours':formatted_time2}
                 # Print the employee details
                 for employee_id, details in employee_details.items():
-                    print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                    logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
             else:
-                print("No records found for the specified client and month.")
+                logging.info("No records found for the specified client and month.")
         else:
-            print("No contracted hours found for the specified client.")
+            logging.info("No contracted hours found for the specified client.")
 
-        print(employee_details)
+        logging.info(employee_details)
 
 
         # for work category below boxes
         project_list = project.objects.filter(toggl_client_id=toggl_client)
-        print("project_list1")
-        print(project_list)
+        logging.info("project_list1")
+        logging.info(project_list)
         # Iterate through the project_list and get toggl_project_id for each project
         toggl_project_ids = [project.toggl_project_id for project in project_list]
         filtered_records = toggl_user_detail.objects.filter(
         project_id__in=toggl_project_ids,
         time_entries_start_date__range=(start_date, end_date)
         )
-        print(filtered_records)
+        logging.info(filtered_records)
         unique_project_ids = filtered_records.values('project_id').distinct()
-        print(unique_project_ids)
+        logging.info(unique_project_ids)
 
         # Query the Project table to get names of unique project IDs
         project_names = project.objects.filter(toggl_project_id__in=unique_project_ids)
-        print("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+        logging.info("lllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
         # Now you can display project names on the UI
-        print(project_names)
+        logging.info(project_names)
 
         #working time on toggl
 
@@ -182,9 +183,9 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                     total_time_spent[client_project_key] = time_seconds
         # Now, total_time_spent dictionary contains the total time spent per client and project
         # You can iterate through it to display the results
-        print("client revenue")
-        print(total_time_spent)
-        print(project_rate)
+        logging.info("client revenue")
+        logging.info(total_time_spent)
+        logging.info(project_rate)
 
         total_time_spent_formatted = {}
         for key, seconds in total_time_spent.items():
@@ -194,9 +195,9 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
 
         # Now, total_time_spent_formatted dictionary contains the total time spent per client and project in HH:MM:SS format
         # You can iterate through it to display the results
-        # print(total_time_spent_formatted)
+        # logging.info(total_time_spent_formatted)
         for key, formatted_time in total_time_spent_formatted.items():
-            print(f"Project {key}: {formatted_time}")
+            logging.info(f"Project {key}: {formatted_time}")
 
 
         #project member images on toggl
@@ -214,7 +215,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             # Assign the user_ids to the dictionary with project_id as the key
             project_user_dict_1[project_id] = list(user_ids)
 
-        print(project_user_dict_1)
+        logging.info(project_user_dict_1)
 
         project_user_dict={}
 
@@ -229,7 +230,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 {'id': data['id'],'salary': float(data['salary']),'image_url': data['image_url'], 'full_name': f"{data['first_name']} {data['last_name']}",'user_name': data['user_name']}
                 for data in employees_data]
 
-        print(project_user_dict)
+        logging.info(project_user_dict)
 
         #employee cost
         total_time_spent_employee = {}
@@ -238,16 +239,16 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         # Iterate through each project
         for project_id, time_spent in total_time_spent.items():
             # Convert total_time_spent from seconds to hours
-            print("new")
-            print(project_id)
-            print(time_spent)
+            logging.info("new")
+            logging.info(project_id)
+            logging.info(time_spent)
             time_spent_hours = time_spent / 3600
             total_time_spent_employee[project_id] = str(time_spent_hours)
 
             # Fetch user salaries for the project
             user_salaries = [user['salary'] for user in project_user_dict.get(project_id, [])]
 
-            print(user_salaries)
+            logging.info(user_salaries)
             # Calculate total rate for the project based on user salaries
             total_salary = sum(user_salaries)
             working_days_per_month = 22
@@ -261,11 +262,11 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             employee_rate_per_hour[project_id] = str(total_rate_formatted)
 
         # Print the results
-        print("total_time_spent_employee:")
-        print(total_time_spent_employee)
+        logging.info("total_time_spent_employee:")
+        logging.info(total_time_spent_employee)
 
-        print("employee_rate_per_hour:")
-        print(employee_rate_per_hour)
+        logging.info("employee_rate_per_hour:")
+        logging.info(employee_rate_per_hour)
 
         # Initialize a variable to store the sum of rates
         sum_of_rates_employee = 0.0
@@ -277,7 +278,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         # Format total_rate to have 2 decimal places
         sum_of_rates_employee = "{:.2f}".format(sum_of_rates_employee)
         # Print the sum of rates
-        print("Sum of Rates Employee:", sum_of_rates_employee)
+        logging.info("Sum of Rates Employee:", sum_of_rates_employee)
 
 
 
@@ -299,53 +300,53 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             one_project_rate=0
 
 
-        print("Sum of Rates Client revenue:", one_project_rate)
+        logging.info("Sum of Rates Client revenue:", one_project_rate)
 
         #contracted employee cost
         if contracted_hours.objects.filter(client_id=toggl_client,month__range=(start_date, end_date),month__year=current_year).exists():
             contracted_client = contracted_hours.objects.get(client_id=toggl_client,month__range=(start_date, end_date),month__year=current_year)
             # contracted_client = contracted_hours.objects.get(client_id=client_id1,month=current_month)
             contracted_working_hours_1 = contracted_client.working_input
-            print(contracted_working_hours_1)
+            logging.info(contracted_working_hours_1)
             contracted_hours_for_project=contracted_client.total_working_hours
-            print("contracted")
-            print(contracted_hours_for_project)
+            logging.info("contracted")
+            logging.info(contracted_hours_for_project)
                 # Convert the JSON string to a dictionary
             contracted_working_hours_1_dict1 = json.loads(contracted_working_hours_1)
-            print('muksn')
-            print(contracted_working_hours_1_dict1)
+            logging.info('muksn')
+            logging.info(contracted_working_hours_1_dict1)
             contracted_working_hours_1_dict = {key.strip(): value for key, value in contracted_working_hours_1_dict1.items()}
             # Fetch the hourly rate for the user from the Employee table
             employee_ids = list(contracted_working_hours_1_dict.keys())
-            print(employee_ids)
+            logging.info(employee_ids)
             # Fetch hourly rate for each employee
             hourly_rates = {}
             for emp_id in employee_ids:
                 try:
                     employee1 = employee.objects.get(toggl_user_id=emp_id)
                     hourly_rates[emp_id] = employee1.salary
-                    print("salary")
-                    print(hourly_rates[emp_id])
+                    logging.info("salary")
+                    logging.info(hourly_rates[emp_id])
 
                 except employee.DoesNotExist:
-                    print(f"Employee with ID {emp_id} not found.")
+                    logging.info(f"Employee with ID {emp_id} not found.")
 
             # Calculate total salary
             total_salary = sum(hourly_rates[emp_id] for emp_id in employee_ids)
-            print(total_salary)
+            logging.info(total_salary)
 
         else:
             contracted_hours_for_project = 0
             total_salary=0
 
         if contracted_hours_for_project != 0:
-            print("calculation")
-            print(total_salary)
-            print(contracted_hours_for_project)
+            logging.info("calculation")
+            logging.info(total_salary)
+            logging.info(contracted_hours_for_project)
             hourly_rate1 = float(total_salary) / (22*8)
-            print(hourly_rate1)
+            logging.info(hourly_rate1)
             hourly_rate=hourly_rate1 * contracted_hours_for_project * 4.3
-            print(hourly_rate)
+            logging.info(hourly_rate)
 
 
         else:
@@ -353,7 +354,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         # Format total_rate to have 2 decimal places
         contracted_sum_of_rates_employee = "{:.2f}".format(hourly_rate)
         # Print the sum of rates
-        print("Contracted Sum of Rates Employee:", contracted_sum_of_rates_employee)
+        logging.info("Contracted Sum of Rates Employee:", contracted_sum_of_rates_employee)
 
 
         client_category_list={}
@@ -364,11 +365,11 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         category_time_dict_client={}
         employee_data={}
         employee_salary_dict={}
-        print("check")
-        print(client_id)
-        print(sum_of_rates_employee)
-        print(contracted_sum_of_rates_employee)
-        print(one_project_rate)
+        logging.info("check")
+        logging.info(client_id)
+        logging.info(sum_of_rates_employee)
+        logging.info(contracted_sum_of_rates_employee)
+        logging.info(one_project_rate)
 
         return sum_of_rates_employee,contracted_sum_of_rates_employee,one_project_rate
 
@@ -380,12 +381,12 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month=current_month).exists():
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month=current_month)
-            print("lllllllllllllllllllllllllllllllll")
-            print(all)
+            logging.info("lllllllllllllllllllllllllllllllll")
+            logging.info(all)
 
             # Check if any records were found
             if all.exists():
-                print("ppppppppppppppppppppppppppppppppppppppppppppp")
+                logging.info("ppppppppppppppppppppppppppppppppppppppppppppp")
                 # Access the first record in the QuerySet
                 first_record = all.first()
 
@@ -402,13 +403,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
 
                 # Parse the JSON string for role information
                 role_dict = json.loads(role_json_str)
-                print(work_dict)
+                logging.info(work_dict)
 
                 # Fetch employee details including image URL based on employee IDs
 
                 for employee_id, hours in work_dict.items():
                     try:
-                        print("try")
+                        logging.info("try")
                         # Assuming Employee model has fields 'employee_id', 'first_name', 'last_name', 'user_name', and 'image_url'
                         employee1 = employee.objects.get(id=int(employee_id))
 
@@ -427,8 +428,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                         # Get the role
                         role = role_dict.get(employee_id, "Unknown")
                         #employee time
-                        print(hours)
-                        print("week_start")
+                        logging.info(hours)
+                        logging.info("week_start")
 
 
                         import calendar
@@ -437,13 +438,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                         date_difference = (end_date - start_date).days
                         # Add 1 to the difference in days
                         date_difference += 1
-                        print(date_difference)
+                        logging.info(date_difference)
 
 
                         # Get the number of days in that month
                         days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
 
-                        print(days_in_month)
+                        logging.info(days_in_month)
 
                         if date_difference==days_in_month:
                             weeks=4.3
@@ -453,9 +454,9 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                         total_hours = float(hours)  * weeks
 
 
-                        print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                        print("muskannnnnnnnnnnnnnnnnnnnnnnnnn")
-                        print(total_hours)
+                        logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                        logging.info("muskannnnnnnnnnnnnnnnnnnnnnnnnn")
+                        logging.info(total_hours)
 
                         # Convert total hours to total seconds
                         total_seconds = int(total_hours * 3600)
@@ -479,13 +480,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                     date_difference = (end_date - start_date).days
                     # Add 1 to the difference in days
                     date_difference += 1
-                    print(date_difference)
+                    logging.info(date_difference)
 
 
                     # Get the number of days in that month
                     days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
 
-                    print(days_in_month)
+                    logging.info(days_in_month)
 
                     if date_difference==days_in_month:
                         weeks=4.3
@@ -499,8 +500,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                     total_hours1 = 0
                     ui_total_hours=0
 
-                # print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                # print(total_hours1)
+                # logging.info("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                # logging.info(total_hours1)
 
                 # Convert total hours to total seconds
                 total_seconds1 = int(total_hours1 * 3600)
@@ -509,10 +510,10 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 hoursss1, remainder1 = divmod(total_seconds1, 3600)
                 minutes1, seconds1 = divmod(remainder1, 60)
 
-                print("qqqqqqqqqqqqqqqqqqqqqqqqq")
-                print(hoursss1)
-                print(minutes1)
-                print(seconds1)
+                logging.info("qqqqqqqqqqqqqqqqqqqqqqqqq")
+                logging.info(hoursss1)
+                logging.info(minutes1)
+                logging.info(seconds1)
 
                 import calendar
                 from datetime import datetime
@@ -520,13 +521,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 date_difference = (end_date - start_date).days
                 # Add 1 to the difference in days
                 date_difference += 1
-                print(date_difference)
+                logging.info(date_difference)
 
 
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
 
-                print(days_in_month)
+                logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
@@ -541,14 +542,14 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 client_details = {'cost': cost_new,'total_working_hours':formatted_time2}
                 # Print the employee details
                 for employee_id, details in employee_details.items():
-                    print(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
+                    logging.info(f"Employee ID: {employee_id}, Employee Name: {details['name']}, Image URL: {details['image_url']}")
             else:
-                print("No records found for the specified client and month.")
+                logging.info("No records found for the specified client and month.")
         else:
-            print("No contracted hours found for the specified client.")
-        print("ghhh")
-        print(employee_details)
-        print(client_details)
+            logging.info("No contracted hours found for the specified client.")
+        logging.info("ghhh")
+        logging.info(employee_details)
+        logging.info(client_details)
         unique_category_ids = timeSheet.objects.filter(client_id=client_id,time_entries_start_date__range=(start_date, end_date)).values('category_id').distinct()
 
         # Prepare a list to store client and category information
@@ -567,10 +568,10 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 client_category_list.append({'id': category_id, 'category_name': category_name})
 
             except Work_Category.DoesNotExist:
-                print(f"Category with ID {category_id} does not exist in the WorkCategory table.")
+                logging.info(f"Category with ID {category_id} does not exist in the WorkCategory table.")
 
 
-        print(client_category_list)
+        logging.info(client_category_list)
 
        # project member of timer
         # Get unique timeSheet entries for a specific client
@@ -604,12 +605,12 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 })
 
             except employee.DoesNotExist:
-                print(f"Employee with ID {employee_id} does not exist in the Employee table.")
+                logging.info(f"Employee with ID {employee_id} does not exist in the Employee table.")
 
         # Now employee_info_dict contains information about employees in each category
         # You can use this dictionary to look up employees based on the category
-        print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-        print(employee_info_dict)
+        logging.info("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
+        logging.info(employee_info_dict)
 
 
 
@@ -641,15 +642,15 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             }
 
         # Print or use the category_time_dict as needed
-        print(category_time_dict)
+        logging.info(category_time_dict)
 
-        print("kiki")
+        logging.info("kiki")
         total_time_spent_by_client = timeSheet.objects.filter(
         client_id=client_id,
         time_entries_start_date__gte=start_date,  # Filter based on start date
         time_entries_stop_date__lte=end_date     # Filter based on end date
         ).values('client_id', 'employee_id').annotate(total_time=Sum('time_entries_seconds'))
-        print(total_time_spent_by_client)
+        logging.info(total_time_spent_by_client)
         # Create a dictionary to store category_id and total time spent
         category_time_dict_client = {}
 
@@ -672,8 +673,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 'minutes': total_time_spent_minutes,
                 'seconds': total_time_spent_seconds
             }
-        print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
-        print(work_dict)
+        logging.info("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj")
+        logging.info(work_dict)
         for employee_id in work_dict.keys():
             if int(employee_id) not in category_time_dict_client:
                 category_time_dict_client[int(employee_id)] = {
@@ -686,8 +687,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 }
 
         # Print or use the category_time_dict as needed
-        print("birth")
-        print(category_time_dict_client)
+        logging.info("birth")
+        logging.info(category_time_dict_client)
 
         #employee cost in task tab
         # Create a dictionary to store category_id and total cost
@@ -720,8 +721,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             }
 
         # Print or use the category_cost_dict as needed
-        print("ppppppppppppppppppppppppppppppppppppppppppppppp")
-        print(category_cost_dict)
+        logging.info("ppppppppppppppppppppppppppppppppppppppppppppppp")
+        logging.info(category_cost_dict)
 
         #employee cost in client tab   $$$$$$$$$$$$$$$$$$$$$$$$$$
         # Get unique timeSheet entries for a specific client
@@ -745,10 +746,10 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             if int(employee_id) not in employee_data:
                 employee_data[int(employee_id)] = {'time_worked': 0, 'salary': 0}
         for employee_id in employee_data.keys():
-            print(employee_data.keys())
+            logging.info(employee_data.keys())
             employee1 = employee.objects.get(id=employee_id)
-            print(employee1)
-            print(client_id)
+            logging.info(employee1)
+            logging.info(client_id)
             if employee1.salary:
                 employee_data[employee_id]['salary'] = employee1.salary
                 adjusted_salary = float(employee1.salary) / (22 * 8)
@@ -775,13 +776,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             total_payment = "{:.2f}".format(total_payment)
             # Update employee_data with total_payment
             employee_data[employee_id]['total_payment'] = total_payment
-        print("qqqqqqqqqqqqqqqqqq")
-        print(employee_data)
+        logging.info("qqqqqqqqqqqqqqqqqq")
+        logging.info(employee_data)
 
 
        # end employee cost in client tab $$$$$$$$$$$$$$$$$$
-        print("vedansh")
-        print(category_cost_dict)
+        logging.info("vedansh")
+        logging.info(category_cost_dict)
 
 
        # Initialize a variable to store the sum of rates
@@ -796,7 +797,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         sum_of_rates_employee= "{:.2f}".format(sum_of_rates_employee)
 
         # Print or use the sum_of_rates_employee_str as needed
-        print("Sum of all costs:", sum_of_rates_employee)
+        logging.info("Sum of all costs:", sum_of_rates_employee)
 
 
 
@@ -817,13 +818,13 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             date_difference = (end_date - start_date).days
             # Add 1 to the difference in days
             date_difference += 1
-            print(date_difference)
+            logging.info(date_difference)
 
 
             # Get the number of days in that month
             days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
 
-            print(days_in_month)
+            logging.info(days_in_month)
 
             if date_difference==days_in_month:
                 weeks=4.3
@@ -837,7 +838,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             one_project_rate=0
 
 
-        print("Sum of Rates Client revenue:", one_project_rate)
+        logging.info("Sum of Rates Client revenue:", one_project_rate)
 
         #contracted employee cost
 
@@ -849,7 +850,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
 
             contracted_working_hours_1_str = contracted_client.working_input
             contracted_working_hours_1 = ast.literal_eval(contracted_working_hours_1_str)
-            print(contracted_working_hours_1)
+            logging.info(contracted_working_hours_1)
 
             employee_salary_dict = {}
             ui_data={}
@@ -870,7 +871,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 date_difference = (end_date - start_date).days
                 # Add 1 to the difference in days
                 date_difference += 1
-                print(date_difference)
+                logging.info(date_difference)
 
                 if employee3.first_name and employee3.last_name:
                     name=employee3.first_name + ' ' + employee3.last_name
@@ -885,7 +886,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 # Get the number of days in that month
                 days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
 
-                print(days_in_month)
+                logging.info(days_in_month)
 
                 if date_difference==days_in_month:
                     weeks=4.3
@@ -898,8 +899,8 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 employee_salary_dict[int(employee_id)] = total_salary
 
 
-            print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
-            print(employee_salary_dict)
+            logging.info("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+            logging.info(employee_salary_dict)
 
         contracted_sum_of_rates_employee=0.0
         # Convert all values in employee_salary_dict to float
@@ -908,7 +909,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         # Sum the values in employee_salary_dict
         contracted_sum_of_rates_employee = sum(employee_salary_dict.values())
         contracted_sum_of_rates_employee = "{:.2f}".format(contracted_sum_of_rates_employee)
-        print("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
+        logging.info("Total contracted sum of rates for employees:", contracted_sum_of_rates_employee)
 
 
         total_time_spent_formatted={}
@@ -934,9 +935,9 @@ def calculate_rates(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
-    print(current_month)
-    print(last_month)
+    logging.info("ssssssssssssssssssssssssssssssssssssss")
+    logging.info(current_month)
+    logging.info(last_month)
 
     selected_year = request.session.get('year')
 
@@ -951,11 +952,11 @@ def calculate_rates(request):
     else:
         last_year=current_year
 
-    print("gggggggggggggggggggggggggggggggggggggg")
-    print(current_year)
-    print(last_year)
+    logging.info("gggggggggggggggggggggggggggggggggggggg")
+    logging.info(current_year)
+    logging.info(last_year)
 
-    print("newwwwwwwwwwwwww11111111111111111")
+    logging.info("newwwwwwwwwwwwww11111111111111111")
 
     if current_year == 2023 and 9 <= current_month <= 12:
         client_ids_for_current_month = contracted_hours.objects.filter(
@@ -970,9 +971,9 @@ def calculate_rates(request):
         date__year=current_year
         ).values_list('client_id', flat=True).distinct()
 
-    print("newwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+    logging.info("newwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
 
-    print(client_ids_for_current_month)
+    logging.info(client_ids_for_current_month)
 
     if last_year == 2023 and 9 <= last_month <= 12:
         client_ids_for_last_month = contracted_hours.objects.filter(
@@ -987,8 +988,8 @@ def calculate_rates(request):
         date__year=last_year
         ).values_list('client_id', flat=True).distinct()
 
-    print("newwwwwlastmonthhhhhhhhhhhhhhhhhhh")
-    print(client_ids_for_last_month)
+    logging.info("newwwwwlastmonthhhhhhhhhhhhhhhhhhh")
+    logging.info(client_ids_for_last_month)
 
     # Initialize as floats
     sum_of_rates_all_employee = 0.0
@@ -1012,7 +1013,7 @@ def calculate_rates(request):
 
         except ValueError:
             # Handle the case where sum_of_rates_client cannot be converted to a float
-            print("Error: Unable to convert sum_of_rates_client to float")
+            logging.info("Error: Unable to convert sum_of_rates_client to float")
         # Accumulate the values
         sum_of_rates_all_employee += sum_of_rates_employee
         sum_of_contracted_rates_all_employee += contracted_sum_of_rates_employee
@@ -1027,7 +1028,7 @@ def calculate_rates(request):
             sum_one_project_rate_previous += float(one_project_rate_prev)
         except ValueError:
             # Handle the case where sum_of_rates_client cannot be converted to a float
-            print("Error: Unable to convert sum_of_rates_client to float")
+            logging.info("Error: Unable to convert sum_of_rates_client to float")
 
 
     # Format the total sum of employee cost and contracted employee cost
@@ -1042,15 +1043,15 @@ def calculate_rates(request):
 
 
     # Print or return the results, depending on your requirements
-    print("\nCurrent Month:")
-    print("Sum of Employee Cost:", formatted_sum_of_employee_cost_current)
-    print("Sum of Contracted Employee Cost:", formatted_sum_of_contracted_employee_cost_current)
-    print("Sum of Client Cost:", formatted_sum_one_project_rate_current)
+    logging.info("\nCurrent Month:")
+    logging.info("Sum of Employee Cost:", formatted_sum_of_employee_cost_current)
+    logging.info("Sum of Contracted Employee Cost:", formatted_sum_of_contracted_employee_cost_current)
+    logging.info("Sum of Client Cost:", formatted_sum_one_project_rate_current)
 
-    print("\nPrevious Month:")
-    print("Sum of Employee Cost:", formatted_sum_of_employee_cost_previous)
-    print("Sum of Contracted Employee Cost:", formatted_sum_of_contracted_employee_cost_previous)
-    print("Sum of Client Cost:", formatted_sum_one_project_rate_previous)
+    logging.info("\nPrevious Month:")
+    logging.info("Sum of Employee Cost:", formatted_sum_of_employee_cost_previous)
+    logging.info("Sum of Contracted Employee Cost:", formatted_sum_of_contracted_employee_cost_previous)
+    logging.info("Sum of Client Cost:", formatted_sum_one_project_rate_previous)
 
 
     # Return the formatted sums
@@ -1102,7 +1103,7 @@ def send_leave_approval_email(leave_obj):
 
 def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
     email_count = 0
-    print("Starting email process...")
+    logging.info("Starting email process...")
 
     # Group clients by buddy
     buddy_clients_map = defaultdict(list)
@@ -1110,7 +1111,7 @@ def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
     for client_id, buddies in client_buddy_id.items():
         for buddy_id in buddies:
             buddy_clients_map[buddy_id].append(client_id)
-    print(buddy_clients_map, 'MAP')
+    logging.info(buddy_clients_map, 'MAP')
     for buddy_id, client_ids in buddy_clients_map.items():
         try:
             emp_ob = employee.objects.get(id=int(buddy_id))
@@ -1136,14 +1137,14 @@ def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
 
                         if latest_date:
                             first_day_of_latest_month = latest_date.replace(day=1)
-                            print(latest_date, first_day_of_latest_month)
+                            logging.info(latest_date, first_day_of_latest_month)
                             # Filter contracts from the latest available month
                             contracts = Client_contract_work.objects.get(date__gte=first_day_of_latest_month,
                                                                          client_id=client_id)
                             if contracts.working_role:
                                 working_role = json.loads(contracts.working_role)  # Parse JSON data
                                 ids_with_role_advisor = [key for key, value in working_role.items() if value == "A"]
-                                print(ids_with_role_advisor)
+                                logging.info(ids_with_role_advisor)
                                 advisor_ob = employee.objects.get(id=int(ids_with_role_advisor[0]))
                                 advisor_name = advisor_ob.first_name + " " + advisor_ob.last_name
                     except Exception as e:
@@ -1156,7 +1157,7 @@ def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
                         "no_link": no_link
                     })
                 except client.DoesNotExist:
-                    print(f"Client ID {client_id} does not exist.")
+                    logging.info(f"Client ID {client_id} does not exist.")
                     continue  # Skip this client and continue
 
             if not client_data:
@@ -1191,15 +1192,15 @@ def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
                 html_message=email_html_body  # Send HTML version
             )
 
-            print(f"Email sent to {buddy_email}")
+            logging.info(f"Email sent to {buddy_email}")
             email_count += 1  # Increase count after sending email
 
         except employee.DoesNotExist:
-            print(f"Employee ID {buddy_id} does not exist.")
+            logging.info(f"Employee ID {buddy_id} does not exist.")
         except Exception as e:
-            print(f"Error sending email: {e}")
+            logging.info(f"Error sending email: {e}")
 
-    print(f"Total emails sent: {email_count}")
+    logging.info(f"Total emails sent: {email_count}")
 
 
 
@@ -1280,10 +1281,10 @@ def revoke_access_token(access_token):
     params = {'token': access_token}
     response = requests.post(url, params=params)
     if response.status_code == 200:
-        print('Access token revoked successfully.')
+        logging.info('Access token revoked successfully.')
         return True
     else:
-        print('Failed to revoke access token.')
+        logging.info('Failed to revoke access token.')
         return False
 
 def get_week_of_month(date):
@@ -1307,12 +1308,12 @@ def get_weekly_heatmap_data(client_id):
         if not date:
             continue
         week = get_week_of_month(date) - 1
-        print('week ',week)
-        print(week)
-        print(date)
+        logging.info('week ',week)
+        logging.info(week)
+        logging.info(date)
         day = date.weekday()
-        print('day')
-        print(post.engagement_rate)
+        logging.info('day')
+        logging.info(post.engagement_rate)
         if 0 <= week < 5 and 0 <= day < 7:
             cell = matrix[day][week]
             cell['likes'] += post.reaction_count or 0
