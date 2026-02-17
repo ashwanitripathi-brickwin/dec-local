@@ -11,6 +11,10 @@ from django.conf import settings
 import random
 import string
 import json
+from datetime import date, timedelta
+from datetime import datetime, timedelta, date
+from django.utils.timezone import now
+
 from django.http import JsonResponse
 import os
 import time
@@ -32,156 +36,16 @@ from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 import openpyxl
+from django.db.models import F, Value
+from django.db.models.functions import Concat
+from django.db.models import Case, When, Value, IntegerField
+from collections import defaultdict
+import logging 
 
-# Create your views here.
-@csrf_exempt
-def login(request):
-    # Check if the user is already logged in
-    if request.user.is_authenticated:
-        return redirect("admin-dashboard")
-
-    base_url = f"{request.scheme}://{request.get_host()}/auth-receiver"
-    if request.method == 'POST':
-        uname = request.POST.get("username")
-        print("myyyy")
-        print(uname)
-        password = request.POST.get('password')
-        print('Password')
-        print(password)
-
-        # Attempt authentication with the original username
-        user = auth.authenticate(username=uname, password=password)
-
-        # If authentication fails, attempt authentication with the first letter lowercase
-        try:
-            if not user:
-                uname_lower = uname[0].lower() + uname[1:]
-                user = auth.authenticate(username=uname_lower, password=password)
-
-            # If authentication fails again, attempt authentication with the first letter uppercase
-            if not user:
-                uname_upper = uname[0].upper() + uname[1:]
-                user = auth.authenticate(username=uname_upper, password=password)
-        except:
-            pass
-
-        if user is not None:
-            # print("if")
-            auth.login(request, user)
-            request.session['user_email'] = user.email
-            print(request.session['user_email'])
-            group = None
-            if request.user.username == 'Sbhutra' and request.user.id == 6:
-                    print("super admin")
-                    print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
-                    employee1 = employee.objects.get(email=request.user.email)
-                    if employee1:
-                        request.session['first_name'] = employee1.first_name
-                        request.session['last_name'] = employee1.last_name
-                        request.session['user_image_url'] = employee1.image_url
-                        request.session['user_name'] = employee1.user_name
-                        request.session['user_id'] = employee1.id
-                        return redirect("admin-dashboard")
-
-            if request.user.groups.exists():
-                group = request.user.groups.all()
-                print("exist group")
-                print(group)
-
-                if group[0].name == 'admin' or group[0].name == 'super_admin':
-                    print("admin")
-                    employee1 = employee.objects.get(email=request.user.email)
-                    if employee1:
-                        request.session['first_name'] = employee1.first_name
-                        request.session['last_name'] = employee1.last_name
-                        request.session['user_image_url'] = employee1.image_url
-                        request.session['user_name'] = employee1.user_name
-                        request.session['user_id'] = employee1.id
-                        return redirect("admin-dashboard")
-
-            else:
-                print("not admin")
-                print("employee")
-                employee1 = employee.objects.get(email=request.user.email)
-                print("sgvfbhjnmk,,,,;l/////////////////////////////////////")
-                print(employee1)
-                if employee1:
-                    request.session['first_name'] = employee1.first_name
-                    request.session['last_name'] = employee1.last_name
-                    request.session['user_image_url'] = employee1.image_url
-                    request.session['user_name'] = employee1.user_name
-                    request.session['user_id'] = employee1.id
-                    print(user.email)
-                    print(employee1.image_url)
-                    print("employee done")
-                return redirect("admin-dashboard")
-
-    # Default return statement if none of the conditions are met
-    return render(request, "login.html", {'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,'base_url':base_url})
-
-
-def logout(request):
-    auth.logout(request)
-    return redirect('login')
-
-
-@csrf_exempt
-def register(request):
-    if request.method == 'POST':
-        uname = request.POST.get("username")
-        pass1 = request.POST.get("password")
-        pass2 = request.POST.get("repeat_password")
-
-        if pass1 != pass2:
-            messages.error(request, "Passwords do not match.")
-            return redirect("register")  # Redirect back to the registration page
-
-        # Check if the email is already in use
-        if User.objects.filter(username=uname).exists():
-            messages.error(request, "This email is already in use.")
-            return redirect("register")
-
-        # Create a new user
-        my_user = User.objects.create_user(username=uname, password=pass1)
-        my_user.save()
-
-        messages.success(request, "Registration successful.")
-        return redirect("admin-dashboard")
-
-    return render(request, "register.html",{})
-@csrf_exempt
-def forgot_password(request):
-        if request.method == 'POST':
-            email = request.POST.get('email')
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                user = None
-
-            if user:
-                # Generate a temporary password
-                temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-                user.set_password(temp_password)
-                user.save()
-
-                # Send an email with the temporary password
-                send_mail(
-                    'Password Reset',
-                    f'Your new password: {temp_password}',
-                    'your_email@example.com',  # Replace with your email
-                    [email],
-                    fail_silently=False,
-                )
-
-                messages.success(request, 'Password reset email sent. Check your inbox.')
-                return redirect('login')  # Redirect to the login page
-            else:
-                messages.error(request, 'No user found with this email address.')
-
-        return render(request, 'forgot_password.html',{})
 
 @login_required(login_url='/')
 def admin_dashboard(request):
+    logging.info("Admin dashboard accessed by user")
     active = [''] * 15
     active[0] = 'active'
 
@@ -197,7 +61,7 @@ def admin_dashboard(request):
         last_month=12
     else:
         last_month=current_month-1
-    print("ssssssssssssssssssssssssssssssssssssss")
+
     print(current_month)
     print(last_month)
 
@@ -255,7 +119,6 @@ def admin_dashboard(request):
     # Remove the current employee's ID from the list
     employee_ids.remove(str(employee_id)) if str(employee_id) in employee_ids else None
 
-    from django.db.models import Case, When, Value, IntegerField
 
 
 
@@ -277,6 +140,7 @@ def admin_dashboard(request):
     # Since we're fetching for a single employee, we don't need custom ordering by `employee_ids`
     # Directly fetch employee details
     emp_details = employee.objects.filter(id=loggedin_employee_id).first()
+    logging.info(f"preparing leave details with employee information")
 
     # Prepare leave details with employee information
     leaves_with_employees = []
@@ -300,50 +164,6 @@ def admin_dashboard(request):
         
         leaves_with_employees.append(leave_data)
 
-    # Fetch leaves that fall within the current week
-    # all_leaves = leave.objects.filter(
-    #     start_date__lte=end_of_week,
-    #     end_date__gte=start_of_week
-    # )
-
-    # all_leaves = all_leaves.annotate(
-    #     custom_order=Case(
-    #         *[
-    #             When(employee_id=emp_id, then=Value(index))
-    #             for index, emp_id in enumerate(employee_ids)
-    #         ],
-    #         default=Value(len(employee_ids)),  # Non-prioritized leaves go to the end
-    #         output_field=IntegerField()
-    #     )
-    # ).order_by('custom_order', 'id')  # Second order by `id` for consistent results
-
-    # employee_details = {
-    #     emp.id: f"{emp.first_name} {emp.last_name}"
-    #     for emp in employee.objects.filter(id__in=employee_ids)
-    # }
-    
-    # leaves_with_employees = []
-    # for leave_obj in all_leaves:
-    #     emp_details = employee.objects.filter(id=leave_obj.employee_id).first()
-    #     leave_data = {
-    #         'id': leave_obj.id,
-    #         'employee_id': leave_obj.employee_id,
-    #         'status': leave_obj.status,
-    #         'start_date': leave_obj.start_date,
-    #         'end_date': leave_obj.end_date,
-    #     }
-        
-    #     if emp_details:
-    #         leave_data.update({
-    #             'employee_name': f"{emp_details.first_name} {emp_details.last_name}",
-    #             'employee_email': emp_details.email,  # Include other fields if needed
-    #             'image_url': emp_details.image_url,  # Include other fields if needed
-    #         })
-    #     else:
-    #         leave_data['employee_name'] = "Unknown Employee"
-        
-    #     leaves_with_employees.append(leave_data)
-
     from datetime import date, timedelta
     today_date = date.today()  # Today's date
     next_30_days_date = today_date + timedelta(days=30)  # 30 days from today
@@ -356,15 +176,7 @@ def admin_dashboard(request):
         employee_id=loggedin_employee_id    # Exclude the logged-in employee's leaves
     )
 
-    # Calculate the start and end of the current month
-    # start_of_month = today_date.replace(day=1)  # First day of the month
-    # end_of_month = (today_date.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)  # Last day of the month
-
-    # # Fetch leaves that fall within the current month
-    # all_leaves_of_month = leave.objects.filter(
-    #     start_date__lte=end_of_month,
-    #     end_date__gte=start_of_month
-    # )
+  
 
     all_leaves_of_month = all_leaves_of_month.annotate(
         custom_order=Case(
@@ -407,6 +219,7 @@ def admin_dashboard(request):
 
     
     ninety_days_later = today + timedelta(days=120)
+    logging.info(f"ninety_days_later: {ninety_days_later}")
     # Fetch birthdays for the next 90 days, excluding today and tomorrow
     future_birthdays = employee.objects.filter(
         Q(date_of_birth__month__gt=today.month) | 
@@ -463,10 +276,6 @@ def admin_dashboard(request):
             'employee_details_by_role': employee_details_by_role
         })
 
-
-    from datetime import date, timedelta
-    from django.db.models import Sum
-
     # Calculate the start and end dates of the current week
     today = date.today()
     start_of_week = today - timedelta(days=today.weekday())  # Monday
@@ -490,6 +299,8 @@ def admin_dashboard(request):
         for emp in employees
     }
 
+    logging.info(f"employee_map: {employee_map}")
+
     # Combine employee names with total working times
     total_working_time_per_employee = sorted([
         {
@@ -512,7 +323,7 @@ def admin_dashboard(request):
     recent_client_info = client.objects.all().order_by('-id')[:5]
 
 
-    from django.utils.timezone import now
+    
     # Assuming the employee_id is passed from the session or obtained dynamically
     employee_id = loggedin_employee_id  # Replace this with the actual employee identification logic
 
@@ -593,265 +404,19 @@ def admin_dashboard(request):
     # Format the data for display
     leave_summary = f"{total_taken_days}/{total_leave}"
 
-    # Query to count distinct client_ids for a given employee
-    # project_count = (
-    #     timeSheet.objects
-    #     .filter(employee_id=loggedin_employee_id,time_entries_start_date__year=current_year, time_entries_start_date__month=current_month, client_id__isnull=False)
-    #     .values('client_id')
-    #     .distinct()
-    #     .count()
-    # )
+
     project_start_date = date(2025, 1, 1)
     project_count = project.objects.filter(created_at__gte=project_start_date).count()
 
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-        print("admin")
-        # employee.objects.filter(toggl_user_id=uid).first()
 
-        # from django.http import HttpResponse
-        # return HttpResponse(project_count)
-        selected_month = request.session.get('month')
-
-        if selected_month:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_month = int(selected_month)
-        else:
-            current_month = 2
-
-        if current_month ==1:
-            last_month=12
-        else:
-            last_month=current_month-1
-        print("ssssssssssssssssssssssssssssssssssssss")
-        print(current_month)
-        print(last_month)
-
-        selected_year = request.session.get('year')
-
-        if selected_year:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_year = int(selected_year)
-        else:
-            current_year = 2026
-
-        if current_month ==1:
-            last_year=current_year-1
-        else:
-            last_year=current_year
-        print("gggggggggggggggggggggggggggggggggggggg")
-        print(current_year)
-        print(last_year)
-        import calendar
-        from datetime import date
-        start_date = date(current_year, current_month, 1)
-        end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
-        employee_count = employee.objects.filter(status=1).count()
-
-        if current_year == 2023 and 9 <= current_month <= 12:
-                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
-
-                # Fetch client information for each client contract work
-                client_contract_work_with_client_info = []
-                for work in client_contract_work:
-                    client_info = client.objects.get(toggl_client_id=work.client_id)
-                    client_contract_work_with_client_info.append((work, client_info))
-
-                # Extract client objects from the list
-                client_list = [client_info for _, client_info in client_contract_work_with_client_info]
-                client_count= len(client_list)
-
-        else:
-
-            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
-
-            # Fetch client information for each client contract work
-            client_contract_work_with_client_info = []
-            logged_in_employee_clients = []
-
-            user_name = request.session.get('user_name')
-            employee1 = employee.objects.get(user_name=user_name)
-
-            logged_in_employee_id = employee1.id
-            for work in client_contract_work:
-                client_info = client.objects.get(id=work.client_id)
-                client_contract_work_with_client_info.append((work, client_info))
-
-                working_roles = json.loads(work.working_role)  # Parse JSON string into a dictionary
-                
-                # Check if the logged-in employee is associated with this client
-                if str(logged_in_employee_id) in working_roles:
-                    client_info = client.objects.get(id=work.client_id)  # Fetch client information
-                    role = working_roles[str(logged_in_employee_id)]  # Get the role for this employee
-                    logged_in_employee_clients.append({"client": client_info, "role": role})
-
-
-            # Extract client objects from the list
-            client_list = [client_info for _, client_info in client_contract_work_with_client_info]
-
-            client_count= len(client_list)
-
-            # Count logged-in employee's clients
-            logged_in_employee_client_count = len(logged_in_employee_clients)
-
-
-
-        # Adjust the month and year filtering based on the current month
-        if current_month == 1:
-            calculation_data = calculation.objects.filter(
-                (Q(date__month=last_month, date__year=last_year) | Q(date__month=current_month, date__year=current_year))
-            )
-        else:
-            calculation_data = calculation.objects.filter(
-                date__month__in=[current_month, last_month],
-                date__year=current_year
-            )
-
-
-        print(calculation_data)
-
-        # Filter data for the current month
-        current_month_data1 = calculation_data.filter(date__month=current_month)
-        current_month_data = current_month_data1.first()
-
-        print(current_month_data)
-
-        # Convert Decimal values to float
-        current_month_earnings = float(current_month_data.earning)
-        current_month_profit = float(current_month_data.profit)
-        current_month_contracted_profit = float(current_month_data.contracted_profit)
-
-        # Filter data for the last month
-
-        last_month_data1 = calculation_data.filter(date__month=last_month)
-        last_month_data = last_month_data1.first()
-
-        # Convert Decimal values to float
-        if last_month_data:
-            last_month_earnings = float(last_month_data.earning)
-            last_month_profit = float(last_month_data.profit)
-            last_month_contracted_profit = float(last_month_data.contracted_profit)
-
-
-        else:
-            last_month_earnings = 0.0
-            last_month_profit = 0.0
-            last_month_contracted_profit = 0.0
-
-        #% calculation
-        #earning
-        # earning=(current_month_earnings-last_month_earnings)/last_month_earnings*100
-        if last_month_earnings != 0:
-            earning = (current_month_earnings - last_month_earnings) / last_month_earnings * 100
-        else:
-            # Handle the case when last_month_earnings is zero
-            earning = 0  # or any other appropriate value or action
-        print("earning profit")
-        print(earning)
-
-        if last_month_profit != 0:
-            profit=(current_month_profit-last_month_profit)/last_month_profit*100
-        else:
-            # Handle the case when last_month_earnings is zero
-            profit = 0  # or any other appropriate value or action
-        print("profit")
-        print(profit)
-
-        if last_month_contracted_profit != 0:
-            contracted_profit=(current_month_contracted_profit-last_month_contracted_profit)/last_month_contracted_profit*100
-        else:
-            # Handle the case when last_month_earnings is zero
-            contracted_profit = 0  # or any other appropriate value or action
-        print("contracted_profit")
-        print(contracted_profit)
-
-        # Print or use the results as needed
-        print("Current Month:")
-        print(f"Earnings: {current_month_earnings}")
-        print(f"Profit: {current_month_profit}")
-        print(f"Contracted Profit: {current_month_contracted_profit}")
-
-        print("\nLast Month:")
-        print(f"Earnings: {last_month_earnings}")
-        print(f"Profit: {last_month_profit}")
-        print(f"Contracted Profit: {last_month_contracted_profit}")
-
-
-
-            # Fetch data for all months in the current year
-
-        all_months_data = calculation.objects.all()
-        print(all_months_data)
-
-        # Constructing the bar chart data for all months
-        bar_chart_data_all_months = [
-            {'y': month_data.date.month,
-             'a': float(month_data.earning),
-             'b': float(month_data.profit),
-             'c': float(month_data.contracted_profit)}
-            for month_data in all_months_data
-        ]
-
-        # Print or use the results as needed
-        print("All Months Bar Chart Data:")
-        print(bar_chart_data_all_months)
-
-        # Set session values for all months data
-        request.session['bar_chart_data_all_months'] = bar_chart_data_all_months
-
-        try:
-            role_order = {'C': 0, 'A': 1, 'B': 2}
-            # Sort using the custom order
-            logged_in_employee_clients = sorted(logged_in_employee_clients, key=lambda x: role_order.get(x['role'], float('inf')))
-        except Exception as e:
-            pass
-
-        
-        context={"employee_count":employee_count,
-            "client_count":client_count,
-            "logged_in_employee_client_count":logged_in_employee_client_count,
-            "project_count":project_count,
-            'current_month':current_month,
-            'current_year':current_year,
-            'client_cost_current':current_month_earnings,
-            'profit_current':current_month_profit,
-            'contracted_profit_current':current_month_contracted_profit,
-            'client_cost_previous':last_month_earnings,
-            'profit_previous':last_month_profit,
-            'contracted_profit_previous':last_month_contracted_profit,
-            "bar_chart_data": bar_chart_data_all_months,
-            'earning':round(earning, 2),
-            'profit':round(profit, 2),
-            'active':active,
-            'leaves_with_employees':leaves_with_employees,
-            'month_leaves_with_employees':month_leaves_with_employees,
-            "contracted_profit":round(contracted_profit, 2),
-            'birthdays_today': birthdays_today,
-            'birthdays_tomorrow': birthdays_tomorrow,
-            'future_birthdays': future_birthdays,
-            'total_working_time_per_employee': total_working_time_per_employee,
-            'total_working_time_all_employees': total_working_time_all_employees,
-            'start_of_week': start_of_week,
-            'end_of_week': end_of_week,
-            'recent_client_info': recent_client_info,
-            'total_hours_today': total_hours_today,
-            'total_hours_week': total_hours_week,
-            'total_hours_month': total_hours_month,
-            'leave_summary': leave_summary,
-            'logged_in_employee_id': logged_in_employee_id,
-            'logged_in_employee_clients': logged_in_employee_clients,
-            'total_working_hours': total_working_hours,
-            'project_data_with_employees': project_data_with_employees,
-
-        }
-        return render(request, "admin-dashboard.html",context)
     group = None
 
     if request.user.groups.exists():
         group = request.user.groups.all()
-        print("exist group")
-        print(group)
+        logging.info("exist group")
+        logging.info(group[0] if group else "No groups")
 
-        if group[0].name == 'admin' or group[0].name == 'super_admin':
+        if group[0].name == 'admin' or group[0].name == 'super_user':
             employee_count = employee.objects.filter(status=1).count()
             client_count = client.objects.count()
             
@@ -959,7 +524,7 @@ def admin_dashboard(request):
             }
             return render(request, "admin-dashboard.html",context)
     else:
-        from django.db.models import Count
+
         user_name = request.session.get('user_name')
         print(user_name)
         employee1 = employee.objects.get(user_name=user_name)
@@ -1007,8 +572,6 @@ def admin_dashboard(request):
         print(f"Total Number of Employees: {total_employees}")
                 
 
-        import calendar
-        from datetime import date
         start_date = date(current_year, current_month, 1)
         end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
         
@@ -1083,8 +646,7 @@ def admin_dashboard(request):
         return render(request, "admin-dashboard.html",context)
 
 def final_calculation(request):
-    import calendar
-    from datetime import date
+
     selected_month = request.session.get('month')
 
     if selected_month:
@@ -1161,7 +723,7 @@ def final_calculation(request):
 
 
 def calculate_rates_for_employee(request,client_id,current_month,current_year):
-    from datetime import datetime, timedelta
+
     start_date = datetime(current_year, current_month, 1).date()
     print("newwwwwwwwwwwwwwwwwwwww")
     print(client_id)
@@ -1655,17 +1217,6 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         print("ghhh")
         print(employee_details)
         print(client_details)
-
-        #new clients tab on client
-
-
-
-        #end of clients tab
-
-        # for work category below boxes
-        # Assuming your models are imported and project_list is obtained as in your code
-
-        # Get unique category IDs for a specific client
         unique_category_ids = timeSheet.objects.filter(client_id=client_id,time_entries_start_date__range=(start_date, end_date)).values('category_id').distinct()
 
         # Prepare a list to store client and category information
@@ -1686,8 +1237,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
             except Work_Category.DoesNotExist:
                 print(f"Category with ID {category_id} does not exist in the WorkCategory table.")
 
-        # Now client_category_list contains client IDs and corresponding category names
-        # You can use this list to pass information to your UI or perform further processing
+
         print(client_category_list)
 
        # project member of timer
@@ -1729,11 +1279,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
         print("kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk")
         print(employee_info_dict)
 
-        #working time for timer
-        # Calculate total time spent for all distinct category_id values for the given client_id
-        # total_time_spent_by_category = timeSheet.objects.filter(client_id=client_id) \
-        #                                                .values('category_id') \
-        #                                                .annotate(total_time=Sum('time_entries_seconds'))
+
 
         total_time_spent_by_category = timeSheet.objects.filter(client_id=client_id,
                                                         time_entries_start_date__gte=start_date,
@@ -1987,8 +1533,7 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
                 ui_working_hours=working_hours
                 # Calculate total salary for the given working hours
 
-                import calendar
-                from datetime import datetime
+              
                 # Calculate the difference between end_date and start_date
                 date_difference = (end_date - start_date).days
                 # Add 1 to the difference in days
@@ -2045,8 +1590,6 @@ def calculate_rates_for_employee(request,client_id,current_month,current_year):
 
 def calculate_rates(request):
 
-    import calendar
-    from datetime import date
     selected_month = request.session.get('month')
 
     if selected_month:
@@ -2266,8 +1809,15 @@ def employees(request):
 
         )
         new_employee.save()
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-            print("super_admin")
+
+    if request.user.groups.exists():
+        group = request.user.groups.all()
+        print("exist group")
+        print(group)
+
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
+    # if request.user.username == 'Sbhutra' and request.user.id == 6:
+            print("super_admin or superadmin")
             # Admin can see all employees
             employee_list = employee.objects.filter(status=1).all().order_by('image_url')
             # Assuming 'designation' is the field representing designations in your Employee model
@@ -2447,167 +1997,105 @@ def employees(request):
     return render(request, "employees/employees.html", context)
 
 
-    # else:
-    #     print("employee")
-    #         # Regular employee can only see their own profile
-    #     employee_list = [employee.objects.get(email=request.user.email)]
-    #     # Fetching the toggl_user_id from the employee object
-    #     toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-    #     print(toggl_user_ids)
-    #     ids = [employee.id for employee in employee_list]
-    #     print(ids)
-    #     selected_month = request.session.get('month')
-
-    #     if selected_month:
-    #         # current_month = datetime.strptime(selected_month, "%B").month
-    #         current_month = int(selected_month)
-    #     else:
-    #         current_month = 4
-
-    #     if current_month ==1:
-    #         last_month=12
-    #     else:
-    #         last_month=current_month-1
-    #     print("ssssssssssssssssssssssssssssssssssssss")
-    #     print(current_month)
-    #     print(last_month)
-
-    #     selected_year = request.session.get('year')
-
-    #     if selected_year:
-    #         # current_month = datetime.strptime(selected_month, "%B").month
-    #         current_year = int(selected_year)
-    #     else:
-    #         current_year = 2026
-
-    #     if current_month ==1:
-    #         last_year=current_year-1
-    #     else:
-    #         last_year=current_year
-    #     if current_year == 2023 and 9 <= current_month <= 12:
-    #         contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month,month__year=current_year
-    #         )
-    #         print(contracted_employee_for_month)
-    #         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-
-    #         for emp in employee_list:
-    #             emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
-    #     else:
-    #         contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
-    #         )
-    #         print(contracted_employee_for_month)
-    #         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-    #         print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-    #         print(contracted_employee_dict)
-
-    #         for emp in employee_list:
-    #             emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
-
-    #             print('muskan')
-    #             print(employee_list)
-
-    #     context={
-    #         "employee_list": employee_list,
-    #         "current_year":current_year,
-    #         "current_month":current_month,
-    #         "month_list":[],
-    #         "active":active
-    #         # "contracted_employee_for_month": contracted_employee_for_month
-    #     }
-    #     return render(request, "employees/employees.html", context)
 
 @csrf_exempt
 @login_required(login_url='/')
 def old_employees(request):
     active = [''] * 15
     active[2] = 'active'
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-        print("super_admin")
-        # Admin can see all employees
-        employee_list = employee.objects.filter(status=2).all().order_by('image_url')
-        # Assuming 'designation' is the field representing designations in your Employee model
-        unique_designations = employee.objects.filter(status=2).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
-        # Assuming 'country_id' is the field in the Employee model representing the country ID
-        unique_country_ids = employee.objects.filter(status=2, country_id__isnull=False).values_list('country_id', flat=True).distinct().order_by('country_id')
+    if request.user.groups.exists():
+        group = request.user.groups.all()
+        print("exist group")
+        print(group)
 
-        # Retrieve country names for the unique country IDs
-        unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
-        toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-        print(toggl_user_ids)
-        ids = [employee.id for employee in employee_list]
-        print(ids)
-        selected_month = request.session.get('month')
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
+        # if request.user.username == 'Sbhutra' and request.user.id == 6:
+            print("super_admin")
+            # Admin can see all employees
+            employee_list = employee.objects.filter(status=2).all().order_by('image_url')
+            # Assuming 'designation' is the field representing designations in your Employee model
+            unique_designations = employee.objects.filter(status=2).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
+            # Assuming 'country_id' is the field in the Employee model representing the country ID
+            unique_country_ids = employee.objects.filter(status=2, country_id__isnull=False).values_list('country_id', flat=True).distinct().order_by('country_id')
 
-        if selected_month:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_month = int(selected_month)
-        else:
-            current_month = 2
+            # Retrieve country names for the unique country IDs
+            unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
+            toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
+            print(toggl_user_ids)
+            ids = [employee.id for employee in employee_list]
+            print(ids)
+            selected_month = request.session.get('month')
 
-        if current_month ==1:
-            last_month=12
-        else:
-            last_month=current_month-1
-        print("ssssssssssssssssssssssssssssssssssssss")
-        print(current_month)
-        print(last_month)
+            if selected_month:
+                # current_month = datetime.strptime(selected_month, "%B").month
+                current_month = int(selected_month)
+            else:
+                current_month = 2
 
-        selected_year = request.session.get('year')
+            if current_month ==1:
+                last_month=12
+            else:
+                last_month=current_month-1
+            print("ssssssssssssssssssssssssssssssssssssss")
+            print(current_month)
+            print(last_month)
 
-        if selected_year:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_year = int(selected_year)
-        else:
-            current_year = 2026
+            selected_year = request.session.get('year')
 
-        if current_month ==1:
-            last_year=current_year-1
-        else:
-            last_year=current_year
+            if selected_year:
+                # current_month = datetime.strptime(selected_month, "%B").month
+                current_year = int(selected_year)
+            else:
+                current_year = 2026
 
-        print("gggggggggggggggggggggggggggggggggggggg")
-        print(current_year)
-        print(last_year)
-        if current_year == 2023 and 9 <= current_month <= 12:
-            contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
-            )
-            print(contracted_employee_for_month)
-            contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-            print(contracted_employee_dict)
+            if current_month ==1:
+                last_year=current_year-1
+            else:
+                last_year=current_year
 
-            for emp in employee_list:
-                emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
+            print("gggggggggggggggggggggggggggggggggggggg")
+            print(current_year)
+            print(last_year)
+            if current_year == 2023 and 9 <= current_month <= 12:
+                contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
+                )
+                print(contracted_employee_for_month)
+                contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
+                print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                print(contracted_employee_dict)
 
-            print('muskan')
-            print(employee_list)
-        else:
-            contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
-            )
-            print(contracted_employee_for_month)
-            contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-            print(contracted_employee_dict)
+                for emp in employee_list:
+                    emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-            for emp in employee_list:
-                emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
+                print('muskan')
+                print(employee_list)
+            else:
+                contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
+                )
+                print(contracted_employee_for_month)
+                contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
+                print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                print(contracted_employee_dict)
 
-            print('muskan')
-            print(employee_list)
+                for emp in employee_list:
+                    emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
+
+                print('muskan')
+                print(employee_list)
 
 
-        context={
-            "employee_list": employee_list,
-            "current_year":current_year,
-            "current_month":current_month,
-            "month_list":[],
-            # "contracted_employee_for_month": contracted_employee_for_month,
-            "unique_designations":unique_designations,
-            "unique_country_names":unique_country_names,
-            "active":active
+            context={
+                "employee_list": employee_list,
+                "current_year":current_year,
+                "current_month":current_month,
+                "month_list":[],
+                # "contracted_employee_for_month": contracted_employee_for_month,
+                "unique_designations":unique_designations,
+                "unique_country_names":unique_country_names,
+                "active":active
 
-        }
-        return render(request, "employees/old_employees.html", context)
+            }
+            return render(request, "employees/old_employees.html", context)
 
     group = None
 
@@ -2616,7 +2104,7 @@ def old_employees(request):
         print("exist group")
         print(group)
 
-        if group[0].name == 'admin' or group[0].name == 'super_admin':
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
             print("admin")
             # Admin can see all employees
             employee_list = employee.objects.filter(status=2).all().order_by('image_url')
@@ -2866,16 +2354,13 @@ def profile(request, employee_id,my_profile_tab=None):
                     response_data = response.json()
                     print("response")
                     print(response_data)
-                    # from django.http import HttpResponse
-                    # return HttpResponse(response_data)
-                    # Loop through each entry in the response_data
+
                     for entry in response_data:
                         try:
                             user_id = entry['user_id']
                             username = entry['username']
                             project_id = entry['project_id']
-                            # from django.http import HttpResponse
-                            # return HttpResponse(project_id)
+
                             if project_id is None:
                                 # If no project_id, you can skip the rest of the code for this entry
                                 continue
@@ -3622,7 +3107,7 @@ def profile(request, employee_id,my_profile_tab=None):
 
     total_time_spent = {}
 
-    from collections import defaultdict
+    
     timesheets = timeSheet.objects.filter(employee_id=employee_id, time_entries_start_date__range=(start_date, end_date),status=None)
 
     monthly_time_spent = defaultdict(lambda: defaultdict(int))
@@ -4040,8 +3525,13 @@ def current_clients(request):
 
     start_date = date(current_year, current_month, 1)
     end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-            print("super admin")
+    if request.user.groups.exists():
+        group = request.user.groups.all()
+        print("exist group")
+        print(group)
+
+        if group[0].name == 'admin' or group[0].name == 'super_admin'or group[0].name == 'super_user':
+            print("super admin or admin ")
             if current_year == 2023 and 9 <= current_month <= 12:
                 client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
 
@@ -4094,7 +3584,7 @@ def current_clients(request):
         print("exist group")
         print(group)
 
-        if group[0].name == 'admin' or group[0].name == 'super_admin':
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
             print("admin")
             if current_year == 2023 and 9 <= current_month <= 12:
                 client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
@@ -4235,101 +3725,6 @@ def archived_clients(request):
     else:
         last_year=current_year
 
-    # start_date = date(current_year, current_month, 1)
-    # end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
-
-    # if request.user.username == 'Sbhutra' and request.user.id == 6:
-    #         print("super admin")
-    #         # client_list = client.objects.filter(status=2)  # Fetch all employees from the database
-    #         # company_list = client.objects.order_by('company_name').distinct('company_name')
-    #         if current_year == 2023 and 9 <= current_month <= 12:
-    #             contracted_clients = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date).values_list('client_id', flat=True)
-    #
-    #             # Fetch all clients
-    #             all_clients = client.objects.all()
-    #
-    #             # Exclude clients who have contracted hours in the specified month
-    #             clients_without_contract = all_clients.exclude(toggl_client_id__in=contracted_clients)
-    #
-    #             client_list = []
-    #             for client_obj in clients_without_contract:
-    #                 client_info = {
-    #                     'id':client_obj.id,
-    #                     'client_name': client_obj.client_name,
-    #                     'company_name': client_obj.company_name,
-    #                     'image_url':client_obj.image_url
-    #                 }
-    #                 client_list.append(client_info)
-    #
-    #             return render(request, "old_clients.html", {"client_list": client_list,"active":active})
-    #         else:
-    #             contracted_clients = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date).values_list('client_id', flat=True)
-    #
-    #             # Fetch all clients
-    #             all_clients = client.objects.all()
-    #
-    #             # Exclude clients who have contracted hours in the specified month
-    #             clients_without_contract = all_clients.exclude(id__in=contracted_clients)
-    #
-    #             client_list = []
-    #             for client_obj in clients_without_contract:
-    #                 client_info = {
-    #                     'id':client_obj.id,
-    #                     'client_name': client_obj.client_name,
-    #                     'company_name': client_obj.company_name,
-    #                     'image_url':client_obj.image_url
-    #                 }
-    #                 client_list.append(client_info)
-    #
-    #             return render(request, "old_clients.html", {"client_list": client_list,"active":active})
-    #
-    # group = None
-    #
-    # if request.user.groups.exists():
-    #     group = request.user.groups.all()
-    #     print("exist group")
-    #     print(group)
-    #
-    #     if group[0].name == 'admin':
-    #         print("admin")
-    #         if current_year == 2023 and 9 <= current_month <= 12:
-    #             contracted_clients = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date).values_list('client_id', flat=True)
-    #
-    #             # Fetch all clients
-    #             all_clients = client.objects.all()
-    #
-    #             # Exclude clients who have contracted hours in the specified month
-    #             clients_without_contract = all_clients.exclude(toggl_client_id__in=contracted_clients)
-    #
-    #             client_list = []
-    #             for client_obj in clients_without_contract:
-    #                 client_info = {
-    #                     'client_name': client_obj.client_name,
-    #                     'company_name': client_obj.company_name
-    #                 }
-    #                 client_list.append(client_info)
-    #
-    #             return render(request, "old_clients.html", {"client_list": client_list,"active":active})
-    #         else:
-    #             contracted_clients = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date).values_list('client_id', flat=True)
-    #
-    #             # Fetch all clients
-    #             all_clients = client.objects.all()
-    #
-    #             # Exclude clients who have contracted hours in the specified month
-    #             clients_without_contract = all_clients.exclude(id__in=contracted_clients)
-    #
-    #             client_list = []
-    #             for client_obj in clients_without_contract:
-    #                 client_info = {
-    #                     'id':client_obj.id,
-    #                     'client_name': client_obj.client_name,
-    #                     'company_name': client_obj.company_name,
-    #                     'image_url':client_obj.image_url
-    #                 }
-    #                 client_list.append(client_info)
-    #
-    #             return render(request, "old_clients.html", {"client_list": client_list,"active":active})
 
     client_list = client.objects.filter(status=2).all().order_by('image_url')
     print(client_list)
@@ -7770,8 +7165,7 @@ def update_client(request):
 @login_required(login_url='/')
 def ajax_get_items(request):
     category_name = request.GET.get('category_id')
-    from django.db.models import F, Value
-    from django.db.models.functions import Concat
+
     if category_name =='company':
         items = client.objects.order_by('company_name').distinct('company_name').values('id').annotate(name=F('company_name'))
     elif category_name =='industry':
@@ -7857,8 +7251,6 @@ def search_client(request):
 def get_employee(request):
     employee_id = request.GET.get('employee_id')
     employee_detail = employee.objects.filter(id=employee_id).first()
-    # from django.http import HttpResponse
-    # return HttpResponse(employee_detail.first_name)
     data = {
         'id': employee_detail.id,
         'first_name': employee_detail.first_name,
@@ -7882,8 +7274,6 @@ def edit_employee(request):
     employee_id = request.POST.get('employee_id')
     try:
         existing_employee = employee.objects.get(id=employee_id)
-        # from django.http import HttpResponse
-        # return HttpResponse(existing_employee)
         if existing_employee:
             existing_employee.first_name = first_name
             existing_employee.last_name = last_name
@@ -7891,8 +7281,6 @@ def edit_employee(request):
             existing_employee.designation = designation
             existing_employee.phone = phone
             existing_employee.save()
-        # from django.http import HttpResponse
-        # return HttpResponse(existing_employee.id)
     except Exception as e:
         print(e)
 
@@ -7914,8 +7302,7 @@ def get_projects(request, employee_id):
     if request.method == 'GET':
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
-        # from django.http import HttpResponse
-        # return HttpResponse(employee_id)
+
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
 
@@ -7923,8 +7310,6 @@ def get_projects(request, employee_id):
         filtered_records = toggl_user_detail.objects.filter(
             employee_id=employee_id,
             time_entries_start_date__range=(start_date, end_date)
-            # time_entries_start_date=start_date.strftime('%Y-%m-%d'),
-            # time_entries_stop_date=end_date.strftime('%Y-%m-%d')
         )
         print("filete")
         print(filtered_records)
@@ -7988,10 +7373,6 @@ def leave_admin(request):
 
             parsed_date2 = datetime.strptime(to_date, "%Y-%m-%d")
             to_date = parsed_date2.strftime("%Y-%m-%d")
-            # print(to_date)
-            # from django.http import HttpResponse
-            # return HttpResponse(employee_id)
-
             new_leave = leave(
                 employee_id=employee_id,
                 leave_type_id=leave_type,
@@ -8081,9 +7462,6 @@ def leave_admin(request):
                 ]
             if not result_list:
                 result_list =[]
-            # return HttpResponse(result_list)
-            # context = {'result_list': result_list}
-            # return render(request, "employees/search_leave.html", context)
     if request.method == 'POST' :
         request_for = request.POST.get('request_for')
     else:
@@ -8143,13 +7521,7 @@ def leave_admin(request):
     approved_leave_count = leave.objects.filter(status__iexact='approved', start_date__year=current_year).count()
 
     today_date = datetime.now().date()
-    # planned_leave_count = leave.objects.filter(
-    #     start_date__lte=today_date, 
-    #     end_date__gte=today_date
-    # ).count()
 
-    # START HOLIDAY COUNT EMPLOYEE 24_1_25
-    # Exclude planned leaves on Friday, Saturday, or Sunday
     try:
         if today_date.weekday() not in [4, 5, 6]:
             planned_leave_ids = leave.objects.filter(
@@ -8175,18 +7547,13 @@ def leave_admin(request):
         planned_leave_count = len(planned_leave_ids)
         holiday_employees_count = len(holiday_employee_ids)
         overlap_count = len(overlap_ids)
-        # print(employee_count,planned_leave_count,holiday_employees_count,overlap_count,'TEST',today_date.weekday(),type(today_date.weekday()))
-        # Subtract overlap only once
+
         presents_count = employee_count - planned_leave_count - holiday_employees_count + overlap_count
 
         print(f"Presents Count: {presents_count}",holiday_employee_ids)
     except Exception as e:
         presents_count = employee_count-planned_leave_count
-    # END HOLIDAY COUNT EMPLOYEE 24_1_25
 
-
-    # return HttpResponse(planned_leave_count)
-    # Iterate through all leaves and fetch employee details
 
     print('dict_results')
     
@@ -8197,14 +7564,6 @@ def leave_admin(request):
         ).exclude(
             status='declined'
         )
-        # total_taken_days = 0
-        # for leave_detail in all_leaves:
-        #     start_date = leave_detail.start_date  # Adjust indices based on your actual data structure
-        #     end_date = leave_detail.end_date
-        #     duration = (end_date - start_date).days + 1 if end_date and start_date else 0
-        #     total_taken_days += duration
-        # country_detail = Country.objects.get(id=dict_result['country_id'])
-        # remaining_leave = country_detail.paid_leave - total_taken_days
         total_taken_days = 0
         for leave_detail in all_leaves:
             leave_start_date = leave_detail.start_date
@@ -8258,13 +7617,7 @@ def leave_admin(request):
 def leave_employee(request):
     active = [''] * 15
     active[5] = 'active'
-    # if request.method == 'GET':
-    #     request_for = request.GET.get('request_for')
-    #     return HttpResponse("Test")
-    # if request.user.groups.exists():
-    #     group = request.user.groups.all()
-    #     return redirect("leaves")
-    # else:
+
     start_date = None
     end_date = None
     leave_status = None
@@ -8275,8 +7628,7 @@ def leave_employee(request):
     employee_detail = employee.objects.get(user_id=user_id)
     print(employee_detail )
     employee_id = employee_detail.id
-    # return HttpResponse(employee_detail.country_id)
-    # print(toggl_user_id)
+
     if employee_detail.country_id:
         country_id = employee_detail.country_id
     else:
@@ -8325,19 +7677,11 @@ def leave_employee(request):
         start_date__lte=today_date,
         end_date__gte=today_date
     ).count()
-    # print("sahil")
-    #
-    # print(leave_details)
+
 
     # Pass the leave details to the template
     leaveTypes = LeaveType.objects.all()
     presents_count = employee_count - planned_leave_count
-
-    # all_leaves = leave.objects.filter(
-    #     employee_id=employee_id
-    # ).exclude(
-    #     status='declined'
-    # )
 
     current_year = datetime.now().year
 
@@ -8518,8 +7862,7 @@ def upload_contracted_hours(request):
             index = 6
             employee_list = first_row [index:]
             employee_list = [item.split('(')[0] for item in employee_list]
-            # from django.http import HttpResponse
-            # return HttpResponse(employee_list)
+
             for row in reader:
                 client_id = row[0].strip()
                 client_name = row[1].strip()+','+row[2].strip()
@@ -8532,8 +7875,7 @@ def upload_contracted_hours(request):
                 res = calendar.monthrange(input_dt.year, input_dt.month)
                 last_day = res[1]
                 current_date = date(current_year, current_month, last_day)
-                # from django.http import HttpResponse
-                # return HttpResponse(current_date)
+
                 if not total_working_hours:
                     total_working_hours = 0
                 if not no_of_people_on_account:
@@ -8541,16 +7883,8 @@ def upload_contracted_hours(request):
 
                 employee_working = row [index:]
                 working_dict = {key: value for key, value in zip(employee_list, employee_working) if value != ''}
-                # working_dict = {}
-                # if working_input:
-                #     pairs = working_input.split(',')
-                #     for pair in pairs:
-                #         key, value = pair.split(':')
-                #         working_dict[int(key)] = float(value)
 
                 json_data = json.dumps(working_dict)
-                # from django.http import HttpResponse
-                # return HttpResponse(working_dict)
                 if client_id:
                     try:
                         try:
@@ -8596,11 +7930,7 @@ def upload_client_contract_work(request):
             first_row = next(reader, None)  # Returns None if the file is empty
             index = 7
             employee_list = first_row [index:]
-            # print("gfhbjnk")
-            # print(employee_list)
             employee_list1 = [item.split('(')[0] for item in employee_list]
-            # print(employee_list1)
-                        # Initialize an empty list to store the corresponding client IDs
             employee_list = []
 
             for employee_id in employee_list1:
@@ -8627,8 +7957,7 @@ def upload_client_contract_work(request):
                 res = calendar.monthrange(input_dt.year, input_dt.month)
                 last_day = res[1]
                 current_date = date(current_year, current_month, last_day)
-                # from django.http import HttpResponse
-                # return HttpResponse(current_date)
+
                 if not total_working_hours:
                     total_working_hours = 0
                 if not no_of_people_on_account:
@@ -8649,9 +7978,6 @@ def upload_client_contract_work(request):
                         try:
                             start_date = date(current_year, current_month, 1)  # October 1st of the current year
                             end_date = date(current_year, current_month, 28)
-                            # print(current_month)
-                            # start_date = date(current_year, 9, 1)  # October 1st of the current year
-                            # end_date = date(current_year, 9, 30)  # October 31st of the current year
 
                             client_details = Client_contract_work.objects.filter(
                                 client_id=client_id,
@@ -8659,8 +7985,7 @@ def upload_client_contract_work(request):
                             ).first()
                         except Exception as e:
                             client_details = ''
-                        # from django.http import HttpResponse
-                        # return HttpResponse(client_details)
+
                         print(current_date)
 
                         if client_details:
@@ -8749,13 +8074,9 @@ def upload_attendance(request):
                             attendance_details.status = status
                             attendance_details.save()
                         else:
-                            # from django.http import HttpResponse
-                            # return HttpResponse(attendance_details)
                             print(employee_id)
                             print(current_date)
                             print(status)
-                            # print(in_time)
-                            # print(out_time)
                             new_attendance_details = Attendance(employee_id=employee_id,date=current_date,in_time=in_time,status=status, out_time=out_time)
                             new_attendance_details.save()
                     except Exception as e:
@@ -8901,8 +8222,6 @@ def search_attendance(request):
 
         
         employee_holiday[emp['id']] = dates_with_weekends
-
-    # print(str(year), str(month), '########', dates_with_weekends)
     print(str(year), str(month), '########', employee_holiday)
     context = {'employee_data_list': employee_data_list, 'last_day': last_day, 'numbers': range(1, last_day),
                'dates_with_weekends': dates_with_weekends, 'year': str(year), 'month': str(month),
@@ -8912,13 +8231,6 @@ def search_attendance(request):
 @csrf_exempt
 @login_required(login_url='/')
 def search_leave(request):
-    from django.db import connection
-    # if request.method == 'POST':
-    #     employee_name = request.POST.get('employee_name')
-    #     leave_type = request.POST.get('leave_type')
-    #     status = request.POST.get('status')
-    #     search_from_date = request.POST.get('search_from_date')
-    #     search_to_date = request.POST.get('search_to_date')
     if request.method == 'GET':
         employee_name = request.GET.get('employee_name')
         leave_type = request.GET.get('leave_type')
@@ -8957,19 +8269,9 @@ def search_leave(request):
         """
         params = [search_term, search_term, search_term, search_term,leave_status, leave_status,leave_type,leave_type, start_date, start_date, end_date, end_date]
 
-        # return HttpResponse(leave_type)
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             result_list = cursor.fetchall()
-
-        # return result_list
-
-        # print(result_list)
-        # from django.http import HttpResponse
-        # for detail in result_list:
-        #     print(detail[0])
-
-        # return HttpResponse(result_list)
 
         context = {'result_list': result_list}
         return render(request, "employees/search_leave.html", context)
@@ -8988,11 +8290,6 @@ def add_leave(request):
                 from_date = request.POST.get('edit_from_date')
                 to_date = request.POST.get('edit_to_date')
                 existing_leave = leave.objects.get(id=leave_id)
-                # existing_leave = leave.objects.filter(id=leave_id)
-
-                # # Update the 'is_published' field for all these books
-                # existing_leave.update(start_date=from_date,end_date=to_date,reason=reason)
-                # from django.http import HttpResponse
 
                 if day_type != 1:
                     to_date = from_date
@@ -9004,8 +8301,6 @@ def add_leave(request):
                     existing_leave.start_date = from_date
                     existing_leave.end_date = to_date
                     existing_leave.status = 'pending'
-                    # print(to_date)
-                    # return HttpResponse(to_date)
                     existing_leave.save()
             else:
                 from_date = request.POST.get('from_date')
@@ -9036,17 +8331,6 @@ def add_leave(request):
                 ).exists()
 
                 if not existing_entry:
-                    # new_leave = leave(
-                    #     employee_id=employee_id,
-                    #     leave_type_id=leave_type,
-                    #     start_date=from_date,
-                    #     end_date=to_date,
-                    #     day_type=day_type,
-                    #     leave_days=leave_days,
-                    #     reason=reason,
-                    #     status='pending'
-                    # )
-                    # new_leave.save()
                     new_leave = leave.objects.create(
                         employee_id=employee_id,
                         leave_type_id=leave_type,
@@ -9090,16 +8374,7 @@ def send_leave_approval_email(leave_obj):
     }
     html_content = render_to_string('email_leave_request.html', context)
 
-    # html_content = f"""
-    #     <p>Hello,</p>
-    #     <p>A new leave request has been submitted by Employee ID: {emp_ob.first_name + ' ' + emp_ob.last_name}.</p>
-    #     <p><strong>From:</strong> {leave_obj.start_date} <br>
-    #        <strong>To:</strong> {leave_obj.end_date} <br>
-    #
-    #     <p>Please take action:</p>
-    #     <a href="{approve_url}" style="padding: 10px 15px; background-color: green; color: white; text-decoration: none;">Approve</a>
-    #     <a href="{decline_url}" style="padding: 10px 15px; background-color: red; color: white; text-decoration: none; margin-left: 10px;">Decline</a>
-    # """
+   
     text_content = strip_tags(html_content)
 
     # msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
@@ -9115,103 +8390,6 @@ def send_leave_approval_email(leave_obj):
     )
 
 
-
-from django.utils.timezone import now
-
-# def update_leave_status(request):
-#     if request.method == 'GET':
-#         print("search")
-#         # Retrieve the leave_type from the query parameters
-#         leave_id = request.GET.get('leave_id', None)
-#         leave_status = request.GET.get('leave_status', None)
-
-#         if leave_id:
-#             try:
-#                 check_leave = leave.objects.get(id=leave_id)
-#                 employee_detail = employee.objects.get(user_id=request.user.id)
-#                 # from django.http import HttpResponse
-#                 # return HttpResponse(check_leave)
-#                 if check_leave:
-#                     check_leave.status = leave_status
-#                     check_leave.approved_by = employee_detail.id
-#                     check_leave.save()
-#                     status = 1
-
-#                 if leave_status == 'approved':
-#                     from django.db.models import Max
-
-#                     # Get the latest month present in the date column
-#                     latest_date = Client_contract_work.objects.aggregate(Max("date"))["date__max"]
-
-#                     if latest_date:
-#                         first_day_of_latest_month = latest_date.replace(day=1)
-#                         print(latest_date, first_day_of_latest_month)
-#                         # Filter contracts from the latest available month
-#                         contracts = Client_contract_work.objects.filter(date__gte=first_day_of_latest_month)
-
-#                         # client_buddy_id = {}
-#                         # for contract in contracts:
-#                         #     if contract.working_role:
-#                         #         working_role = json.loads(contract.working_role)  # Parse JSON data
-#                         #
-#                         #         # Check if ID 31 has role 'C'
-#                         #         if str(check_leave.employee_id) in working_role and working_role[str(check_leave.employee_id)] == "C":
-#                         #             # Get all IDs where role is 'B'
-#                         #             b_ids = [k for k, v in working_role.items() if v == "B"]
-#                         #             client_buddy_id[contract.client_id] = b_ids
-#                         #
-#                         # print(client_buddy_id)  # List of IDs where role is 'B' only when 31 has role 'C' in the latest month
-
-#                         client_buddy_id = {}
-
-#                         for contract in contracts:
-#                             if contract.working_role:
-#                                 working_role = json.loads(contract.working_role)  # Parse JSON data
-
-#                                 # Check if the given employee ID has role 'C'
-#                                 if str(check_leave.employee_id) in working_role and working_role[
-#                                     str(check_leave.employee_id)] == "C":
-#                                     # Get all IDs where role is 'B'
-#                                     b_ids = [k for k, v in working_role.items() if v == "B"]
-
-#                                     # Initialize dictionary for client_id if not exists
-#                                     if contract.client_id not in client_buddy_id:
-#                                         client_buddy_id[contract.client_id] = {}
-
-#                                     # Populate the nested structure with response_status and response_date
-#                                     for b_id in b_ids:
-#                                         client_buddy_id[contract.client_id][int(b_id)] = {
-#                                             "response_status": "",
-#                                             "response_date": "",
-#                                         }
-
-#                         print(client_buddy_id, 'ORIGINAL')
-#                         client_buddy_id = {k: v for k, v in client_buddy_id.items() if v}
-#                         print(client_buddy_id, 'FILTERED')
-#                         try:
-#                             buddy_email_ob = Buddy_Email.objects.get(leave_id=leave_id)
-#                         except Exception as e:
-#                             buddy_email_ob = Buddy_Email.objects.create(
-#                                 leave_id=leave_id,
-#                                 employee_id=check_leave.employee_id,
-#                                 client_buddy_record=json.dumps(client_buddy_id),
-#                                 leave_approved_date=now().date()
-#                             )
-#                         print(client_buddy_id, 'FILTERED1')
-#                         send_buddy_email(client_buddy_id, buddy_email_ob.id, leave_id)
-#                         print(client_buddy_id, 'FILTERED2')
-#                     else:
-#                         print("No data available in the date column.")
-#             except Exception as e:
-#                 print(e)
-#                 status = 0
-#             # Return the result as JSON
-#             return JsonResponse({'status': status})
-#         else:
-#             return JsonResponse({'status': 'No leave specified'})
-#     else:
-#         # Handle other HTTP methods if needed
-#         return JsonResponse({'error': 'Invalid request method'})
 
 
 from django.template.loader import render_to_string
@@ -9320,65 +8498,6 @@ def send_buddy_email(client_buddy_id, buddy_email_ob_id, leave_id):
 
     print(f"Total emails sent: {email_count}")
 
-
-def send_buddy_email_old(client_buddy_id, buddy_email_ob_id, leave_id):
-    email_count = 0
-
-    for client_id, buddies in client_buddy_id.items():
-        for buddy_id in buddies:
-            # if email_count >= 1:
-            #     return  # Stop after sending 2 emails
-
-            try:
-                client_ob = client.objects.get(id=client_id)
-                emp_ob = employee.objects.get(id=int(buddy_id))
-                leave_ob = leave.objects.get(id=leave_id)
-                leave_start_date = leave_ob.start_date
-                leave_end_date = leave_ob.end_date
-
-                client_name = client_ob.client_name
-                buddy_name = emp_ob.first_name
-                # buddy_email = emp_ob.email  # Ensure the email is coming from DB
-                buddy_email = "jagrawal@educatedc.com"  # Ensure the email is coming from DB
-
-                # Build confirmation links dynamically
-                yes_link = f"{settings.BASE_URL}{reverse('update_response', args=[buddy_email_ob_id, buddy_id, client_id, 'yes'])}"
-                no_link = f"{settings.BASE_URL}{reverse('update_response', args=[buddy_email_ob_id, buddy_id, client_id, 'no'])}"
-
-                # Email subject
-                email_subject = f"Client Assignment ({leave_start_date} - {leave_end_date})"
-
-                # Render HTML template with context data
-                email_html_body = render_to_string("email_template.html", {
-                    "buddy_name": buddy_name,
-                    "client_name": client_name,
-                    "leave_start_date": leave_start_date,
-                    "leave_end_date": leave_end_date,
-                    "yes_link": yes_link,
-                    "no_link": no_link,
-                })
-
-                # Strip HTML tags for plain text version
-                email_plain_body = strip_tags(email_html_body)
-
-                # Send email
-                send_mail(
-                    email_subject,
-                    email_plain_body,  # Plain text version
-                    "developers@brickwin.com",  # Sender email (must be configured in settings.py)
-                    [buddy_email],
-                    fail_silently=False,
-                    html_message=email_html_body  # Send HTML version
-                )
-                print(f"Email sent to {buddy_email}")
-                email_count += 1  # Increase count after sending email
-
-            except client.DoesNotExist:
-                print(f"Client ID {client_id} does not exist.")
-            except employee.DoesNotExist:
-                print(f"Employee ID {buddy_id} does not exist.")
-            except Exception as e:
-                print(f"Error sending email: {e}")
 
 
 from django.shortcuts import get_object_or_404
@@ -9504,126 +8623,6 @@ def update_response(request, buddy_email_id, buddy_id, client_id, response):
     else:
         return HttpResponse("Error: Client ID not found.", status=400)
 
-
-
-def update_response_old(request, buddy_email_id, buddy_id, client_id, response):
-    # Get the Buddy_Email record
-    buddy_email = get_object_or_404(Buddy_Email, id=buddy_email_id)
-    client_ob = client.objects.get(id=client_id)
-    emp_ob = employee.objects.get(id=buddy_id)
-    # Convert JSONField data into a dictionary
-    try:
-        client_buddy_record = json.loads(buddy_email.client_buddy_record)  # Ensure it's a dictionary
-    except json.JSONDecodeError:
-        return HttpResponse("Error: Invalid JSON format in database.", status=400)
-
-    # Check if client_id exists in the dictionary
-    if str(client_id) in client_buddy_record:
-        # Check if buddy_id exists under the client_id
-        if str(buddy_id) in client_buddy_record[str(client_id)]:
-            # Update the response_status and response_date
-            client_buddy_record[str(client_id)][str(buddy_id)]["response_status"] = response
-            client_buddy_record[str(client_id)][str(buddy_id)]["response_date"] = now().strftime("%Y-%m-%d %H:%M:%S")
-
-            # Save the updated JSON back to the model
-            buddy_email.client_buddy_record = json.dumps(client_buddy_record)  # Convert back to JSON string
-            buddy_email.save()
-            leave_user_emp_ob = employee.objects.get(id=buddy_email.employee_id)
-            if response == 'yes':
-                # consultant_email = leave_user_emp_ob.email
-                consultant_email = "jagrawal@educatedc.com"
-                email_html_body = render_to_string("buddy_response_yes.html", {
-                    "buddy_name": emp_ob.first_name,
-                    "client_name": client_ob.client_name,
-                    "leave_user_name": leave_user_emp_ob.first_name,
-                })
-
-                # Strip HTML tags for plain text version
-                email_plain_body = strip_tags(email_html_body)
-                email_subject = f"Buddy {emp_ob.first_name} Responded (Accepted)"
-                # email_body = f"""<p>Hello {leave_user_emp_ob.first_name},</p>
-                #                  <p>Your buddy {emp_ob.first_name} <h2>Accepted</h2> </p>
-                #                  <p>work on {client_ob.client_name}</p>
-                #             """
-
-            else:
-                consultant_email = 'jagrawal@educatedc.com'
-                email_html_body = render_to_string("buddy_response_no.html", {
-                    "buddy_name": emp_ob.first_name,
-                    "client_name": client_ob.client_name,
-                    "leave_user_name": leave_user_emp_ob.first_name,
-                })
-
-                # Strip HTML tags for plain text version
-                email_plain_body = strip_tags(email_html_body)
-                email_subject = f"Buddy {emp_ob.first_name} Responded (Not Accepted)"
-            
-
-            # Send email
-            send_mail(
-                email_subject,
-                email_plain_body,  # Empty text body since we're sending an HTML email
-                "developers@brickwin.com",  # Ensure this is set in settings.py
-                [consultant_email],
-                fail_silently=False,
-                html_message=email_html_body
-            )
-            html_content = """
-                <html>
-                <head>
-                    <title>Response Recorded</title>
-                    <style>
-                        body {
-                            background-color: #f6f6f6;
-                            font-family: Arial, sans-serif;
-                            text-align: center;
-                            padding: 50px;
-                        }
-                        .container {
-                            background: #ffffff;
-                            padding: 30px;
-                            border-radius: 10px;
-                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                            display: inline-block;
-                        }
-                        h1 {
-                            color: #0061bf;
-                            margin-bottom: 15px;
-                        }
-                        p {
-                            color: #333;
-                            font-size: 16px;
-                            margin-bottom: 20px;
-                        }
-                        .btn {
-                            display: inline-block;
-                            padding: 10px 20px;
-                            color: #ffffff;
-                            background-color: #0061bf;
-                            text-decoration: none;
-                            border-radius: 5px;
-                            font-size: 16px;
-                            transition: 0.3s;
-                        }
-                        .btn:hover {
-                            background-color: #004c99;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>Response Recorded</h1>
-                        <p>Your response has been successfully recorded, and a confirmation has been sent.</p>
-                        
-                    </div>
-                </body>
-                </html>
-                """
-            return HttpResponse(html_content)
-        else:
-            return HttpResponse("Error: Buddy ID not found under the given Client ID.", status=400)
-    else:
-        return HttpResponse("Error: Client ID not found.", status=400)
 
 
 
@@ -9879,29 +8878,10 @@ def calender(request):
                     print("New Category ID:", category_id)
                 else:
                     return JsonResponse({"error": "Please Fill Work Category"}, status=400,safe=False)
-            # new_category_instance = Work_Category(category=other_category)
-            # new_category_instance.save()
-            #
-            # # Get the ID of the newly created instance
-            # category_id = new_category_instance.id
 
 
 
-        # print(f"The user worked for {time_difference_seconds} seconds.")
-
-        # print("Start Date:", start_date)
-        # print("End Date:", end_date)
-        # print("Start Time:", start_time)
-        # print("End Time:", end_time)
-        # print("Client ID:", client_id)
-        # print("Description:", description)
-        # print("Time Seconds:", time_difference_seconds)
-        # print(time_difference_seconds)
-        # return HttpResponse(time_difference_seconds)
-
-        if request.user.username == 'Sbhutra' and request.user.id == 6:
-                print("super admin")
-                employee_id = request.session.get('user_id')
+       
         group = None
 
         if request.user.groups.exists():
@@ -9909,7 +8889,7 @@ def calender(request):
             print("exist group")
             print(group)
 
-            if group[0].name == 'admin' or group[0].name == 'super_admin':
+            if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
                 print("admin")
                 employee_id = request.session.get('user_id')
 
@@ -9962,20 +8942,7 @@ def calender(request):
                 country_city = 'America/New_York'
 
 
-        # try:
-        #     employee_country = Country.objects.get(id=employee_ob.country_id)
-        #     if employee_country.code == 'US':
-        #         country_city = 'America/New_York'
-        #     elif employee_country.code == 'SA':
-        #         country_city = 'Africa/Johannesburg'
-        #     elif employee_country.code == 'UK':
-        #         country_city = 'Europe/London'
-        #     elif employee_country.code == 'PH':
-        #         country_city = 'Asia/Manila'
-        #     else:
-        #         country_city = 'America/New_York'
-        # except Exception as e:
-        #     country_city = 'America/New_York'
+    
         print(country_city)
         local_tz = pytz.timezone(country_city)  # Replace with your local timezone
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -10032,50 +8999,7 @@ def calender(request):
 
         employee_ob = employee.objects.get(id=employee_id)
 
-        # try:
-        #     # country_city = request.session['employee_timezone']
-        #     # country_city = employee_ob.timezone
-        #     country_city = employee_ob.manual_timezone
-        #     if len(country_city) == 0:
-        #         employee_country = Country.objects.get(id=employee_ob.country_id)
-        #         if employee_country.code == 'US':
-        #             country_city = 'America/New_York'
-        #         elif employee_country.code == 'SA':
-        #             country_city = 'Africa/Johannesburg'
-        #         elif employee_country.code == 'UK':
-        #             country_city = 'Europe/London'
-        #         elif employee_country.code == 'PH':
-        #             country_city = 'Asia/Manila'
-        #         else:
-        #             country_city = 'America/New_York'
-        # except Exception as e:
-        #     employee_country = Country.objects.get(id=employee_ob.country_id)
-        #     if employee_country.code == 'US':
-        #         country_city = 'America/New_York'
-        #     elif employee_country.code == 'SA':
-        #         country_city = 'Africa/Johannesburg'
-        #     elif employee_country.code == 'UK':
-        #         country_city = 'Europe/London'
-        #     elif employee_country.code == 'PH':
-        #         country_city = 'Asia/Manila'
-        #     else:
-        #         country_city = 'America/New_York'
-
-
-        # try:
-        #     employee_country = Country.objects.get(id=employee_ob.country_id)
-        #     if employee_country.code == 'US':
-        #         country_city = 'America/New_York'
-        #     elif employee_country.code == 'SA':
-        #         country_city = 'Africa/Johannesburg'
-        #     elif employee_country.code == 'UK':
-        #         country_city = 'Europe/London'
-        #     elif employee_country.code == 'PH':
-        #         country_city = 'Asia/Manila'
-        #     else:
-        #         country_city = 'America/New_York'
-        # except Exception as e:
-        #     country_city = 'America/New_York'
+   
         print(country_city)
 
 
@@ -10161,20 +9085,7 @@ def calender(request):
         emp_client_with_a = get_clients_with_role_a(employee_id)
         emp_client_with_b = get_clients_with_role_b(employee_id)
         if emp_client_with_c:
-            # Filter timesheets from the last 5 months for the given employee
-            # timesheets_c = timeSheet.objects.filter(
-            #     time_entries_start_date__gte=five_months_ago,
-            #     employee_id=int(employee_id),
-            #     client_id__in=emp_client_with_c  # Only include relevant client_ids
-            # )
     
-            # # Get the top 5 most frequently used client_id
-            # top_clients_c = (
-            #     timesheets_c.values("client_id")
-            #         .exclude(client_id=227)
-            #         .annotate(client_count=Count("id"))
-            #         .order_by("-client_count")[:5]  # Get top 5 most used client IDs
-            # )
     
             # Extract client_id list
             top_clients_first = list(clients.filter(id__in=emp_client_with_c))  # Top 5 first
@@ -10273,7 +9184,7 @@ def calendar(request):
             print("exist group")
             print(group)
 
-            if group[0].name == 'admin' or group[0].name == 'super_admin':
+            if group[0].name == 'admin' or group[0].name == 'super_admin'  or group[0].name == 'super_user':
                 print("admin")
                 user_name = request.session.get('admin')
         else:
@@ -10321,383 +9232,7 @@ def calendar(request):
 
     return render(request, "calender.html",{'projects': projects,'clients':clients})
 
-# @login_required(login_url='/')
-# def calender_events(request):
-#     group = None
-#     if request.user.groups.exists():
-#         group = request.user.groups.all()
-#         print("exist group")
-#         print(group)
 
-#         if group[0].name == 'super_admin':
-#             print("super admin")
-#             employee_id = request.session.get('user_id')
-#         else:
-#             employee_id = request.session.get('user_id')
-#     else:
-#         employee_id = request.session.get('user_id')
-#     # print(employee_id, '%%%%%%%%%%%%%%%%55')
-#     # Fetch timeSheet data
-
-#     emp_ob = employee.objects.get(id=int(employee_id))
-#     print(emp_ob.calender_status, 'KKK1111122222222')
-#     if emp_ob.calender_status == 0:
-#         time_entries = timeSheet.objects.filter(employee_id=employee_id).exclude(is_google=1)
-#         print(time_entries, 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa', len(time_entries))
-#     else:
-#         # time_entries = timeSheet.objects.filter(employee_id=employee_id)
-#         # print(time_entries, 'AAAAAAA', len(time_entries))
-#         global CLIENT_SECRETS_FILE
-#         # Check if there are already stored credentials in the session
-#         employee_ob = employee.objects.get(id=int(employee_id))
-#         print(employee_ob.token, 'ASHOK')
-
-#         if employee_ob.token:
-#             google_credentials = json.loads(employee_ob.token)
-#             creds = Credentials.from_authorized_user_info(google_credentials, SCOPES)
-#             #if creds.expired and creds.refresh_token:
-#                 #return JsonResponse({'status':False}, safe=False)
-
-#             # else:
-#             #     return get_authenticated_service(request)
-#             service = build('calendar', 'v3', credentials=creds)
-#             current_time = datetime.utcnow().isoformat() + 'Z'
-
-#             start_date_time = datetime.utcnow() - timedelta(days=30)
-#             # Convert start_date to RFC3339 format (required by Google Calendar API)
-#             start_date_time = start_date_time.isoformat() + 'Z'
-#             # events_result = service.events().list(calendarId='primary', timeMin=start_date_time,
-#             #                                       timeMax=current_time).execute()
-#             # # events_result = (
-#             # #     service.events()
-#             # #         .list(
-#             # #         calendarId="primary",
-#             # #         timeMin=now,
-#             # #         maxResults=10,
-#             # #         singleEvents=True,
-#             # #         orderBy="startTime",
-#             # #     ).execute()
-#             # # )
-#             # events = events_result.get('items', [])
-#             #
-#             # # Display events or handle them as needed
-#             # if not events:
-#             #     return HttpResponse('No events found.')
-#             # else:
-#             #     client_id = 227
-#             #     category_id = 23
-#             #     print("Employee id:", employee_id)
-#             #     print("Client ID:", client_id)
-#             #     print("Category ID:", category_id)
-#             #     print("Category ID:", events)
-#             #     for ev in events:
-#             #         try:
-#             #             gmail = ev['creator']['email']
-#             #             calender_eid = ev['htmlLink']
-#             #             print("Description:", ev['summary'])
-#             #             # print("Time Seconds:", time_difference_seconds)
-#             #             start_date = ev['start']['dateTime']
-#             #             end_date = ev['end']['dateTime']
-#             #             print("Start Date:", ev['start']['dateTime'])
-#             #             print("End Date:", ev['end']['dateTime'])
-#             #
-#             #             dt_obj1 = datetime.fromisoformat(start_date)
-#             #             # Extract date and time components
-#             #             start_date = dt_obj1.date()
-#             #             start_time = dt_obj1.time()
-#             #             dt_obj2 = datetime.fromisoformat(end_date)
-#             #             # Extract date and time components
-#             #             end_date = dt_obj2.date()
-#             #             end_time = dt_obj2.time()
-#             #             print(end_date, end_time, "End Date:", start_date, start_time)
-#             #
-#             #             employee_ob = employee.objects.get(id=employee_id)
-#             #             try:
-#             #                 employee_country = Country.objects.get(id=employee_ob.country_id)
-#             #                 if employee_country.code == 'US':
-#             #                     country_city = 'America/New_York'
-#             #                 elif employee_country.code == 'SA':
-#             #                     country_city = 'Africa/Johannesburg'
-#             #                 elif employee_country.code == 'UK':
-#             #                     country_city = 'Europe/London'
-#             #                 elif employee_country.code == 'PH':
-#             #                     country_city = 'Asia/Manila'
-#             #                 else:
-#             #                     country_city = 'America/New_York'
-#             #             except Exception as e:
-#             #                 country_city = 'America/New_York'
-#             #             print(country_city)
-#             #             local_tz = pytz.timezone(country_city)  # Replace with your local timezone
-#             #             # Combine date and time
-#             #             local_start_dt = datetime.combine(start_date, start_time)
-#             #             local_start_dt = local_tz.localize(local_start_dt)  # Make it timezone-aware
-#             #             # Convert to UTC
-#             #             start_date = local_start_dt.astimezone(pytz.utc)
-#             #             # Combine date and time
-#             #             local_end_dt = datetime.combine(end_date, end_time)
-#             #             local_end_dt = local_tz.localize(local_end_dt)  # Make it timezone-aware
-#             #             # Convert to UTC
-#             #             end_date = local_end_dt.astimezone(pytz.utc)
-#             #             print(start_date, '###########################', end_date)
-#             #             start_time = start_date.time()
-#             #             end_time = end_date.time()
-#             #             print(start_time, '###########################', end_time)
-#             #
-#             #             sd = datetime.strptime(f"{start_date.date()} {start_time}", "%Y-%m-%d %H:%M:%S")
-#             #             ed = datetime.strptime(f"{end_date.date()} {end_time}", "%Y-%m-%d %H:%M:%S")
-#             #
-#             #             # Calculate time difference
-#             #             time_difference = ed - sd
-#             #
-#             #             # Convert time difference to seconds
-#             #             time_difference_seconds = time_difference.total_seconds()
-#             #             # Create a new timeSheet entry
-#             #             print(time_difference, 'PRAKASH2')
-#             #             existing_entry = timeSheet.objects.filter(
-#             #                 employee_id=employee_id,
-#             #                 client_id=client_id,
-#             #                 category_id=category_id,
-#             #                 description=ev['summary'],
-#             #                 time_entries_seconds=time_difference_seconds,
-#             #                 time_entries_start_date=start_date,
-#             #                 time_entries_stop_date=end_date,
-#             #                 time_entries_start_time=start_time,
-#             #                 time_entries_stop_time=end_time,
-#             #                 is_google=1,
-#             #                 gmail=gmail,
-#             #                 calender_eid = calender_eid
-#             #             ).first()
-#             #             if existing_entry:
-#             #                 print("This event already exists in the database.")
-#             #             else:
-#             #                 new_entry = timeSheet(
-#             #                     employee_id=employee_id,
-#             #                     client_id=client_id,
-#             #                     category_id=category_id,
-#             #                     description=ev['summary'],
-#             #                     time_entries_seconds=time_difference_seconds,  # assuming 1 hour in seconds
-#             #                     time_entries_start_date=start_date,
-#             #                     time_entries_stop_date=end_date,
-#             #                     time_entries_start_time=start_time,
-#             #                     time_entries_stop_time=end_time,
-#             #                     is_google=1,
-#             #                     gmail=gmail,
-#             #                     calender_eid = calender_eid
-#             #                 )
-#             #                 # Save the entry to the database
-#             #                 new_entry.save()
-#             #         except Exception as e:
-#             #             pass
-#         # time_entries = timeSheet.objects.filter(employee_id=employee_id,gmail=employee_ob.auth_gmail)
-#         # time_entries = timeSheet.objects.filter(Q(employee_id=employee_id) & (Q(gmail=employee_ob.auth_gmail) | Q(gmail=None)))
-#         time_entries = timeSheet.objects.filter(
-#             Q(employee_id=employee_id) &
-#             (Q(gmail=employee_ob.auth_gmail) | (Q(gmail=None) & Q(is_google=0)))
-#         )
-
-#     employee_ob = employee.objects.get(id=employee_id)
-#     try:
-#         employee_country = Country.objects.get(id=employee_ob.country_id)
-#         if employee_country.code == 'US':
-#             country_city = 'America/New_York'
-#         elif employee_country.code == 'SA':
-#             country_city = 'Africa/Johannesburg'
-#         elif employee_country.code == 'UK':
-#             country_city = 'Europe/London'
-#         elif employee_country.code == 'PH':
-#             country_city = 'Asia/Manila'
-#         else:
-#             country_city = 'America/New_York'
-#     except Exception as e:
-#         country_city = 'America/New_York'
-#     # print(country_city)
-#     events = []
-
-#     for entry in time_entries:
-#         start_datetime = datetime.combine(entry.time_entries_start_date, entry.time_entries_start_time)
-#         end_datetime = datetime.combine(entry.time_entries_stop_date, entry.time_entries_stop_time)
-
-#         start_datetime_utc = start_datetime.replace(tzinfo=pytz.utc)
-#         end_datetime_utc = end_datetime.replace(tzinfo=pytz.utc)
-#         # Create a timezone object for US Eastern Time (ET)
-#         local_tz = pytz.timezone(country_city)
-#         # Convert the datetime to US Eastern Time
-#         start_datetime = start_datetime_utc.astimezone(local_tz)
-#         end_datetime = end_datetime_utc.astimezone(local_tz)
-
-#         # Format start_datetime in ISO 8601 format with 'Z'
-#         start_formatted = start_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-#         end_formatted = end_datetime.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z'
-
-#         # print("muskan ", entry.time_entries_start_date)
-#         # print(entry.client_id)
-#         print(start_formatted, 'kkkkkkkkkkkkk')
-#         # print(entry.description)
-#         # print(end_formatted)
-#         try:
-#             client_name = client.objects.get(id=entry.client_id)
-#             client_name = client_name.toggl_client_name
-#             # print(client_name)
-#         except Exception as e:
-#             client_name = ''
-#         try:
-#             category_name = Work_Category.objects.get(id=entry.category_id)
-#             category_name = category_name.category
-#         except Exception as e:
-#             category_name = ''
-#         # print(client_name, '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', category_name)
-#         class_name = 'border-0 bg-primary text-white ff-heading fs-18 fw-semibold'
-#         calender_eid = '#'
-#         if entry.is_google == 1:
-#             client_name = entry.description
-#             class_name = 'border-0 bg-secondary text-white ff-heading fs-18 fw-semibold'
-#             calender_eid = entry.calender_eid
-#             print(calender_eid, 'LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
-#         events.append({
-#             'title': client_name,
-#             'start': start_formatted,
-#             'end': end_formatted,
-#             # 'className': 'border-0 bg-primary text-white ff-heading fs-18 fw-semibold',
-#             'className': class_name,
-#             'categoryName': category_name,
-#             'clientId': entry.client_id,
-#             'categoryId': entry.category_id,
-#             'description': entry.description,
-#             'eventId': entry.id,
-#             'calenderEid': calender_eid
-#         })
-#     # if employee_ob.token and employee_ob.calender_status == 1:
-#     #     # events_result = service.events().list(calendarId='primary', timeMin=current_time).execute()
-#     #     #events_result = service.events().list(calendarId='primary', timeMin=start_date_time).execute()
-#     #     try:
-#     #         events_result = service.events().list(calendarId='primary', timeMin=start_date_time).execute()
-#     #     except Exception as e:
-#     #         emp_ob = employee.objects.get(id=int(employee_id))
-#     #         if emp_ob.token:
-#     #             google_credentials = json.loads(emp_ob.token)
-#     #             emp_ob.token = None
-#     #             emp_ob.calender_status = 0
-#     #             emp_ob.auth_gmail = None
-#     #             emp_ob.save()
-#     #         return JsonResponse({'status':False}, safe=False)
-#     #     events_data = events_result.get('items', [])
-#     #     for ev in events_data:
-#     #         print(ev)
-#     #         try:
-#     #             start_date = ev['start']['dateTime']
-#     #             end_date = ev['end']['dateTime']
-#     #             title = ev['summary']
-#     #             category_name = 'Google Calender'
-#     #             client_id = 227
-#     #             category_id = 23
-#     #             events.append({
-#     #                 'title': title,
-#     #                 'start': start_date,
-#     #                 'end': end_date,
-#     #                 'className': 'border-0 bg-secondary text-white ff-heading fs-18 fw-semibold',
-#     #                 'categoryName': category_name,
-#     #                 'clientId': client_id,
-#     #                 'categoryId': category_id,
-#     #                 'description': title,
-#     #                 'calenderEid': ev['htmlLink']
-#     #             })
-#     #         except Exception as e:
-#     #             pass
-#     # print(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-#     if employee_ob.token and employee_ob.calender_status == 1:
-#         try:
-#             # Fetch calendar events
-#             try:
-#                 events_result = service.events().list(
-#                     calendarId='primary',
-#                     timeMin=start_date_time,
-#                     singleEvents=True,
-#                     orderBy='startTime'
-#                 ).execute()
-#             except Exception as e:
-#                 emp_ob = employee.objects.get(id=int(employee_id))
-#                 if emp_ob.token:
-#                     google_credentials = json.loads(emp_ob.token)
-#                     revoke_access_token(google_credentials['refresh_token'])
-#                     emp_ob.token = None
-#                     emp_ob.calender_status = 0
-#                     emp_ob.auth_gmail = None
-#                     emp_ob.save()
-#                 return JsonResponse({'status': False}, safe=False)
-
-#             events_data = events_result.get('items', [])
-#             for ev in events_data:
-#                 try:
-#                     start_date = ev['start'].get('dateTime', ev['start'].get('date'))
-#                     end_date = ev['end'].get('dateTime', ev['end'].get('date'))
-#                     email = ev['creator']['email']
-#                     title = ev.get('summary', 'No Title')
-#                     category_name = 'Google Calendar'
-#                     client_id = 227
-#                     category_id = 23
-
-#                     # Detect event type for customization
-#                     event_type = ev.get('eventType', 'default')
-#                     if event_type == 'outOfOffice':
-#                         class_name = 'border-0 bg-danger text-white ff-heading fs-18 fw-semibold'
-#                         continue
-#                     elif event_type == 'focusTime':
-#                         class_name = 'border-0 bg-info text-white ff-heading fs-18 fw-semibold'
-#                         continue
-#                     elif event_type == 'appointment':
-#                         class_name = 'border-0 bg-primary text-white ff-heading fs-18 fw-semibold'
-#                         continue
-#                     else:
-#                         class_name = 'border-0 bg-secondary text-white ff-heading fs-18 fw-semibold'
-
-#                     # Append event
-#                     events.append({
-#                         'title': title,
-#                         'start': start_date,
-#                         'email': email,
-#                         'end': end_date,
-#                         'className': class_name,
-#                         'categoryName': category_name,
-#                         'clientId': client_id,
-#                         'categoryId': category_id,
-#                         'description': title,
-#                         'calenderEid': ev.get('htmlLink', '')
-#                     })
-#                 except Exception as e:
-#                     print(f"Error processing calendar event: {e}")
-#                     pass
-
-#             # Fetch tasks
-#             try:
-#                 tasks_service = build('tasks', 'v1', credentials=creds)
-#                 tasklists = tasks_service.tasklists().list().execute()
-#                 for tasklist in tasklists.get('items', []):
-#                     tasks = tasks_service.tasks().list(tasklist=tasklist['id']).execute()
-#                     for task in tasks.get('items', []):
-#                         try:
-#                             title = task.get('title', 'No Title')
-#                             due_date = task.get('due')  # Tasks may only have a due date
-#                             events.append({
-#                                 'title': title,
-#                                 'start': due_date,
-#                                 'end': due_date,
-#                                 'className': 'border-0 bg-warning text-dark ff-heading fs-18 fw-semibold',
-#                                 'categoryName': 'Google Tasks',
-#                                 'clientId': 227,
-#                                 'categoryId': 23,
-#                                 'description': title,
-#                                 'calenderEid': ''
-#                             })
-#                         except Exception as e:
-#                             print(f"Error processing task: {e}")
-#             except Exception as e:
-#                 print(f"Error fetching tasks: {e}")
-
-#         except Exception as e:
-#             print(f"Error fetching events and tasks: {e}")
-#             return JsonResponse({'status': False, 'error': str(e)}, safe=False)
-
-#     return JsonResponse(events, safe=False)
 
 
 import re
@@ -10860,7 +9395,7 @@ def calender_events(request):
         print("exist group")
         print(group)
 
-        if group[0].name == 'super_admin':
+        if group[0].name == 'super_admin' or group[0].name == 'super_user':
             print("super admin")
             employee_id = request.session.get('user_id')
         else:
@@ -11056,14 +9591,6 @@ def calender_events(request):
                         print("Start Date:", ev['start']['dateTime'])
                         print("End Date:", ev['end']['dateTime'])
 
-                        # dt_obj1 = datetime.fromisoformat(start_date)
-                        # # Extract date and time components
-                        # start_date = dt_obj1.date()
-                        # start_time = dt_obj1.time()
-                        # dt_obj2 = datetime.fromisoformat(end_date)
-                        # # Extract date and time components
-                        # end_date = dt_obj2.date()
-                        # end_time = dt_obj2.time()
 
                         try:
                             dt_obj1 = datetime.fromisoformat(start_date)
@@ -11098,20 +9625,7 @@ def calender_events(request):
                         print(end_date, end_time, "End Date:", start_date, start_time)
 
                         employee_ob = employee.objects.get(id=employee_id)
-                        # try:
-                        #     employee_country = Country.objects.get(id=employee_ob.country_id)
-                        #     if employee_country.code == 'US':
-                        #         country_city = 'America/New_York'
-                        #     elif employee_country.code == 'SA':
-                        #         country_city = 'Africa/Johannesburg'
-                        #     elif employee_country.code == 'UK':
-                        #         country_city = 'Europe/London'
-                        #     elif employee_country.code == 'PH':
-                        #         country_city = 'Asia/Manila'
-                        #     else:
-                        #         country_city = 'America/New_York'
-                        # except Exception as e:
-                        #     country_city = 'America/New_York'
+    
                         print(country_city)
 
                         #GET TIMEZONE FROM GOOGLE AND CONVERT IT INTO UTC
@@ -11157,47 +9671,7 @@ def calender_events(request):
 
 
 
-                        # existing_entry = timeSheet.objects.filter(
-                        #     employee_id=employee_id,
-                        #     # client_id=client_id,
-                        #     # category_id=category_id,
-                        #     # description=ev['summary'],
-                        #     # time_entries_seconds=time_difference_seconds,
-                        #     # time_entries_start_date=start_date,
-                        #     # time_entries_stop_date=end_date,
-                        #     # time_entries_start_time=start_time,
-                        #     # time_entries_stop_time=end_time,
-                        #     # is_google=1,
-                        #     # gmail=gmail,
-                        #     calender_eid=calender_eid
-                        # ).first()
-                        # if existing_entry:
-                        #     # existing_entry.time_entries_seconds = time_difference_seconds
-                        #     # existing_entry.time_entries_start_date = start_date
-                        #     # existing_entry.time_entries_start_time = start_time
-                        #     # existing_entry.time_entries_stop_time = end_time
-                        #     # existing_entry.save()
-                        #     print("This event already exists in the database.")
-                        # else:
 
-                        # 8TH AUGUST 2026
-                        # new_entry = timeSheet(
-                        #     employee_id=employee_id,
-                        #     client_id=client_id,
-                        #     category_id=category_id,
-                        #     description=title,
-                        #     time_entries_seconds=time_difference_seconds,  # assuming 1 hour in seconds
-                        #     time_entries_start_date=start_date,
-                        #     time_entries_stop_date=end_date,
-                        #     time_entries_start_time=start_time,
-                        #     time_entries_stop_time=end_time,
-                        #     is_google=1,
-                        #     gmail=emp_ob.auth_gmail,
-                        #     calender_eid=calender_eid,
-                        #     status = status
-                        # )
-                        # # Save the entry to the database
-                        # new_entry.save()
                     
                         obj, created = timeSheet.objects.get_or_create(
                             employee_id=employee_id,
@@ -11229,21 +9703,7 @@ def calender_events(request):
         )
 
     employee_ob = employee.objects.get(id=employee_id)
-    # try:
-    #     employee_country = Country.objects.get(id=employee_ob.country_id)
-    #     if employee_country.code == 'US':
-    #         country_city = 'America/New_York'
-    #     elif employee_country.code == 'SA':
-    #         country_city = 'Africa/Johannesburg'
-    #     elif employee_country.code == 'UK':
-    #         country_city = 'Europe/London'
-    #     elif employee_country.code == 'PH':
-    #         country_city = 'Asia/Manila'
-    #     else:
-    #         country_city = 'America/New_York'
-    # except Exception as e:
-    #     country_city = 'America/New_York'
-    # print(country_city)
+
     events = []
 
     current_time_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -11330,45 +9790,6 @@ def calender_events(request):
             'city':country_city
         })
     if employee_ob.token and employee_ob.calender_status == 1:
-        # events_result = service.events().list(calendarId='primary', timeMin=current_time).execute()
-        # events_result = service.events().list(calendarId='primary', timeMin=start_date_time).execute()
-
-        #     try:
-        #         events_result = service.events().list(calendarId='primary', timeMin=start_date_time).execute()
-        #     except Exception as e:
-        #         emp_ob = employee.objects.get(id=int(employee_id))
-        #         if emp_ob.token:
-        #             google_credentials = json.loads(emp_ob.token)
-        #             emp_ob.token = None
-        #             emp_ob.calender_status = 0
-        #             emp_ob.auth_gmail = None
-        #             emp_ob.save()
-        #         return JsonResponse({'status': False}, safe=False)
-        #     events_data = events_result.get('items', [])
-        #     for ev in events_data:
-        #         print(ev)
-        #         try:
-        #             start_date = ev['start']['dateTime']
-        #             end_date = ev['end']['dateTime']
-        #             title = ev['summary']
-        #             category_name = 'Google Calender'
-        #             client_id = 227
-        #             category_id = 23
-        #             events.append({
-        #                 'title': title,
-        #                 'start': start_date,
-        #                 'end': end_date,
-        #                 'className': 'border-0 bg-secondary text-white ff-heading fs-18 fw-semibold',
-        #                 'categoryName': category_name,
-        #                 'clientId': client_id,
-        #                 'categoryId': category_id,
-        #                 'description': title,
-        #                 'calenderEid': ev['htmlLink']
-        #             })
-        #         except Exception as e:
-        #             pass
-        # print(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        # return JsonResponse(events, safe=False)
 
         try:
             # Fetch calendar events
@@ -11443,16 +9864,7 @@ def calender_events(request):
 
                     # Detect event type for customization
                     event_type = ev.get('eventType', 'default')
-                    # if event_type == 'outOfOffice':
-                    #     class_name = 'border-0 bg-danger text-white ff-heading fs-18 fw-semibold'
-                    #     continue
-                    # elif event_type == 'focusTime':
-                    #     class_name = 'border-0 bg-info text-white ff-heading fs-18 fw-semibold'
-                    #     continue
-                    # elif event_type == 'workingLocation':
-                    #     class_name = 'border-0 bg-primary text-white ff-heading fs-18 fw-semibold'
-                    #     continue
-                    # Skip specific event types
+
                     if title.lower() in ['ooo','out of office']:
                         continue
 
@@ -11503,31 +9915,6 @@ def calender_events(request):
                     print(f"Error processing calendar event: {e}")
                     pass
 
-            # Fetch tasks
-            # try:
-            #     tasks_service = build('tasks', 'v1', credentials=creds)
-            #     tasklists = tasks_service.tasklists().list().execute()
-            #     for tasklist in tasklists.get('items', []):
-            #         tasks = tasks_service.tasks().list(tasklist=tasklist['id']).execute()
-            #         for task in tasks.get('items', []):
-            #             try:
-            #                 title = task.get('title', 'No Title')
-            #                 due_date = task.get('due')  # Tasks may only have a due date
-            #                 events.append({
-            #                     'title': title,
-            #                     'start': due_date,
-            #                     'end': due_date,
-            #                     'className': 'border-0 bg-warning text-dark ff-heading fs-18 fw-semibold',
-            #                     'categoryName': 'Google Tasks',
-            #                     'clientId': 227,
-            #                     'categoryId': 23,
-            #                     'description': title,
-            #                     'calenderEid': ''
-            #                 })
-            #             except Exception as e:
-            #                 print(f"Error processing task: {e}")
-            # except Exception as e:
-            #     print(f"Error fetching tasks: {e}")
 
         except Exception as e:
             print(f"Error fetching events and tasks: {e}")
@@ -11667,20 +10054,7 @@ def edit_calender_events(request):
                 country_city = 'Asia/Manila'
             else:
                 country_city = 'America/New_York'
-        # try:
-        #     employee_country = Country.objects.get(id=employee_ob.country_id)
-        #     if employee_country.code == 'US':
-        #         country_city = 'America/New_York'
-        #     elif employee_country.code == 'SA':
-        #         country_city = 'Africa/Johannesburg'
-        #     elif employee_country.code == 'UK':
-        #         country_city = 'Europe/London'
-        #     elif employee_country.code == 'PH':
-        #         country_city = 'Asia/Manila'
-        #     else:
-        #         country_city = 'America/New_York'
-        # except Exception as e:
-        #     country_city = 'America/New_York'
+
         print(country_city)
         local_tz = pytz.timezone(country_city)  # Replace with your local timezone
         # start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -11730,13 +10104,7 @@ def edit_calender_events(request):
         emp_timesheet_ob.time_entries_stop_time = end_time
         emp_timesheet_ob.time_entries_stop_date = end_date
         emp_timesheet_ob.time_entries_seconds = time_difference_seconds
-        # if emp_timesheet_ob.project_id:
-        #     if len(project_id) == 0:
-        #         emp_timesheet_ob.project_id = None
-        #     else:
-        #         emp_timesheet_ob.project_id = int(project_id)
-        # if len(project_id) > 0:
-        #     emp_timesheet_ob.project_id = int(project_id)
+   
 
         if emp_timesheet_ob.project_id:
             print('TEST2')
@@ -12113,54 +10481,7 @@ def excel_sheet(request):
 
         contract_ids.append(contract.client_id)
     print('contract_ids',contract_ids)
-       # Get the current month
-    # # Get the current date
-    # current_date = datetime.now()
-    # current_month = datetime.now().month
-    # print("muskannnnnnnnnnnnnnnnnnn")
-    # # print(current_date.month)
-    # # print(current_month)
-    # previous_month = current_date.month - 1 if current_date.month > 1 else 12
-    # # print(previous_month)
-    #
-    # # Check if the current month is February
-    # if not Client_contract_work.objects.filter(date__year=2024, date__month=current_month).exists():
-    #     # Fetch data from Client_contract_work model for January
-    #     january_contracts = Client_contract_work.objects.filter(date__year=2024, date__month=previous_month)
-    #
-    #     # Loop through the January contracts and copy them to February
-    #     for january_contract in january_contracts:
-    #         # Create a new contract for February with the same data as January
-    #         february_contract = Client_contract_work.objects.create(
-    #             client_id=january_contract.client_id,
-    #             no_of_people_on_account=january_contract.no_of_people_on_account,
-    #             cost=january_contract.cost,
-    #             total_working_hours=january_contract.total_working_hours,
-    #             working_input=january_contract.working_input,
-    #             working_role=january_contract.working_role,
-    #             status=january_contract.status,
-    #             date=datetime(2024, current_month, 1)  # Set the date to February 1st, 2024
-    #         )
-    #         february_contract.save()  # Save the February contract inside the loop
-    #         # print(february_contract)
-    # # Check if the current month is February
-    # if not Client_contract_employee.objects.filter(date__year=2024, date__month=current_month).exists():
-    #     # Fetch data from Client_contract_work model for January
-    #     january_employees = Client_contract_employee.objects.filter(date__year=2024, date__month=previous_month)
-    #
-    #     # Loop through the January contracts and copy them to February
-    #     for january_employee in january_employees:
-    #         # Create a new contract for February with the same data as January
-    #         february_employee = Client_contract_employee.objects.create(
-    #             employee_id=january_employee.employee_id,
-    #             support=january_employee.support,
-    #             account_manager=january_employee.account_manager,
-    #             advisor=january_employee.advisor,
-    #             total=january_employee.total,
-    #             date=datetime(2024, current_month, 1)  # Set the date to February 1st, 2024
-    #         )
-    #         february_employee.save()  # Save the February contract inside the loop
-    #         # print(february_contract)
+
 
     # Pass the data to the template
     current_year = 2026
@@ -12403,110 +10724,110 @@ def update_month_sheet(request):
 @csrf_exempt
 @login_required(login_url='/')
 def search_designation(request):
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-        selected_name = request.GET.get('name')
-        selected_country = request.GET.get('country')
-        selected_designation = request.GET.get('designation')
+    if request.user.groups.exists():
+        group = request.user.groups.all()
+        print("exist group")
+        print(group)
 
-        # Query your database based on the selected designation
-        # Example:
-        print("astha222222222222222")
-        print(selected_name)
-        print(selected_country)
-        print(selected_designation)
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
+       
+            selected_name = request.GET.get('name')
+            selected_country = request.GET.get('country')
+            selected_designation = request.GET.get('designation')
 
-        if selected_name !='Select Name':
-            employee_list = employee.objects.filter(status=1,id=selected_name)
-            print(employee_list)
-        elif selected_country !='Select Country'and selected_designation !='Select Designation':
-            employee_list = employee.objects.filter(status=1,country_id=selected_country,designation=selected_designation)
-            print(employee_list)
+            # Query your database based on the selected designation
+            # Example:
+            print("astha222222222222222")
+            
+            print(selected_name)
+            print(selected_country)
+            print(selected_designation)
 
-        elif selected_country !='Select Country':
-            employee_list = employee.objects.filter(status=1,country_id=selected_country)
-            print(employee_list)
-        else:
-            employee_list = employee.objects.filter(status=1,designation=selected_designation)
-            print(employee_list)
+            if selected_name !='Select Name':
+                employee_list = employee.objects.filter(status=1,id=selected_name)
+                print(employee_list)
+            elif selected_country !='Select Country'and selected_designation !='Select Designation':
+                employee_list = employee.objects.filter(status=1,country_id=selected_country,designation=selected_designation)
+                print(employee_list)
 
-        toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
-        # print(toggl_user_ids)
-        ids = [employee.id for employee in employee_list]
-        # print(ids)
-        selected_month = request.session.get('month')
+            elif selected_country !='Select Country':
+                employee_list = employee.objects.filter(status=1,country_id=selected_country)
+                print(employee_list)
+            else:
+                employee_list = employee.objects.filter(status=1,designation=selected_designation)
+                print(employee_list)
 
-        if selected_month:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_month = int(selected_month)
-        else:
-            current_month = 2
+            toggl_user_ids = [employee.toggl_user_id for employee in employee_list]
+            # print(toggl_user_ids)
+            ids = [employee.id for employee in employee_list]
+            # print(ids)
+            selected_month = request.session.get('month')
 
-        if current_month ==1:
-            last_month=12
-        else:
-            last_month=current_month-1
-        # print("ssssssssssssssssssssssssssssssssssssss")
-        # print(current_month)
-        # print(last_month)
+            if selected_month:
+                # current_month = datetime.strptime(selected_month, "%B").month
+                current_month = int(selected_month)
+            else:
+                current_month = 2
 
-        selected_year = request.session.get('year')
+            if current_month ==1:
+                last_month=12
+            else:
+                last_month=current_month-1
+            # print("ssssssssssssssssssssssssssssssssssssss")
+            # print(current_month)
+            # print(last_month)
 
-        if selected_year:
-            # current_month = datetime.strptime(selected_month, "%B").month
-            current_year = int(selected_year)
-        else:
-            current_year = 2026
+            selected_year = request.session.get('year')
 
-        if current_month ==1:
-            last_year=current_year-1
-        else:
-            last_year=current_year
+            if selected_year:
+                # current_month = datetime.strptime(selected_month, "%B").month
+                current_year = int(selected_year)
+            else:
+                current_year = 2026
 
-        # print("gggggggggggggggggggggggggggggggggggggg")
-        # print(current_year)
-        # print(last_year)
-        if current_year == 2023 and 9 <= current_month <= 12:
-            contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
-            )
-            # print(contracted_employee_for_month)
-            contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-            # print(contracted_employee_dict)
+            if current_month ==1:
+                last_year=current_year-1
+            else:
+                last_year=current_year
 
-            for emp in employee_list:
-                emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
+            if current_year == 2023 and 9 <= current_month <= 12:
+                contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
+                )
+                # print(contracted_employee_for_month)
+                contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
+                # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                # print(contracted_employee_dict)
 
-            # print('muskan')
-            # print(employee_list)
-        else:
-            contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
-            )
-            # print(contracted_employee_for_month)
-            contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-            # print(contracted_employee_dict)
+                for emp in employee_list:
+                    emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-            for emp in employee_list:
-                emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
+                # print('muskan')
+                # print(employee_list)
+            else:
+                contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
+                )
+                # print(contracted_employee_for_month)
+                contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
+                # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
+                # print(contracted_employee_dict)
 
-            # print('muskan')
-            # print(employee_list)
+                for emp in employee_list:
+                    emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
 
-        data = {"employee_list": employee_list,
-                "current_year":current_year,
-                "current_month":current_month,
-                "month_list":[],
-                }
-        # print(data)
-        return render(request, "employees/search_designation.html", data)
+                # print('muskan')
+                # print(employee_list)
+
+            data = {"employee_list": employee_list,
+                    "current_year":current_year,
+                    "current_month":current_month,
+                    "month_list":[],
+                    }
+            # print(data)
+            return render(request, "employees/search_designation.html", data)
+        
     group = None
 
-    # if request.user.groups.exists():
-    #     group = request.user.groups.all()
-    #     print("exist group")
-    #     print(group)
 
-    #     if group[0].name == 'admin' or group[0].name == 'super_admin':
     print("admin")
     selected_name = request.GET.get('name')
     selected_country = request.GET.get('country')
@@ -12647,9 +10968,6 @@ def old_search_designation(request):
             last_month=12
         else:
             last_month=current_month-1
-        # print("ssssssssssssssssssssssssssssssssssssss")
-        # print(current_month)
-        # print(last_month)
 
         selected_year = request.session.get('year')
 
@@ -12664,29 +10982,23 @@ def old_search_designation(request):
         else:
             last_year=current_year
 
-        # print("gggggggggggggggggggggggggggggggggggggg")
-        # print(current_year)
-        # print(last_year)
+
         if current_year == 2023 and 9 <= current_month <= 12:
             contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
             )
-            # print(contracted_employee_for_month)
+
             contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-            # print(contracted_employee_dict)
 
             for emp in employee_list:
                 emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
 
-            # print('muskan')
-            # print(employee_list)
+
         else:
             contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
             )
-            # print(contracted_employee_for_month)
+
             contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-            # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-            # print(contracted_employee_dict)
+  
 
             for emp in employee_list:
                 emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
@@ -12708,14 +11020,12 @@ def old_search_designation(request):
         print("exist group")
         print(group)
 
-        if group[0].name == 'admin' or group[0].name == 'super_admin':
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
             selected_name = request.GET.get('name')
             selected_country = request.GET.get('country')
             selected_designation = request.GET.get('designation')
 
-            # Query your database based on the selected designation
-            # Example:
-            print("astha")
+
             print(selected_name)
             print(selected_country)
             print(selected_designation)
@@ -12749,9 +11059,6 @@ def old_search_designation(request):
                 last_month=12
             else:
                 last_month=current_month-1
-            # print("ssssssssssssssssssssssssssssssssssssss")
-            # print(current_month)
-            # print(last_month)
 
             selected_year = request.session.get('year')
 
@@ -12766,29 +11073,21 @@ def old_search_designation(request):
             else:
                 last_year=current_year
 
-            # print("gggggggggggggggggggggggggggggggggggggg")
-            # print(current_year)
-            # print(last_year)
+
             if current_year == 2023 and 9 <= current_month <= 12:
                 contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month, month__year=current_year
                 )
-                # print(contracted_employee_for_month)
+
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                # print("fffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                # print(contracted_employee_dict)
+
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.toggl_user_id, None)
-
-                # print('muskan')
-                # print(employee_list)
             else:
                 contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
                 )
                 # print(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
-                # print("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
-                # print(contracted_employee_dict)
 
                 for emp in employee_list:
                     emp.contracted_employee_info = contracted_employee_dict.get(emp.id, None)
@@ -13109,61 +11408,6 @@ def report(request):
             reverse=True  # Descending order
         )
 
-
-
-        # # Iterate through each entry in the queryset
-        # for entry in time_entries_last_week:
-        #     import datetime
-        #     # Fetch employee details
-        #     employee1 = employee.objects.get(id=entry.employee_id)
-        #
-        #     # Calculate total time spent by the employee
-        #     total_time_employee = sum(e.time_entries_seconds for e in time_entries_last_week if e.employee_id == entry.employee_id)
-        #     # print(total_time_employee)
-        #
-        #     # Fetch client details
-        #     client1 = client.objects.get(id=entry.client_id)
-        #
-        #     # Fetch category details
-        #     category_id = Work_Category.objects.get(id=entry.category_id)
-        #
-        #     # Convert time duration from seconds to formatted string
-        #     hours, remainder = divmod(entry.time_entries_seconds, 3600)
-        #     minutes, seconds = divmod(remainder, 60)
-        #     duration_formatted = '{:02d}:{:02d}:{:02d}'.format(int(hours), int(minutes), int(seconds))
-        #
-        #     # Calculate percentage time spent for the current entry
-        #     if total_time_employee > 0:
-        #         percentage_time = entry.time_entries_seconds / total_time_employee
-        #     else:
-        #         percentage_time = 0
-        #
-        #     # Multiply by data['percentage'] for that employee id
-        #     if entry.employee_id in employee_total_time:
-        #         percentage_multiplier = employee_total_time[entry.employee_id]['percentage']
-        #         percentage_time *= percentage_multiplier
-        #
-        #     # Round percentage_time to 2 decimal points
-        #     percentage_time = round(percentage_time, 2)
-        #
-        #
-        #     # Add additional details to the entry dictionary
-        #     entry_details = {
-        #         'employee_id': entry.employee_id,
-        #         'time': duration_formatted,
-        #         'percentage_time': percentage_time,
-        #         'category_name': category_id.category,
-        #          'category_id':category_id.id
-        #     }
-        #     entries_with_details.append(entry_details)
-        #
-        # print("table2")
-        #
-        # print(entries_with_details)
-
-            #for bar graphhhhhhh
-
-        # print(employee_total_time)
         # Create a dictionary to store total time spent by each day
         from collections import defaultdict
         # Create a dictionary to store total time spent by each day
@@ -13181,9 +11425,6 @@ def report(request):
 
         print(type(start_date))
         print(end_date)
-        # Convert start_date and end_date to datetime objects
-        # Convert start_date and end_date to datetime objects
-        # Convert start_date and end_date to datetime objects
 
         if start_date==end_date:
            num_days =1
@@ -13455,9 +11696,6 @@ def report(request):
 
         print(type(start_date))
         print(end_date)
-        # Convert start_date and end_date to datetime objects
-        # Convert start_date and end_date to datetime objects
-        # Convert start_date and end_date to datetime objects
 
         if start_date==end_date:
            num_days =1
@@ -13616,91 +11854,12 @@ def cal(request):
 
 
 
-# from django.http import HttpRequest
-# 
-# import os.path
-# from django.shortcuts import redirect
-# from django.http import HttpRequest, HttpResponse
-# from django.conf import settings
-# from google.auth.transport.requests import Request
-# from google.oauth2.credentials import Credentials
-# from google_auth_oauthlib.flow import InstalledAppFlow
-# from googleapiclient.discovery import build
-# from googleapiclient.errors import HttpError
-# 
-# # Define your scopes and credentials file
-# SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
-# CLIENT_SECRETS_FILE = "credentials.json"
-# 
-# def get_authenticated_service(request):
-#     global CLIENT_SECRETS_FILE
-# 
-#     absolute_url1 = request.build_absolute_uri('/callback')
-#     if absolute_url1.startswith('http://'):
-#         absolute_url1 = 'https://' + absolute_url1[len('http://'):]
-#     # Check if there are already stored credentials in the session
-#     flow = InstalledAppFlow.from_client_secrets_file(
-#         CLIENT_SECRETS_FILE, SCOPES,
-#         redirect_uri=absolute_url1
-#     )
-#     authorization_url, _ = flow.authorization_url(
-#         access_type='offline',
-#         include_granted_scopes='true'
-#     )
-#     return redirect(authorization_url)
-# 
-#     # Build the service using the authenticated credentials
-#     service = build('calendar', 'v3', credentials=creds)
-#     events_result = service.events().list(calendarId='primary', maxResults=10).execute()
-#     events = events_result.get('items', [])
-# 
-#     # Display events or handle them as needed
-#     if not events:
-#         return HttpResponse('No events found.')
-#     else:
-#         return render(request, 'events.html', {'events': events})
-# 
-# def callback(request: HttpRequest):
-#     global CLIENT_SECRETS_FILE
-#     absolute_url = request.build_absolute_uri()
-# 
-#     # Forcefully replace the URL scheme with 'https'
-#     if absolute_url.startswith('http://'):
-#         absolute_url = 'https://' + absolute_url[len('http://'):]
-#     # Build the flow object
-#     absolute_url1 = request.build_absolute_uri('/callback')
-#     if absolute_url1.startswith('http://'):
-#         absolute_url1 = 'https://' + absolute_url1[len('http://'):]
-#     flow = InstalledAppFlow.from_client_secrets_file(
-#         CLIENT_SECRETS_FILE, SCOPES,
-#         redirect_uri=absolute_url1
-#     )
-# 
-#     # Exchange the authorization code for credentials
-#     flow.fetch_token(authorization_response=absolute_url)
-#     creds = flow.credentials
-#     return HttpResponse(creds.refresh_token)
-#     # Store the credentials in the session
-#     request.session['google_credentials'] = {
-#         'token': creds.token,
-#         'refresh_token': creds.refresh_token,
-#         'token_uri': creds.token_uri,
-#         'client_id': creds.client_id,
-#         'client_secret': creds.client_secret,
-#         'scopes': creds.scopes
-#     }
-# 
-#     return redirect('/events')
 
 
 def events(request):
     global CLIENT_SECRETS_FILE
 
-    # Check if there are already stored credentials in the session
-    # if 'google_credentials' in request.session:
-    #     creds = Credentials.from_authorized_user_info(request.session['google_credentials'], SCOPES)
-    # else:
-    #     return get_authenticated_service(request)
+
     creds = Credentials.from_authorized_user_info(request.session['google_credentials'], SCOPES)
     # Build the service using the authenticated credentials
     service = build('calendar', 'v3', credentials=creds)
@@ -14388,21 +12547,7 @@ def client_profile2(request, client_id,start_date,end_date):
         #client revenue
 
         toggl_client = client_id
-             # Filter contracted hours for the project and current month
-        # if contracted_hours.objects.filter(client_id=toggl_client,month__month=current_month,month__year=current_year).exists():
-        #     contracted_hours_for_month = contracted_hours.objects.filter(client_id= toggl_client,month__month=current_month,month__year=current_year
-        #         )
-        #     first_contracted_hour = contracted_hours_for_month.first()
-        #
-        #        # Access the rate attribute if the instance exists, otherwise set project_salary to 100
-        #         # Set project_salary based on conditions
-        #
-        #     one_project_rate = first_contracted_hour.rate
-        # else:
-        #     one_project_rate=0
-        #
-        #
-        # print("Sum of Rates Client revenue:", one_project_rate)
+
 
         if contracted_hours.objects.filter(client_id=toggl_client,month__month__range=[start_month, end_month],month__year=current_year).exists():
         # Filter contracted hours for the project and current month
@@ -14455,10 +12600,6 @@ def client_profile2(request, client_id,start_date,end_date):
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
                 else:
                     total_days_between = (target_month_end - start_date_in_target_month).days
-
-
-                # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                 date_difference=total_days_between
 
@@ -14667,22 +12808,16 @@ def client_profile2(request, client_id,start_date,end_date):
         employee_details = {}
         client_details={}
         ui_client_data=[]
-        #contracted employee images
-        # print("------------------------------------------------------------------------------------------------------------------------------")
-        # print(client_id)
-        # print(start_month)
-        # print(end_month)
+
         if Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month]).exists():
-            # print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 # Use the contracted_hours model to query the database
             all = Client_contract_work.objects.filter(client_id=client_id,date__year=current_year,date__month__range=[start_month, end_month])
-            # print("lllllllllllllllllllllllllllllllll")
-            # print(all)
+
 
             # Check if any records were found
             # Iterate over each record in the queryset
             for record in all:
-                # print("ppppppppppppppppppppppppppppppppppppppppppppp")
+
                 # Access the current record in the queryset
                 first_record = record
                 # print(first_record)
@@ -14730,23 +12865,6 @@ def client_profile2(request, client_id,start_date,end_date):
                         # Store employee details
                         # Get the role
                         role = role_dict.get(employee_id, "Unknown")
-                        #employee time
-                        # print(hours)
-
-
-                        import calendar
-                        from datetime import datetime
-                        # # Calculate the difference between end_date and start_date
-                        # date_difference = (end_date - start_date).days
-                        # # Add 1 to the difference in day
-                        # date_difference += 1
-
-                        # print(target_month)
-                        # print(start_date)
-                        # print(end_date)
-
-
-
 
                         target_month_start = start_date.replace(month=target_month, day=1)
 
@@ -14756,10 +12874,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                         # Get the end date of the target month
                         if start_date_in_target_month.month == target_month:
-                            # print("if")
-                            # # If the start date is in the target month, use the end of the month
-                            # print("end_date")
-                            # print(end_date)
+
                             if target_month == 12:
                                 next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                             else:
@@ -14810,13 +12925,6 @@ def client_profile2(request, client_id,start_date,end_date):
                         else:
                             total_hours = float(hours)  * weeks
 
-
-
-                        # print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
-                        # print("muskannnnnnnnnnnnnnnnnnnnnnnnnn")
-                        # print(total_hours)
-
-                        # Convert total hours to total seconds
                         total_seconds = int(total_hours * 3600)
 
                         # Extracting hours, minutes, and seconds
@@ -14826,11 +12934,6 @@ def client_profile2(request, client_id,start_date,end_date):
                         # Formatting the time
                         formatted_time = f"{hoursss:02d}:{minutes:02d}:{seconds:02d}"
 
-                        # if int(employee_id) in employee_details:
-                        #
-                        #     new_role = role_dict.get(employee_id)
-                        #     if new_role not in employee_details[int(employee_id)]['role']:
-                        #         employee_details[int(employee_id)]['role'].append(new_role)
                         if int(employee_id) in employee_details:
                             new_role = role_dict.get(employee_id)
                             # Use set to avoid duplicates
@@ -14848,18 +12951,6 @@ def client_profile2(request, client_id,start_date,end_date):
                 #client total time contract
                 if first_record.total_working_hours:
 
-                    import calendar
-                    from datetime import datetime
-                    # Get the number of days in that month
-
-                    # print(target_month)
-                    # print(start_date)
-                    # print(end_date)
-                    #
-                    # print(start_date_str)
-                    # print(end_date_str)
-
-
                     target_month_start = start_date.replace(month=target_month, day=1)
 
                     # Ensure that the start date is within the target month
@@ -14868,10 +12959,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                     # Get the end date of the target month
                     if start_date_in_target_month.month == target_month:
-                        # print("if")
-                        # If the start date is in the target month, use the end of the month
-                        # print("end_date")
-                        # print(end_date)
+ 
                         if target_month == 12:
                             next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                         else:
@@ -14889,10 +12977,6 @@ def client_profile2(request, client_id,start_date,end_date):
                         total_days_between = (target_month_end - start_date_in_target_month).days+1
                     else:
                         total_days_between = (target_month_end - start_date_in_target_month).days
-
-
-                    # # Print the total number of days in the specified month between the start and end dates
-                    # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
 
                     date_difference=total_days_between
 
@@ -14926,14 +13010,7 @@ def client_profile2(request, client_id,start_date,end_date):
                 hoursss1, remainder1 = divmod(total_seconds1, 3600)
                 minutes1, seconds1 = divmod(remainder1, 60)
 
-                # print("qqqqqqqqqqqqqqqqqqqqqqqqq")
-                # print(hoursss1)
-                # print(minutes1)
-                # print(seconds1)
 
-                import calendar
-                from datetime import datetime
-                # Calculate the difference between end_date and start_date
 
                 target_month_start = start_date.replace(month=target_month, day=1)
 
@@ -14943,11 +13020,7 @@ def client_profile2(request, client_id,start_date,end_date):
 
                 # Get the end date of the target month
                 if start_date_in_target_month.month == target_month:
-                    # print("if")
-                    # If the start date is in the target month, use the end of the month
-                    # print("end_date")
-                    # print(end_date)
-                    
+
                     if target_month == 12:
                         next_month_date = start_date.replace(year=start_date.year + 1, month=1, day=1)
                     else:
@@ -14959,11 +13032,7 @@ def client_profile2(request, client_id,start_date,end_date):
                     # print("else")
                     # If the start date is not in the target month, use the end of the start month
                     target_month_end = min(start_date.replace(month=target_month, day=1) - datetime.resolution, end_date)
-                # print(target_month_end)
-                # Calculate the total days in the target month between the start and end dates
-                # print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-                # print(start_date_in_target_month)
-                # print(target_month_end)
+
                 if target_month_end.month==start_date_in_target_month.month:
                     # print("if")
                     total_days_between = (target_month_end - start_date_in_target_month).days+1
@@ -14972,25 +13041,14 @@ def client_profile2(request, client_id,start_date,end_date):
                     total_days_between = (target_month_end - start_date_in_target_month).days
 
 
-                # # Print the total number of days in the specified month between the start and end dates
-                # print(f"Total days between {start_date_str} and {end_date_str} in the target month: {total_days_between}")
-
+    
                 date_difference=total_days_between
 
                 days_in_month = calendar.monthrange(date.year, date.month)[1]
-
-                # print(days_in_month)
-                # print("differneceeeeeee11")
-                # print(date_difference)
-
-
                 if date_difference==days_in_month:
                     weeks=4.3
                     weeks=round(weeks,2)
                     cost_new=first_record.cost
-
-                    # print("if--------------------------------------------")
-                    # print("costtttttttttttttt")
                 else:
                     weeks = date_difference / 7
                     weeks=round(weeks,2)
@@ -15000,9 +13058,7 @@ def client_profile2(request, client_id,start_date,end_date):
                 # Formatting the time
                 formatted_time2 = f"{hoursss1:02d}:{minutes1:02d}:{seconds1:02d}"
                 ui_formatted_time2=formatted_time2
-                # print("time================================")
-                # print(formatted_time2)
-                # print(cost_new)
+     
 
                 if 'cost' in client_details:
                     client_details['cost'] += cost_new
@@ -20512,31 +18568,38 @@ def export_all_to_excel(request):
 
     all_clients = []
 
-    if request.user.username == 'Sbhutra' and request.user.id == 6:
-        print("super admin")
-        if current_year == 2023 and 9 <= current_month <= 12:
-            client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
+    if request.user.groups.exists():
+        group = request.user.groups.all()
+        print("exist group")
+        print(group)
 
-            # Fetch client information for each client contract work
-            client_contract_work_with_client_info = []
-            for work in client_contract_work:
-                client_info = client.objects.get(toggl_client_id=work.client_id)
-                client_contract_work_with_client_info.append((work, client_info))
+        if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
 
-            # Extract client objects from the list
-            all_clients = [client_info for _, client_info in client_contract_work_with_client_info]
 
-        else:
-            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+            print("super admin")
+            if current_year == 2023 and 9 <= current_month <= 12:
+                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
 
-            # Fetch client information for each client contract work
-            client_contract_work_with_client_info = []
-            for work in client_contract_work:
-                client_info = client.objects.get(id=work.client_id)
-                client_contract_work_with_client_info.append((work, client_info))
+                # Fetch client information for each client contract work
+                client_contract_work_with_client_info = []
+                for work in client_contract_work:
+                    client_info = client.objects.get(toggl_client_id=work.client_id)
+                    client_contract_work_with_client_info.append((work, client_info))
 
-            # Extract client objects from the list
-            all_clients = [client_info for _, client_info in client_contract_work_with_client_info]
+                # Extract client objects from the list
+                all_clients = [client_info for _, client_info in client_contract_work_with_client_info]
+
+            else:
+                client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+
+                # Fetch client information for each client contract work
+                client_contract_work_with_client_info = []
+                for work in client_contract_work:
+                    client_info = client.objects.get(id=work.client_id)
+                    client_contract_work_with_client_info.append((work, client_info))
+
+                # Extract client objects from the list
+                all_clients = [client_info for _, client_info in client_contract_work_with_client_info]
 
     # Create a new Excel workbook and worksheet
     workbook = openpyxl.Workbook()
@@ -20656,13 +18719,15 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from django.shortcuts import redirect
 from django.conf import settings
+from Database_Educated_System.settings import LIVE_URL
+
 
 # Set up the OAuth 2.0 flow
 flow = Flow.from_client_secrets_file(
     'client_secret2.json',
     scopes=['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/userinfo.email','https://www.googleapis.com/auth/userinfo.profile','openid']
 )
-flow.redirect_uri = 'https://dec.educatedapp.com/oauth2callback/'
+flow.redirect_uri = f'{LIVE_URL}oauth2callback/'
 
 @csrf_exempt
 @login_required(login_url='/')
@@ -20688,8 +18753,6 @@ def generate_and_open_in_sheets(request):
     # Get the email of the Google authenticated user
     google_email = userinfo.get('email')
     
-    import calendar
-    from datetime import date, datetime, timedelta
 
     submit_type = request.session.get('submit_type')
     employee_id = request.session.get('employee_id')
@@ -22853,9 +20916,7 @@ def export_employee_data(request):
     start_month = start_date.month
     end_month = end_date.month
 
-    from datetime import datetime
-    import calendar
-    import json
+
 
     merged_ui_employee = {}
     merged_ui_employee_list = []
@@ -23013,10 +21074,9 @@ def export_employee_data(request):
         except (json.JSONDecodeError, ValueError):
             pass
 
-    from decimal import Decimal
+
     count_days = count_working_days(start_date_str, end_date_str)
-    from collections import defaultdict
-    from datetime import datetime
+
 
     # Assuming necessary imports and initializations are already done
 
@@ -26538,9 +24598,7 @@ def delete_document(request, document_id):
         else:
             return redirect("client-profile", document.client_id)
 
-    # except FileManager.DoesNotExist:
-    #     logger.warning(f"Document not found with ID: {document_id}")
-    #     return JsonResponse({"error": "Document not found."}, status=404)
+
     except Exception as e:
         print(e)
         pass
@@ -26614,33 +24672,6 @@ def check_file_name(request):
 
     
 
-
-
-
-# def update_gmail1(request):
-#     try:
-#         # Find all records that match the condition
-#         records = timeSheet.objects.filter(
-#             employee_id=6, gmail='amackenzie@educatedc.com'
-#         )
-
-#         if records.exists():
-#             # Get a list of updated record IDs
-#             updated_ids = list(records.values_list('id', flat=True))
-
-#             # Update the gmail field
-#             records.update(gmail='saseobantilan@educatedc.com')
-
-#             return JsonResponse({
-#                 "message": "Gmail updated successfully",
-#                 "updated_records": len(updated_ids),
-#                 "updated_ids": updated_ids
-#             })
-#         else:
-#             return JsonResponse({"message": "No records found to update"}, status=404)
-
-#     except Exception as e:
-#         return JsonResponse({"error": str(e)}, status=500)
 
 
 
@@ -26839,11 +24870,6 @@ def upload_from_drive(request):
         employee_id = request.session.get('user_id')
         # creds_data = request.session.get('creds')
         employee_ob = employee.objects.get(id=employee_id)
-        # if not employee_ob.gd_token:
-        #     url = reverse('profile_with_optional', kwargs={'employee_id': int(employee_id), 'my_profile_tab': '3'})
-        #     print(url)
-        #     response = HttpResponseRedirect(url)  # Redirect to a home page or a login pag
-        #     return response  # Redirect user to a login or home page after signout
 
         try:
             if not employee_ob.gd_token:
@@ -26958,20 +24984,7 @@ def delete_category(request):
         deleted_category = request.POST.get('deleted_category')
 
         cat_ob = File_Category.objects.get(id=deleted_category)
-        # fm_ob = FileManager.objects.filter(category_id = cat_ob.id)
-        # for fm in fm_ob:
-        #     decoded_file_url = urllib.parse.unquote(fm.file.url)
-        #     print(decoded_file_url)
-        #     relative_path = decoded_file_url.replace('/static/assets/', '', 1)
-        #     # Construct the full absolute file system path
-        #     file_path = os.path.join(settings.STATICFILES_DIRS[0], relative_path)
-        #     try:
-        #         os.remove(file_path)
-        #     except OSError as e:
-        #         print(e, 'PATH ERROR2')
-        #         pass
-        #     print(fm.file.url)
-        # fm_ob.delete()
+   
         cat_ob.delete()
         messages.success(request, 'Category Deleted successfully!')
 
@@ -27355,32 +25368,7 @@ def dashboard(request, linkedin_user):
     # six_months_ago = now - relativedelta(months=6)
     six_months_ago = now - timedelta(days=180)
 
-    # result = get_6_month_follower_growth(client_id)
-
-    # linkedin_growth = None
-    # linkedin_growth_percentage = None
-    # twitter_growth = None
-    # twitter_growth_percentage = None
-    # avg_engagement = None
-    # avg_impressions = None
-
-    # if result:
-    #     linkedin_growth = result.get('linkedin_growth')
-    #     linkedin_growth_percentage = result.get('linkedin_growth_percentage')
-    #     twitter_growth = result.get('twitter_growth')
-    #     twitter_growth_percentage = result.get('twitter_growth_percentage')
-
-    # if airtable_details:
-    #     linkedin_engagement_count = airtable_details.linkedin_engagement_count or 0
-    #     linkedin_profile_view_count = airtable_details.linkedin_view_count or 0
-    #     linkedin_post_count = airtable_details.linkedin_post_count or 0
-        
-    #     if linkedin_post_count > 0:
-    #         avg_engagement = linkedin_engagement_count / linkedin_post_count
-    #         avg_impressions = linkedin_profile_view_count / linkedin_post_count
-    #     else:
-    #         avg_engagement = None
-    #         avg_impressions = None
+ 
 
     result = get_6_month_follower_growth(client_id)
 
@@ -27625,50 +25613,12 @@ def dashboard(request, linkedin_user):
 
     full_url = request.build_absolute_uri(reverse('dashboard', args=[linkedin_user]))
 
-    # matrix = get_heatmap_data(client_id)
-    # matrix, month_labels = get_monthly_heatmap_data(client_id)
 
-    # client_id = request.user.id  # or from session/query
     weekly = get_weekly_heatmap_data(client_id)
     monthly, month_labels = get_monthly_heatmap_data(client_id)
     print('month_labels1')
     print(month_labels)
 
-
-    # --- Topic breakdown calculation ---
-
-    # topic_color_map = {
-    #     'Responsible AI': 'rgb(155, 135, 245)',
-    #     'Data sharing': 'rgb(142, 145, 150)',
-    #     'Future predictions': 'rgb(234, 56, 76)',
-    #     'Networking events': 'rgb(126, 105, 171)',
-    #     'Private equity': 'rgb(217, 70, 239)',
-    #     'Value Creation': 'rgb(51, 195, 240)'
-    # }
-
-    # # Count only valid topics
-    # topic_counter = Counter()
-    # for post in posts:
-    #     for topic in [post.topic_1, post.topic_2, post.topic_3]:
-    #         if topic and topic in topic_color_map:
-    #             topic_counter[topic] += 1
-
-    # total_valid = sum(topic_counter.values())
-    # topic_breakdown = []
-
-    # # Build breakdown only for topics in the map
-    # if total_valid > 0:
-    #     for topic in topic_color_map:
-    #         count = topic_counter.get(topic, 0)
-    #         percentage = round((count / total_valid) * 100, 2) if total_valid else 0
-    #         topic_breakdown.append({
-    #             'label': topic,
-    #             'value': percentage,
-    #             'color': topic_color_map[topic]
-    #         })
-
-    # # Sort by percentage descending
-    # topic_breakdown.sort(key=lambda x: x['value'], reverse=True)
 
 
     predefined_colors = [
@@ -27841,18 +25791,7 @@ def submit_post_generate_data(request):
             # webhook_url = 'https://n8n.educatedapp.com/webhook-test/dec_common'
             webhook_url = 'https://n8n.educatedapp.com/webhook/dec_common'
 
-        # elif int(data['client_id1']) == 80:
-        #     # Forward the data to n8n webhook
-        #     webhook_url = 'https://n8n.educatedapp.com/webhook/stevenlee'
-        #     # webhook_url = 'https://n8n.educatedapp.com/webhook-test/stevenlee'
-        # elif int(data['client_id1']) == 79:
-        #     # Forward the data to n8n webhook
-        #     webhook_url = 'https://n8n.educatedapp.com/webhook/richardwatson'
-        #     # webhook_url = 'https://n8n.educatedapp.com/webhook-test/richardwatson'
-        # elif int(data['client_id1']) == 88:
-        #     # Forward the data to n8n webhook
-        #     # webhook_url = 'https://n8n.educatedapp.com/webhook/sanghoechow'
-        #     webhook_url = 'https://n8n.educatedapp.com/webhook-test/sanghoechow'
+
 
         elif int(data['client_id1']) == 79:
             data['asst_id'] = "asst_94oxLFO72WyzPWfjn8zGXVp8"
@@ -27926,14 +25865,6 @@ def receive_post_data(request):
             linkedin_post = data.get("linkedin_post")
             twitter_post = data.get("twitter_post")
 
-            # if not all([client_id, date_str]):
-            #     return JsonResponse({"error": "client_id and date are required."}, status=400)
-
-            # Convert date string to date object
-            # date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-
-            # Get matching SocialMedia record
-            # Get the most recent SocialMedia entry for the given client_id
             social_post = SocialMedia.objects.filter(client_id=int(client_id)).last()
             print(social_post.id)
             if social_post:
