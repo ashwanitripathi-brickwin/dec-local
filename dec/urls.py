@@ -2,8 +2,12 @@ from django.urls import path,include
 from .views import *
 
 urlpatterns = [
-    path('auth/',include('dec.auth.urls')),
-    path("", admin_dashboard, name="admin-dashboard"),
+    path("", login, name="login"),
+    path("login/", login, name="login"),
+    path("logout/", logout, name="logout"),
+    # path("forgot_password/", forgot_password, name="forgot_password"),
+    path("register/", register, name="register"),
+    path("admin-dashboard", admin_dashboard, name="admin-dashboard"),
     path("employees/", employees, name="employees"),
     path("holidays/", holidays, name="holidays"),
     path('profile/<int:employee_id>/', profile, name='profile'),
