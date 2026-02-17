@@ -1,6 +1,7 @@
 # dec/tasks.py
 from django.utils import timezone
-from .views import send_buddy_email
+# from .views import send_buddy_email
+from .utils import *
 from .models import *
 from django.utils.timezone import now
 import json
