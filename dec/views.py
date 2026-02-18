@@ -1930,7 +1930,11 @@ def profile(request, employee_id,my_profile_tab=None):
             employee1 = employee.objects.get(id=employee_id)
             # employee_salary= employee1.salary
             employee_salary = get_salary_for_date(employee1, date)
-            employee_name = employee1.first_name + " " + employee1.last_name
+            last_name=""
+            if employee1.last_name:
+                last_name = employee1.last_name
+                
+            employee_name = employee1.first_name + " " + last_name
 
             employee_id1=employee_id
 
