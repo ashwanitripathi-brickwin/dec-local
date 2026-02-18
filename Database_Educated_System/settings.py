@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'dec',
     'django_apscheduler',
-    'django.contrib.humanize'
+    'django.contrib.humanize',
+    'sslserver',
 ]
 
 MIDDLEWARE = [

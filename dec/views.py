@@ -213,6 +213,10 @@ def admin_dashboard(request):
         leaves_with_employees.append(leave_data)
 
     from datetime import date, timedelta
+    import calendar
+    from datetime import date
+
+
     today_date = date.today()  # Today's date
     next_30_days_date = today_date + timedelta(days=30)  # 30 days from today
 
@@ -261,6 +265,7 @@ def admin_dashboard(request):
 
     today = date.today()
     tomorrow = today + timedelta(days=1)
+
 
     birthdays_today = employee.objects.filter(date_of_birth__month=today.month, date_of_birth__day=today.day)
     birthdays_tomorrow = employee.objects.filter(date_of_birth__month=tomorrow.month, date_of_birth__day=tomorrow.day)
@@ -500,8 +505,7 @@ def admin_dashboard(request):
             print(current_year)
             print(last_year)
 
-            import calendar
-            from datetime import date
+           
             start_date = date(current_year, current_month, 1)
             end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
             
@@ -23251,20 +23255,23 @@ def add_holidays_2026(request):
 @csrf_exempt
 def login(request):
     # Check if the user is already logged in
+    logging.info("Accessed login view")
     if request.user.is_authenticated:
         print(f"User {request.user.username} is already authenticated. Redirecting to admin dashboard.")
         return redirect("admin-dashboard")
 
     base_url = f"{request.scheme}://{request.get_host()}/auth-receiver"
     if request.method == 'POST':
+        
         uname = request.POST.get("username")
         print("myyyy")
         print(uname)
         password = request.POST.get('password')
         print('Password')
         print(password)
+        logging.info(f"Received login data: username={uname}, password={'*' * len(password) if password else None}")
 
-        # Attempt authentication with the original username
+        # Attempt authentication with the original email
         user = auth.authenticate(username=uname, password=password)
 
         # If authentication fails, attempt authentication with the first letter lowercase
@@ -23294,7 +23301,7 @@ def login(request):
 
                 if group[0].name == 'admin' or group[0].name == 'super_admin'or group[0].name == 'super_user':
                     print("admin")
-                    employee1 = employee.objects.get(email=request.user.email)
+                    employee1 = employee.objects.get(user_name=request.user.username)
                     if employee1:
                         request.session['first_name'] = employee1.first_name
                         request.session['last_name'] = employee1.last_name
@@ -23306,7 +23313,7 @@ def login(request):
             else:
                 print("User is not in any admin group. Checking for employee record.")
                 print("employee")
-                employee1 = employee.objects.get(email=request.user.email)
+                employee1 = employee.objects.get(user_name=request.user.username)
                 print("sgvfbhjnmk,,,,;l/////////////////////////////////////")
                 print(employee1)
                 if employee1:
@@ -23331,10 +23338,13 @@ def logout(request):
 
 @csrf_exempt
 def register(request):
+    logging.info("Accessed register view")
     if request.method == 'POST':
+        
         uname = request.POST.get("username")
         pass1 = request.POST.get("password")
         pass2 = request.POST.get("repeat_password")
+        logging.info(f"Received registration data: username={uname}, pass1={pass1 }, pass2={pass2}")
 
         if pass1 != pass2:
             messages.error(request, "Passwords do not match.")
@@ -23346,10 +23356,18 @@ def register(request):
             return redirect("register")
 
         # Create a new user
-        my_user = User.objects.create_user(username=uname, password=pass1)
-        my_user.save()
+        try:
 
-        messages.success(request, "Registration successful.")
+            my_user = User.objects.create_user(username=uname, password=pass1,email=uname)
+            my_user.save()
+            my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname)
+            logging.info(f"Created user: {my_user}, employee record: {my_employee}")
+            return redirect("login")
+        except Exception as e:
+            logging.error(f"Error creating user: {e}")
+        
+            messages.error(request, "An error occurred during registration. Please try again later.")
+        # messages.success(request, "Registration successful.")
         return redirect("admin-dashboard")
 
     return render(request, "register.html",{})

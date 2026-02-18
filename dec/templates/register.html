@@ -26,11 +26,21 @@
                     <div class="account-wrapper">
                         <h3 class="account-title">Register</h3>
                         <p class="account-subtitle">Access to our dashboard</p>
+                         {% if messages %}
+                        <div class="messages mb-3">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                         <form action="{% url 'register' %}" method="post">
                             {% csrf_token %}
                             <div class="input-block mb-4">
-                                <label class="col-form-label">Username<span class="mandatory">*</span></label>
-                                <input class="form-control" type="text" name="username">
+                                <label class="col-form-label">Email<span class="mandatory">*</span></label>
+                                <input class="form-control" type="email" name="username" required>
                             </div>
                             <div class="input-block mb-4">
                                 <label class="col-form-label">Password<span class="mandatory">*</span></label>
