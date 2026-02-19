@@ -1,0 +1,37 @@
+
+
+services:
+  web:
+    build: .
+    command: gunicorn Database_Educated_System.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - .:/code
+    restart: always
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME:-dec_db}
+      POSTGRES_USER: ${DB_USER:-dec_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dec_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - static_volume:/code/staticfiles 
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+  static_volume:

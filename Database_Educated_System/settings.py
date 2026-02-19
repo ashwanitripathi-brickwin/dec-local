@@ -36,10 +36,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$$i+r@=skhltcrta-^60fb%f3bke3m+40#$fd88j$!gtae2chm'
+
+SECRET_KEY="django-insecure-$$i+r@=skhltcrta-^60fb%f3bke3m+40#$fd88j$!gtae2chm"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', '0') in ('1', 'True', 'true')
 
 ALLOWED_HOSTS = ["*"]
 
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,14 +95,15 @@ WSGI_APPLICATION = 'Database_Educated_System.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dec_db',
-        'USER': 'myuser',
-        'PASSWORD': 'mypassword',
-        'HOST': 'localhost',
-        'PORT': '5432'
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'dec_db'),
+        'USER': os.environ.get('DB_USER', 'dec_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'dec_pass'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -153,7 +156,14 @@ USE_TZ = True
 #     os.path.join(BASE_DIR, 'dec/static/assets'),  # 'static' contains 'assets' folder
 # ]
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'dec/static/assets')]
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'dec/static')
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 
 # Default primary key field type
@@ -165,7 +175,7 @@ SESSION_COOKIE_AGE = 604800  # 7 days * 24 hours * 60 minutes * 60 seconds
 
 
 CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://dec.educatedapp.com']
+CSRF_TRUSTED_ORIGINS = ['https://dec.educatedapp.com', 'https://localhost:8000', 'https://127.0.0.1:8000']
 
 
 
