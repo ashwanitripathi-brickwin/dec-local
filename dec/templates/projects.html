@@ -44,7 +44,8 @@
 				<div class="input-block mb-3 form-focus">
 					<select class="select form-control leaderDropdown hideLabel" id="employee_id" multiple name="employee_id" >
 						{% for employee in employee_list %}
-							<option value="{{ employee.id }}" {% if employee.id|stringformat:"s" in employee_ids %} selected {% endif %}>{{ employee.first_name }} {{ employee.last_name }}</option>
+							<option value="{{ employee.id }}" {% if employee.id|stringformat:"s" in employee_ids %} selected {% endif %}>{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}</option>
+	
 						{% endfor %}
 					</select>
 					<label class="focus-label">Employee Name</label>
@@ -381,6 +382,7 @@
 							</div>
 						</div>
 					</div>
+				
 					<div class="row">
 						<div class="col-sm-6">
 							<div class="input-block mb-3">
@@ -388,7 +390,7 @@
 								<select class="select form-control leaderDropdown" id="leaderDropdown" onchange="updateTeamMemberImages('leader')" multiple name="leader">
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
-									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}</option>
 									{% endfor %}
 								</select>
 								<div class="invalid-feedback">Please select at least one leader.</div>
@@ -411,7 +413,8 @@
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
 									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
-										{{ employee.first_name }} {{ employee.last_name }}
+										<!-- {{ employee.first_name }} {{ employee.last_name }} -->
+										{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}
 									</option>
 									{% endfor %}
 								</select>
@@ -435,7 +438,8 @@
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
 									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
-										{{ employee.first_name }} {{ employee.last_name }}
+								
+										{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}
 									</option>
 									{% endfor %}
 								</select>
@@ -667,13 +671,7 @@
 
 							</div>
 						</div>
-						<div class="col-sm-6">
-							<div class="input-block mb-3">
-								<label class="col-form-label">Team Leader</label>
-								<div class="project-members" id="editLeaderContainer">
-								</div>
-							</div>
-						</div>
+					
 					</div>
 					<div class="row">
 						<div class="col-sm-6">
