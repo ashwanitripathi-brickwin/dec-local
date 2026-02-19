@@ -23386,6 +23386,7 @@ def register(request):
                     password=pass1,
                     email=uname
                 )
+                my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname,status=1)
                 logging.info("Superuser created")
 
             else:
