@@ -20293,7 +20293,7 @@ def auth_receiver(request):
     """
     print('Inside')
     token = request.POST['credential']
-    c_id = "338920935761-qo45770jjhdg2q2e80aldv9t1kia578k.apps.googleusercontent.com"
+    c_id = "602216227502-oqfm2k4p809igsbsibfdt7m9r7sfhsd4.apps.googleusercontent.com"
     # return HttpResponse(f'{token}:{id_token}:{requests.Request()} INSIDE')
     request_info = str(requests.Request())
     id_token_info = id_token.__name__
@@ -23354,6 +23354,8 @@ def logout(request):
     return redirect('login')
 
 
+
+
 @csrf_exempt
 def register(request):
     logging.info("Accessed register view")
@@ -23394,6 +23396,25 @@ def register(request):
                 my_user.save()
                 my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname,status=1)
                 logging.info(f"Created user: {my_user}, employee record: {my_employee}")
+
+            body="""
+                Hi,
+                <br>
+                Your account has been created successfully. Please log in to access the platform.
+                <br>
+                If you have any questions or need assistance, feel free to contact our support team. 
+                <br><br>
+                Best regards, 
+                <br>
+                The Brickwin Team 
+            """
+            
+            send_email_modified(
+                to_email=uname,
+                subject="Welcome to the Brickwin",
+                body=body
+             )
+
             return redirect("login")
         except Exception as e:
             logging.error(f"Error creating user: {e}")
@@ -23403,6 +23424,7 @@ def register(request):
         return redirect("admin-dashboard")
 
     return render(request, "register.html",{})
+
 @csrf_exempt
 def forgot_password(request):
         if request.method == 'POST':

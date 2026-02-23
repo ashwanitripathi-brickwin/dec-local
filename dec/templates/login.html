@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none">
 {% load static %}
+
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,13 +27,32 @@
 
     <script src="https://accounts.google.com/gsi/client" async></script>
 
+  <style>
+.btn-primary.account-btn {  
+    background: #4994fc !important;
+    border-color: #5e9cf2 !important;
+}
+
+.btn-primary.account-btn:hover,
+.btn-primary.account-btn:focus {
+    background: #4a86d6 !important;
+    border-color: #4a86d6 !important;
+}
+
+.account-logo img {
+    height: 60px !important;   /* ↓ make smaller */
+    width: 208px !important ;
+}
+</style>
+
+
 </head>
 <body class="account-page">
     <div class="main-wrapper">
         <div class="account-content">
             <div class="container">
                 <div class="account-logo">
-                    <a href="{% url 'admin-dashboard' %}"><img src="{% static 'assets/img/logo2.png' %}" alt="Brickwin "></a>
+                    <a href="{% url 'admin-dashboard' %}"><img src="{% static 'assets/img/Brickwin Logo Full Black.png' %}" alt="Brickwin "></a>
                 </div>
                 <div class="account-box">
                     <div class="account-wrapper">
@@ -80,10 +101,10 @@
                         </form>
                         <div>
                            <div id="g_id_onload"
-                             data-client_id="338920935761-qo45770jjhdg2q2e80aldv9t1kia578k.apps.googleusercontent.com"
+                             data-client_id="602216227502-oqfm2k4p809igsbsibfdt7m9r7sfhsd4.apps.googleusercontent.com"
                              data-context="signin"
                              data-ux_mode="popup"
-                             data-login_uri="https://dec.educatedapp.com/auth-receiver"
+                             data-login_uri="https://127.0.0.1:5000/auth-receiver"
                              data-itp_support="true">
                             </div>
 

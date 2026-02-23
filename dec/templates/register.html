@@ -12,6 +12,23 @@
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
     <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+     <style>
+.btn-primary.account-btn {
+     background: #4994fc !important;
+    border-color: #5e9cf2 !important;
+
+}
+
+.btn-primary.account-btn:hover,
+.btn-primary.account-btn:focus {
+    background: #4786d8 !important;
+    border-color: #4a86d6 !important;
+}
+.account-logo img {
+    height: 60px !important;   /* ↓ make smaller */
+    width: 208px !important ;
+}
+</style>
 </head>
 <body class="account-page">
     <div class="main-wrapper">
@@ -19,7 +36,7 @@
             <div class="container">
                 <div class="account-logo">
                     <a href="{% url 'admin-dashboard' %}">
-                        <img src="{% static 'assets/img/logo2.png' %}" alt="Brickwin ">
+                        <img src="{% static 'assets/img/Brickwin Logo Full Black.png' %}" alt="Brickwin ">
                     </a>
                 </div>
                 <div class="account-box">

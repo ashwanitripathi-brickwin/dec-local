@@ -1069,8 +1069,8 @@ def calculate_rates(request):
 def send_leave_approval_email(leave_obj):
     emp_ob = employee.objects.get(id=leave_obj.employee_id)
     subject = f"{emp_ob.first_name} Leave Request Approval Needed ({leave_obj.start_date} - {leave_obj.end_date})"
-    to_email = ["ekirk@educatedc.com"]
-    user_email = "ekirk@educatedc.com"
+    to_email = ["developers@brickwin.com"]
+    user_email = "developers@brickwin.com"
     approve_url = settings.BASE_URL + reverse('update_leave_status') + f'?leave_id={leave_obj.id}&leave_status=approved&user_email={user_email}'
     decline_url = settings.BASE_URL + reverse('update_leave_status') + f'?leave_id={leave_obj.id}&leave_status=declined&user_email={user_email}'
     leave_type_ob = LeaveType.objects.get(id = leave_obj.leave_type_id)
@@ -1081,7 +1081,7 @@ def send_leave_approval_email(leave_obj):
         'leave_type':leave_type_ob.name,
         'approve_url': approve_url,
         'decline_url': decline_url,
-        'logo_url': 'https://dec.educatedapp.com/static/assets/img/EC_Logo_Black.png',  # Or use static()
+        'logo_url': '',  # Or use static()
     }
     html_content = render_to_string('email_leave_request.html', context)
 
@@ -1329,3 +1329,44 @@ def get_weekly_heatmap_data(client_id):
     #             cell['total'] = round(cell['total'] / cell['count'], 2)
 
     return matrix
+
+
+
+import smtplib
+from email.mime.text import MIMEText
+import os
+
+
+EMAILS_FROM_EMAIL = os.environ.get("EMAILS_FROM_EMAIL")
+EMAILS_FROM_NAME= os.environ.get("EMAILS_FROM_NAME")
+SMTP_HOST = os.environ.get("SMTP_HOST")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))  # Default to 587 if not set
+SMTP_USER = os.environ.get("SMTP_USER")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+
+
+def send_email_modified(to_email: str, subject: str, body: str):
+    """
+    Send an email with error handling and logging.
+    """
+    try:
+        msg = MIMEText(body, "html")
+        msg["Subject"] = subject
+        msg["From"] = f"{EMAILS_FROM_NAME} <{EMAILS_FROM_EMAIL}>"
+        msg["To"] = to_email
+
+        logging.info(f"[EMAIL] Attempting to send email to {to_email} via {SMTP_HOST}:{SMTP_PORT}")
+
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.sendmail(EMAILS_FROM_EMAIL, [to_email], msg.as_string())
+
+        logging.info(f"[EMAIL] Successfully sent email to {to_email} with subject '{subject}'")
+
+    except smtplib.SMTPException as smtp_err:
+        logging.exception(f"[EMAIL] SMTP error while sending to {to_email}: {smtp_err}")
+        raise
+    except Exception as e:
+        logging.exception(f"[EMAIL] Failed to send email to {to_email}: {e}")
+        raise

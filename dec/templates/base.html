@@ -10,7 +10,7 @@
 }
 
 .header-left .logo img {
-    max-height: 38px;          /* control logo size */
+    height: 28px !important;        /* control logo size */
     width: auto;
     object-fit: contain;
 }
@@ -66,7 +66,7 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
+                background-color: rgba(245, 239, 239, 0.5);
             }
         </style>
     </head>
@@ -79,7 +79,7 @@
 
                 <div class="header-left">
                     <a href="{% url 'admin-dashboard' %}" class="logo">
-                        <img src="{% static 'assets/img/brickwin_consultancy_services_logo.png' %}" alt="Logo">
+                        <img src="{% static 'assets/img/Brickwin Logo Full White.png' %}" alt="Logo">
 
                     </a>
                     <!-- <a href="admin-dashboard.html" class="logo">
@@ -99,24 +99,14 @@
                 </a>
 
                 <div class="page-title-box">
-                    <h3>Brickwin </h3>
+                    <h3>Brickwin Consultancy Services </h3>
                 </div>
 
                 <a id="mobile_btn" class="mobile_btn" href="#sidebar"><i class="fa-solid fa-bars"></i></a>
 
                 <ul class="nav user-menu">
 
-                    <!-- <li class="nav-item">
-                        <div class="top-nav-search">
-                            <a href="javascript:void(0);" class="responsive-search">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </a>
-                            <form action="#">
-                                <input class="form-control" type="text" placeholder="Search here">
-                                <button class="btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                            </form>
-                        </div>
-                    </li> -->
+                  
 
                     <li class="nav-item dropdown" hidden>
                         <a href="#" class="dropdown-toggle nav-link" data-bs-toggle="dropdown1">
@@ -325,7 +315,7 @@
                                 <span>{{ request.session.first_name }}</span>
 
                         </a>
-                        
+
                         <div class="dropdown-menu">
                             <a class="dropdown-item" href="{% url 'profile' request.session.user_id %}">My Profile</a>
                             <!-- <a class="dropdown-item" href="#">Settings</a> -->
@@ -353,13 +343,6 @@
                             <li class="menu-title">
                                 <span>Main</span>
                             </li>
-                            <!-- <li class="submenu">
-                                <a href="#"><i class="la la-dashboard"></i> <span> Dashboard</span> <span class="menu-arrow"></span></a>
-                                <ul>
-                                    <li><a class="{{ active.0 }}" href="{% url 'admin-dashboard' %}">Admin Dashboard</a></li>
-                                    <li><a href="{% url 'employees' %}">Employee Dashboard</a></li>
-                                </ul>
-                            </li> -->
                             <li class="{{ active.0 }}">
                                 <a href="{% url 'admin-dashboard' %}"><i class="la la-dashboard"></i> <span>Dashboard</span></a>
                             </li>
@@ -412,7 +395,7 @@
                                 <a href="{% url 'calender' %}"><i class="la la-users"></i> <span>Timer</span></a>
                             </li>
                             {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'super_admin' %}
+                                        {% if user.groups.all.0.name == 'super_admin' or user.groups.all.0.name == 'super_user'%}
                                 <li>
                                     <a class="{{ active.11 }}" href="{% url 'excel_sheet' %}"><i class="la la-users"></i> <span>Sheet</span></a>
                                 </li>
@@ -422,7 +405,7 @@
                                 <a href="{% url 'report' %}"><i class="la la-rocket"></i> <span>Report</span></a>
                             </li>
                             {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'super_admin' %}
+                                        {% if user.groups.all.0.name == 'super_admin' or user.groups.all.0.name == 'super_user'%}
                             <li class="{{ active.12 }}">
                                 <a href="{% url 'short_mail' %}"><i class="fas fa-envelope"></i> <span>Email</span></a>
                             </li>
@@ -432,28 +415,18 @@
                                 <a href="{% url 'projects' %}"><i class="la la-rocket"></i> <span>Projects</span></a>
                             </li>
                             {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'super_admin' %}
+                                       {% if user.groups.all.0.name == 'super_admin' or user.groups.all.0.name == 'super_user'%}
                                 <li>
                                     <a class="{{ active.14 }}" href="{% url 'quickbook' %}"><i class="la la-users"></i> <span>Quickbooks</span></a>
                                 </li>
                             {% endif %}
                             {% endif %}
                             {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'super_admin' %}
+                                        {% if user.groups.all.0.name == 'super_admin' or user.groups.all.0.name == 'super_user'%}
                                 <li class="submenu">
                                     <a href="#"><i class="la la-files-o"></i> <span> Excel </span> <span class="menu-arrow"></span></a>
                                     <ul>
-                                        <!-- <li><a href="{% url 'update_employee' %}">Update Employee </a></li>
-                                        <li><a href="{% url 'update_client' %}">Update Client </a></li>
-                                        <li><a href="{% url 'employees_id' %}">Employee Id</a></li>
-                                        <li><a href="{% url 'upload_contracted_hours' %}">Upload Contracted Data </a></li>
-                                        <li><a href="{% url 'upload_contracted_employee' %}">Upload Contracted Employee </a></li>
-                                        <li><a href="{% url 'upload_attendance' %}">Upload Attendance Data </a></li>
-                                        <li><a href="{% url 'final_calculation' %}">Final Calculation </a></li>
-                                        <li><a href="{% url 'upload_working_category' %}">Upload Working category </a></li>
-                                        <li><a href="{% url 'upload_client_contract_work' %}">Upload Client contract work </a></li>
-                                        <li><a href="{% url 'upload_client_contract_employee' %}">Upload Client contract employee </a></li> -->
-
+                                      
 
                                     </ul>
                                 </li>
@@ -961,7 +934,7 @@
     <style type="text/css">
 
         #password_change_modal {
-          background-color: rgba(0, 0, 0, 0.3); /* Fallback color */
+          background-color: rgb(250, 247, 247); /* Fallback color */
           backdrop-filter: blur(3px); /* Blur the background */
           -webkit-backdrop-filter: blur(3px); /* For Safari support */
         }
