@@ -31,6 +31,9 @@ class employee(models.Model):
     manual_timezone = models.CharField(max_length=100, null=True, blank=True)
     gd_gmail = models.CharField(max_length=200, null=True, blank=True)
     gd_token = models.TextField(null=True, blank=True)
+    is_special_case = models.BooleanField(default=False)
+    is_external = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
 
 
     # def __str__(self):

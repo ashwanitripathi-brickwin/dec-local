@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    {% load static %}
+<head>
+    <title>Email Verification</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smarthr - Bootstrap Admin Template">
+    <meta name="keywords" content="admin, estimates, bootstrap, business, corporate, creative, management, minimal, modern, accounts, invoice, html5, responsive, CRM, Projects">
+    <meta name="author" content="Dreamguys - Bootstrap Admin Template">
+    <title>Email Verification - Database Educated Change</title>
+
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/css/line-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/material.css' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/css/line-awesome.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+
+    <script src="https://accounts.google.com/gsi/client" async></script>
+    <style>
+        body { font-family: Arial; text-align:center; padding:50px; }
+        .box { border:1px solid #eee; padding:30px; display:inline-block; }
+        .btn { padding:10px 20px; background:#0d6efd; color:white; text-decoration:none; border-radius:5px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        {% if success %}
+            <h2>✅ Email Verified</h2>
+            <p>Your email has been successfully verified.</p>
+            <a href="{% url 'login' %}" class="btn btn-primary">Go to Login</a>
+        {% else %}
+            <h2>❌ Invalid or Expired Link</h2>
+            <p>This verification link is invalid or expired.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

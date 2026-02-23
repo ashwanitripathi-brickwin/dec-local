@@ -23270,6 +23270,7 @@ def add_holidays_2026(request):
 def login(request):
     # Check if the user is already logged in
     logging.info("Accessed login view")
+    
     if request.user.is_authenticated:
         logging.info(f"User {request.user.username} is already authenticated. Redirecting to admin dashboard.")
         return redirect("admin-dashboard")
@@ -23287,6 +23288,15 @@ def login(request):
 
         # Attempt authentication with the original email
         user = auth.authenticate(username=uname, password=password)
+   
+        emp = employee.objects.get(email=uname)
+        if not emp.is_email_verified:
+            messages.error(
+                request,
+                "Your email is not verified. Please verify you email before login.",
+                extra_tags="email_not_verified"
+            )
+            return redirect("login")
         logging.info("Authentication attempt with original username")
 
         # If authentication fails, attempt authentication with the first letter lowercase
@@ -23356,6 +23366,12 @@ def logout(request):
 
 
 
+
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+
+
+
 @csrf_exempt
 def register(request):
     logging.info("Accessed register view")
@@ -23395,25 +23411,37 @@ def register(request):
                 my_user = User.objects.create_user(username=uname, password=pass1,email=uname)
                 my_user.save()
                 my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname,status=1)
-                logging.info(f"Created user: {my_user}, employee record: {my_employee}")
+                # after creating user
+                uid = urlsafe_base64_encode(force_bytes(my_user.pk))
+                token = email_verification_token.make_token(my_user)
 
-            body="""
-                Hi,
-                <br>
-                Your account has been created successfully. Please log in to access the platform.
-                <br>
-                If you have any questions or need assistance, feel free to contact our support team. 
-                <br><br>
-                Best regards, 
-                <br>
-                The Brickwin Team 
-            """
-            
-            send_email_modified(
-                to_email=uname,
-                subject="Welcome to the Brickwin",
-                body=body
-             )
+                verify_link = request.build_absolute_uri(
+                    reverse("verify_email", kwargs={"uidb64": uid, "token": token})
+                )
+
+                body = f"""
+                Hi,<br><br>
+
+                Please verify your email by clicking below:<br><br>
+
+                <a href="{verify_link}">Verify Email</a><br><br>
+
+                If you didn’t register, ignore this email.<br><br>
+
+                Thanks,<br>
+                Brickwin Team
+                """
+
+                send_email_modified(
+                    to_email=uname,
+                    subject="Verify your Brickwin account",
+                    body=body
+                )
+                messages.error(request, "Registration successful. Please check your email to verify your account.")
+                logging.info(f"Created user: {my_user}, employee record: {my_employee}")
+                return redirect("register")
+
+           
 
             return redirect("login")
         except Exception as e:
@@ -23424,6 +23452,74 @@ def register(request):
         return redirect("admin-dashboard")
 
     return render(request, "register.html",{})
+
+
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+
+def verify_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except Exception:
+        user = None
+
+    if user and email_verification_token.check_token(user, token):
+        emp = employee.objects.get(user_id=user.id)
+        emp.is_email_verified = True
+        emp.save()
+
+        return render(request, "email_verified.html", {"success": True})
+
+    return render(request, "email_verified.html", {"success": False})
+
+
+def resend_email_verification(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        logging.info(f"Email received for verification :{email}")
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist as e:
+            logging.info(f"no user find with email while verification :{str(e)}")
+            user = None
+
+        if user:
+            emp = employee.objects.get(user_id=user.id)
+            if not emp.is_email_verified:
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = email_verification_token.make_token(user)
+
+                verify_link = request.build_absolute_uri(
+                    reverse("verify_email", kwargs={"uidb64": uid, "token": token})
+                )
+
+                body = f"""
+                Hi,<br><br>
+
+                Please verify your email by clicking below:<br><br>
+
+                <a href="{verify_link}">Verify Email</a><br><br>
+
+                If you didn’t register, ignore this email.<br><br>
+
+                Thanks,<br>
+                Brickwin Team
+                """
+
+                send_email_modified(
+                    to_email=email,
+                    subject="Verify your Brickwin account",
+                    body=body
+                )
+                messages.success(request, "Verification link sent to your email.")
+            else:
+                messages.error(request, "Your email is already verified.")
+        else:
+            messages.error(request, "No user found with this email address.")
+
+    return render(request, "resend-email-verification.html", {})
+
 
 @csrf_exempt
 def forgot_password(request):
