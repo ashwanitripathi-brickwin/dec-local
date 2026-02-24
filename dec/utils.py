@@ -1382,3 +1382,46 @@ class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
         return f"{user.pk}{timestamp}{user.is_active}"
 
 email_verification_token = EmailVerificationTokenGenerator()
+
+
+
+
+
+# utils/decorators.py
+import logging
+from functools import wraps
+
+logger = logging.getLogger(__name__)
+
+def log_view_call(func):
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        logger.info(f"VIEW CALLED: {func.__name__}")
+        return func(request, *args, **kwargs)
+    return wrapper
+
+
+def is_brickwin_email(email: str) -> bool:
+    """
+    Returns True if email ends with @brickwin.com (case-insensitive)
+    """
+    if not email:
+        return False
+
+    email = email.strip().lower()
+    return email.endswith("@brickwin.com")
+
+
+
+def get_username_from_email(value: str) -> str:
+    """
+    Returns substring before '@' if present.
+    Otherwise returns the original string.
+    """
+    if not value:
+        return ""
+
+    if "@" in value:
+        return value.split("@", 1)[0]
+
+    return value

@@ -91,9 +91,10 @@ from Database_Educated_System.settings import LIVE_URL
 
 
 
+@log_view_call
 @login_required(login_url='/')
 def admin_dashboard(request):
-    print("Admin dashboard accessed by user")
+    logging.info("Admin dashboard accessed by user")
     active = [''] * 15
     active[0] = 'active'
 
@@ -110,8 +111,14 @@ def admin_dashboard(request):
     else:
         last_month=current_month-1
 
-    print(current_month)
-    print(last_month)
+    logging.info(f"Current month: {current_month}")
+    logging.info(f"Last month: {last_month}")
+    logging.info(f"request.user.email at admin_Dashboard :{request.user.email}")
+
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
+        logging.info("internal employee at dashboard")
 
     selected_year = request.session.get('year')
     from datetime import datetime, timedelta
@@ -128,13 +135,17 @@ def admin_dashboard(request):
     # Filter client_contract_work records for the given month and year
     contract_works = Client_contract_work.objects.filter(
         date__year=current_year,
-        date__month=current_month
+        date__month=current_month,
+        is_external=is_external
     )
 
 
     user_name = request.session.get('user_name')
-    print(user_name)
-    employee1 = employee.objects.get(user_name=user_name)
+    email= request.user.email
+    
+    logging.info(f"request session at admin dashboard:{request.session}")
+    logging.info(f"email:{email}")
+    employee1 = employee.objects.get(email=email)
     employee_id = employee1.toggl_user_id
 
     loggedin_employee_id = employee1.id
@@ -182,7 +193,8 @@ def admin_dashboard(request):
     all_leaves = leave.objects.filter(
         employee_id=loggedin_employee_id,
         start_date__year=running_year,
-        start_date__gte=today_date
+        start_date__gte=today_date,
+        is_external=is_external
     ).order_by('start_date')
 
     # Since we're fetching for a single employee, we don't need custom ordering by `employee_ids`
@@ -223,7 +235,8 @@ def admin_dashboard(request):
     # Fetch leaves that fall within the next 30 days
     all_leaves_of_month = leave.objects.filter(
         start_date__lte=next_30_days_date,  # Leaves that start before or on the next 30 days date
-        end_date__gte=today_date           # Leaves that end after or on today
+        end_date__gte=today_date,
+        is_external=is_external          # Leaves that end after or on today
     ).exclude(
         employee_id=loggedin_employee_id    # Exclude the logged-in employee's leaves
     )
@@ -243,7 +256,7 @@ def admin_dashboard(request):
     
     month_leaves_with_employees = []
     for leave_obj in all_leaves_of_month:
-        emp_details = employee.objects.filter(id=leave_obj.employee_id).first()
+        emp_details = employee.objects.filter(id=leave_obj.employee_id,is_external=is_external).first()
         leave_data = {
             'id': leave_obj.id,
             'employee_id': leave_obj.employee_id,
@@ -267,8 +280,8 @@ def admin_dashboard(request):
     tomorrow = today + timedelta(days=1)
 
 
-    birthdays_today = employee.objects.filter(date_of_birth__month=today.month, date_of_birth__day=today.day)
-    birthdays_tomorrow = employee.objects.filter(date_of_birth__month=tomorrow.month, date_of_birth__day=tomorrow.day)
+    birthdays_today = employee.objects.filter(date_of_birth__month=today.month, date_of_birth__day=today.day,is_external=is_external)
+    birthdays_tomorrow = employee.objects.filter(date_of_birth__month=tomorrow.month, date_of_birth__day=tomorrow.day,is_external=is_external)
 
     
     ninety_days_later = today + timedelta(days=120)
@@ -279,7 +292,8 @@ def admin_dashboard(request):
         (Q(date_of_birth__month=today.month) & Q(date_of_birth__day__gt=today.day)),
         Q(date_of_birth__month__lt=ninety_days_later.month) | 
         (Q(date_of_birth__month=ninety_days_later.month) & Q(date_of_birth__day__lte=ninety_days_later.day)),
-        status=1  # Include status=1 as a keyword argument
+        status=1 , # Include status=1 as a keyword argument,
+        is_external=is_external
     ).exclude(
         Q(date_of_birth__month=tomorrow.month, date_of_birth__day=tomorrow.day)  # Exclude tomorrow's birthdays
     ).order_by('date_of_birth__month', 'date_of_birth__day')
@@ -287,13 +301,13 @@ def admin_dashboard(request):
     # Handle date_of_births spanning across the year boundary
     if today.month > ninety_days_later.month:
         future_birthdays = employee.objects.filter(
-            Q(date_of_birth__month__gte=today.month) | Q(date_of_birth__month__lte=ninety_days_later.month),
+            Q(date_of_birth__month__gte=today.month) | Q(date_of_birth__month__lte=ninety_days_later.month),is_external=is_external
         ).exclude(
             Q(date_of_birth__month=tomorrow.month, date_of_birth__day=tomorrow.day)  # Exclude tomorrow's birthdays
         )
 
     project_start_date = date(2025, 1, 1)
-    project_list2 = project.objects.filter(created_at__gte=project_start_date).order_by('-id')[:5]
+    project_list2 = project.objects.filter(created_at__gte=project_start_date,is_external=is_external).order_by('-id')[:5]
     print("Vinod project_list2")
     print(project_list2)
 
@@ -337,13 +351,14 @@ def admin_dashboard(request):
     # Filter timesheets within the current week
     timesheet_data = timeSheet.objects.filter(
         time_entries_start_date__gte=start_of_week,
-        time_entries_stop_date__lte=end_of_week
+        time_entries_stop_date__lte=end_of_week,
+        is_external=is_external
     ).values('employee_id').annotate(
         total_time_seconds=Sum('time_entries_seconds')
     )
 
     # Map employee data to the timesheet data
-    employees = employee.objects.all()
+    employees = employee.objects.filter(is_external=is_external)
     employee_map = {
         emp.id: {
             'name': f"{emp.first_name} {emp.last_name}",
@@ -373,7 +388,7 @@ def admin_dashboard(request):
         entry['total_time_seconds'] or 0 for entry in timesheet_data
     )
 
-    recent_client_info = client.objects.all().order_by('-id')[:5]
+    recent_client_info = client.objects.filter(is_external=is_external).order_by('-id')[:5]
 
 
     
@@ -384,7 +399,8 @@ def admin_dashboard(request):
     today = now().date()
     total_seconds_today = timeSheet.objects.filter(
         employee_id=loggedin_employee_id,
-        time_entries_start_date=today
+        time_entries_start_date=today,
+        is_external=is_external
     ).aggregate(Sum('time_entries_seconds'))['time_entries_seconds__sum'] or 0
     total_hours_today = total_seconds_today / 3600  # Convert to hours
 
@@ -393,7 +409,8 @@ def admin_dashboard(request):
     end_of_week = start_of_week + timedelta(days=6)  # Sunday
     total_seconds_week = timeSheet.objects.filter(
         employee_id=loggedin_employee_id,
-        time_entries_start_date__range=[start_of_week, end_of_week]
+        time_entries_start_date__range=[start_of_week, end_of_week],
+        is_external=is_external
     ).aggregate(Sum('time_entries_seconds'))['time_entries_seconds__sum'] or 0
     total_hours_week = total_seconds_week / 3600  # Convert to hours
 
@@ -402,7 +419,8 @@ def admin_dashboard(request):
     today_date = date.today()
     total_seconds_month = timeSheet.objects.filter(
         employee_id=loggedin_employee_id,
-        time_entries_start_date__range=[start_of_month, today_date]
+        time_entries_start_date__range=[start_of_month, today_date],
+        is_external=is_external
     ).aggregate(Sum('time_entries_seconds'))['time_entries_seconds__sum'] or 0
     total_hours_month = round(total_seconds_month / 3600,2)  # Convert to hours
 
@@ -419,7 +437,8 @@ def admin_dashboard(request):
     # Fetch all leaves for the current year, excluding declined ones
     all_leaves = leave.objects.filter(
         employee_id=loggedin_employee_id,
-        start_date__year=running_year  # Filter by current year
+        start_date__year=running_year,  # Filter by current year,
+        is_external=is_external
     ).exclude(status='declined')
 
     # Initialize total taken days and other leave details
@@ -459,7 +478,7 @@ def admin_dashboard(request):
 
 
     project_start_date = date(2025, 1, 1)
-    project_count = project.objects.filter(created_at__gte=project_start_date).count()
+    project_count = project.objects.filter(created_at__gte=project_start_date,is_external=is_external).count()
 
 
     group = None
@@ -470,8 +489,8 @@ def admin_dashboard(request):
         print(group[0] if group else "No groups")
 
         if group[0].name == 'admin' or group[0].name == 'super_user':
-            employee_count = employee.objects.filter(status=1).count()
-            client_count = client.objects.count()
+            employee_count = employee.objects.filter(status=1,is_external=is_External).count()
+            client_count = client.objects.filter(is_External=is_external).count()
             
             selected_month = request.session.get('month')
 
@@ -509,7 +528,7 @@ def admin_dashboard(request):
             start_date = date(current_year, current_month, 1)
             end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
             
-            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date,is_external=is_external)
 
             # Fetch client information for each client contract work
             client_contract_work_with_client_info = []
@@ -612,40 +631,40 @@ def admin_dashboard(request):
             last_year=current_year
 
         # Get the project IDs for the employee
-        project_ids = toggl_user_detail.objects.filter(user_id=employee_id).values_list('project_id', flat=True).distinct()
+        project_ids = toggl_user_detail.objects.filter(user_id=employee_id,is_external=is_external).values_list('project_id', flat=True).distinct()
         # Query to get the unique client IDs for the projects
-        unique_client_ids = project.objects.filter(toggl_project_id__in=project_ids).values('toggl_client_id').distinct()
+        unique_client_ids = project.objects.filter(toggl_project_id__in=project_ids,is_external=is_external).values('toggl_client_id').distinct()
         print(unique_client_ids)
         # Count the number of unique clients
         total_unique_clients = unique_client_ids.count()
         print(f"Total Unique Clients for Employee {user_name}: {total_unique_clients}")
 
-        total_employees = employee.objects.filter(status=1).count()
+        total_employees = employee.objects.filter(status=1,is_external=is_external).count()
         print(f"Total Number of Employees: {total_employees}")
                 
 
         start_date = date(current_year, current_month, 1)
         end_date = date(current_year, current_month, calendar.monthrange(current_year, current_month)[1])
         
-        client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+        client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date,is_external=is_external)
 
         # Fetch client information for each client contract work
         client_contract_work_with_client_info = []
         logged_in_employee_clients = []
 
         user_name = request.session.get('user_name')
-        employee1 = employee.objects.get(user_name=user_name)
+        employee1 = employee.objects.get(user_name=user_name,is_external=is_external)
 
         logged_in_employee_id = employee1.id
         for work in client_contract_work:
-            client_info = client.objects.get(id=work.client_id)
+            client_info = client.objects.get(id=work.client_id,is_external=is_external)
             client_contract_work_with_client_info.append((work, client_info))
 
             working_roles = json.loads(work.working_role)  # Parse JSON string into a dictionary
             
             # Check if the logged-in employee is associated with this client
             if str(logged_in_employee_id) in working_roles:
-                client_info = client.objects.get(id=work.client_id)  # Fetch client information
+                client_info = client.objects.get(id=work.client_id,is_external=is_external)  # Fetch client information
                 role = working_roles[str(logged_in_employee_id)]  # Get the role for this employee
                 logged_in_employee_clients.append({"client": client_info, "role": role})
 
@@ -783,6 +802,10 @@ def final_calculation(request):
 def employees(request):
     active = [''] * 15
     active[1] = 'active'
+    logging.info("employees view called")
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
@@ -829,7 +852,9 @@ def employees(request):
             reports_to=reports_to,
             address=address,
             gender=gender,
-            email=email
+            email=email,
+            is_external=is_external
+            
 
         )
         new_employee.save()
@@ -843,11 +868,11 @@ def employees(request):
     # if request.user.username == 'Sbhutra' and request.user.id == 6:
             print("super_admin or superadmin")
             # Admin can see all employees
-            employee_list = employee.objects.filter(status=1).all().order_by('image_url')
+            employee_list = employee.objects.filter(status=1,is_external=is_external).all().order_by('image_url')
             # Assuming 'designation' is the field representing designations in your Employee model
-            unique_designations = employee.objects.filter(status=1).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
+            unique_designations = employee.objects.filter(status=1,is_external=is_external).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
             # Assuming 'country_id' is the field in the Employee model representing the country ID
-            unique_country_ids = employee.objects.filter(status=1, country_id__isnull=False).values_list('country_id', flat=True).distinct().order_by('country_id')
+            unique_country_ids = employee.objects.filter(status=1, country_id__isnull=False,is_external=is_external).values_list('country_id', flat=True).distinct().order_by('country_id')
 
             # Retrieve country names for the unique country IDs
             unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
@@ -887,7 +912,6 @@ def employees(request):
             else:
                 last_year=current_year
 
-            print("gggggggggggggggggggggggggggggggggggggg")
             print(current_year)
             print(last_year)
             if current_year == 2023 and 9 <= current_month <= 12:
@@ -904,7 +928,7 @@ def employees(request):
                 print('muskan')
                 print(employee_list)
             else:
-                contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
+                contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year, is_external=is_external
                 )
                 print(contracted_employee_for_month)
                 contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
@@ -940,11 +964,11 @@ def employees(request):
     #     if group[0].name == 'admin' or group[0].name == 'super_admin':
     print("admin")
     # Admin can see all employees
-    employee_list = employee.objects.filter(status=1).all().order_by('image_url')
+    employee_list = employee.objects.filter(status=1,is_external=is_external).all().order_by('image_url')
     # Assuming 'designation' is the field representing designations in your Employee model
-    unique_designations = employee.objects.filter(status=1).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
+    unique_designations = employee.objects.filter(status=1,is_external=is_external).exclude(designation=None).values_list('designation', flat=True).distinct().order_by('designation')
     # Assuming 'country_id' is the field in the Employee model representing the country ID
-    unique_country_ids = employee.objects.filter(status=1, country_id__isnull=False).values_list('country_id', flat=True).distinct().order_by('country_id')
+    unique_country_ids = employee.objects.filter(status=1, is_external=is_external,country_id__isnull=False).values_list('country_id', flat=True).distinct().order_by('country_id')
 
     # Retrieve country names for the unique country IDs
     unique_country_names = Country.objects.filter(id__in=unique_country_ids).order_by('name')
@@ -982,7 +1006,7 @@ def employees(request):
     else:
         last_year=current_year
     if current_year == 2023 and 9 <= current_month <= 12:
-        contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month,month__year=current_year
+        contracted_employee_for_month = contracted_employee.objects.filter(employee_id__in=toggl_user_ids,month__month=current_month,month__year=current_year, is_external=is_external
         )
         print(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
@@ -993,7 +1017,7 @@ def employees(request):
         print('muskan')
         print(employee_list)
     else:
-        contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year
+        contracted_employee_for_month = Client_contract_employee.objects.filter(employee_id__in=ids,date__month=current_month, date__year=current_year, is_external=is_external
         )
         # print(contracted_employee_for_month)
         contracted_employee_dict = {employee.employee_id: employee for employee in contracted_employee_for_month}
@@ -1310,6 +1334,7 @@ def employees_id(request):
 def profile(request, employee_id,my_profile_tab=None):
     import calendar
     from datetime import date
+    logging.info("")
     if request.method == 'POST':
         form_type = request.POST.get('form_type')
         action = request.POST.get('action')
@@ -2163,7 +2188,12 @@ def profile(request, employee_id,my_profile_tab=None):
         for client_id, seconds1 in client_times.items():
             hours, remainder = divmod(seconds1, 3600)
             minutes, seconds2 = divmod(remainder, 60)
-            monthly_client_total_time_spent_formatted[year_month][client_id] = f"{hours:02d}:{minutes:02d}:{seconds2:02d}"                
+            monthly_client_total_time_spent_formatted[year_month][client_id] = f"{hours:02d}:{minutes:02d}:{seconds2:02d}"         
+            if not employee_salary:
+                employee_salary = 0.0
+
+            if not working_days:
+                working_days = 1  # Avoid division by zero, you can also choose to set       
             
             hourly_working = employee_salary / (working_days * 8)
             employee_cost = (seconds1 / 3600) * float(hourly_working)
@@ -2191,6 +2221,11 @@ def profile(request, employee_id,my_profile_tab=None):
         hours, remainder = divmod(seconds1, 3600)
         minutes, seconds2 = divmod(remainder, 60)
         client_total_time_spent_formatted[key] = f"{hours:02d}:{minutes:02d}:{seconds2:02d}"
+        if not employee_salary:
+                employee_salary = 0.0
+
+        if not working_days:
+            working_days = 1 
         hourly_working = employee_salary / (working_days * 8)
         print(seconds1)
         employee_cost = (seconds1 / 3600) * float(hourly_working)
@@ -2262,6 +2297,11 @@ def profile(request, employee_id,my_profile_tab=None):
 
             ui_total_time = float(total_time)
             ui_total_time_hours = round(total_time / 3600, 2)
+            if not employee_salary:
+                employee_salary = 0.0
+
+            if not working_days:
+                working_days = 1 
             working_time = round(employee_salary / (working_days * 8), 2)
             working_time = float(working_time)
             employee_cost = round((working_time * ui_total_time_hours), 2)
@@ -2316,7 +2356,8 @@ def profile(request, employee_id,my_profile_tab=None):
 
     project_details = toggl_user_detail.objects.filter(
         employee_id=employee_id,
-        time_entries_start_date__range=(start_date, end_date)
+        time_entries_start_date__range=(start_date, end_date),
+        
     )
 
     from django.db import connection
@@ -2495,6 +2536,11 @@ def clients_id(request):
 def current_clients(request):
     active = [''] * 15
     active[8] = 'active'
+    logging.info(f"current clients called by request.user.email:{request.user.email}")
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
+
     if request.method == 'POST':
         client_name = request.POST.get('client_name')
         email = request.POST.get('email')
@@ -2514,7 +2560,8 @@ def current_clients(request):
             designation=designation,
             address=address,
             gender=gender,
-
+            is_external=is_external,
+            created_by=request.user.id
         )
         new_client.save()
         # Redirect to a success page or another appropriate view
@@ -2561,7 +2608,7 @@ def current_clients(request):
         if group[0].name == 'admin' or group[0].name == 'super_admin'or group[0].name == 'super_user':
             print("super admin or admin ")
             if current_year == 2023 and 9 <= current_month <= 12:
-                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
+                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date,is_external=is_external)
 
                 # Fetch client information for each client contract work
                 client_contract_work_with_client_info = []
@@ -2572,7 +2619,7 @@ def current_clients(request):
                 # Extract client objects from the list
                 client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-                employee_list = employee.objects.filter(status=1).all()
+                employee_list = employee.objects.filter(status=1,is_external=is_external).all()
                 context = {
                     "client_list": client_list,
                     "active":active,
@@ -2585,7 +2632,7 @@ def current_clients(request):
                 return render(request, "current_clients.html", context)
             else:
 
-                client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+                client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date,is_external=is_external)
 
                 # Fetch client information for each client contract work
                 client_contract_work_with_client_info = []
@@ -2596,7 +2643,7 @@ def current_clients(request):
                 # Extract client objects from the list
                 client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-                employee_list = employee.objects.filter(status=1).all()
+                employee_list = employee.objects.filter(status=1,is_external=is_external).all()
                 context = {
                     "client_list": client_list,
                     "active":active,
@@ -2616,7 +2663,7 @@ def current_clients(request):
         if group[0].name == 'admin' or group[0].name == 'super_admin' or group[0].name == 'super_user':
             print("admin")
             if current_year == 2023 and 9 <= current_month <= 12:
-                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
+                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date,is_external=is_external)
 
                 # Fetch client information for each client contract work
                 client_contract_work_with_client_info = []
@@ -2627,7 +2674,7 @@ def current_clients(request):
                 # Extract client objects from the list
                 client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-                employee_list = employee.objects.filter(status=1).all()
+                employee_list = employee.objects.filter(status=1,is_external=is_external).all()
                 context = {
                     "client_list": client_list,
                     "active":active,
@@ -2639,7 +2686,7 @@ def current_clients(request):
                 return render(request, "current_clients.html", context)
             else:
 
-                client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+                client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date,is_external=is_external)
 
                 # Fetch client information for each client contract work
                 client_contract_work_with_client_info = []
@@ -2650,7 +2697,7 @@ def current_clients(request):
                 # Extract client objects from the list
                 client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-                employee_list = employee.objects.filter(status=1).all()
+                employee_list = employee.objects.filter(status=1,is_external=is_external).all()
                 context = {
                     "client_list": client_list,
                     "active":active,
@@ -2664,7 +2711,7 @@ def current_clients(request):
 
     else:
         if current_year == 2023 and 9 <= current_month <= 12:
-                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date)
+                client_contract_work = contracted_hours.objects.filter(month__gte=start_date, month__lte=end_date,is_external=is_external)
 
                 # Fetch client information for each client contract work
                 client_contract_work_with_client_info = []
@@ -2675,7 +2722,7 @@ def current_clients(request):
                 # Extract client objects from the list
                 client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-                employee_list = employee.objects.filter(status=1).all()
+                employee_list = employee.objects.filter(status=1,is_external=is_external).all()
                 context = {
                     "client_list": client_list,
                     "active":active,
@@ -2687,7 +2734,7 @@ def current_clients(request):
                 return render(request, "current_clients.html", context)
         else:
 
-            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date)
+            client_contract_work = Client_contract_work.objects.filter(date__gte=start_date, date__lte=end_date,is_external=is_external)
 
             # Fetch client information for each client contract work
             client_contract_work_with_client_info = []
@@ -2698,7 +2745,7 @@ def current_clients(request):
             # Extract client objects from the list
             client_list = [client_info for _, client_info in client_contract_work_with_client_info]
 
-            employee_list = employee.objects.filter(status=1).all()
+            employee_list = employee.objects.filter(status=1,is_external=is_external).all()
             context = {
                 "client_list": client_list,
                 "active":active,
@@ -2815,6 +2862,7 @@ def client_profile(request, client_id):
     import calendar
     from datetime import datetime, timedelta
     from datetime import date
+    logging.info("client_profile called")
     if request.method == 'POST':
 
         from datetime import datetime, timedelta
@@ -3688,12 +3736,15 @@ def client_profile(request, client_id):
                 employee3 = employee.objects.get(id=employee_id)
                 # Calculate salary per hour
                 emp3_salary = get_salary_for_date(employee3, start_date)
-                ui_employee_salary = float(emp3_salary)
+                # ui_employee_salary = float(emp3_salary)
+                if not emp3_salary:
+                    emp3_salary=1
+
                 salary_per_hour = float(emp3_salary) / (working_days * 8)
                 salary_per_hour = round(salary_per_hour, 2)
                 # Convert working hours to float
                 working_hours = float(working_hours)
-                ui_working_hours = working_hours
+                # ui_working_hours = working_hours
                 # Calculate total salary for the given working hours
 
                 if employee3.first_name and employee3.last_name:
@@ -3929,8 +3980,13 @@ def projects_id(request):
 @csrf_exempt
 @login_required(login_url='/')
 def projects(request):
+
     active = [''] * 15
     active[6] = 'active'
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
+
     logging.info(f"Projects page accessed by user: {request.user}")
     if request.method == 'POST':
         request_for = request.POST.get('request_for')
@@ -4034,7 +4090,7 @@ def projects(request):
                     return JsonResponse({"error": "Client name and Company are required when adding a new client."}, status=400)
                 
                 toggl_client_name = f"{client_company}, {client_name}"
-                clientData, created = client.objects.get_or_create(client_name=client_name, company_name=client_company, toggl_client_name=toggl_client_name, status=1)
+                clientData, created = client.objects.get_or_create(client_name=client_name, company_name=client_company, toggl_client_name=toggl_client_name, status=1,is_external=is_external)
                 client_id = clientData.id
                 if created:
                     clientData.toggl_client_id = client_id
@@ -4061,7 +4117,8 @@ def projects(request):
                 rate_type=rate_type,
                 status=status,
                 description=description,
-                uploaded_file=uploaded_file
+                uploaded_file=uploaded_file,
+                is_external=is_external
             )
             project1.save()
         elif request_for == 'filter_project':
@@ -4069,9 +4126,9 @@ def projects(request):
             employee_id = request.POST.getlist('employee_id')
             status = request.POST.get('status')
 
-    employee_list = employee.objects.filter(status=1).all()
+    employee_list = employee.objects.filter(status=1,is_external=is_external).all()
     logging.info(f"Employee list retrieved at projects: {len(employee_list)}")
-    client_list = client.objects.all()
+    client_list = client.objects.filter(is_external=is_external)
     import ast
     if request.method == 'POST' :
         request_for = request.POST.get('request_for')
@@ -4099,7 +4156,7 @@ def projects(request):
 
 
 
-    project_queryset = project.objects.filter(created_at__gte=project_start_date).order_by('id')
+    project_queryset = project.objects.filter(created_at__gte=project_start_date,is_external=is_external).order_by('id')
 
     if project_name:
         project_queryset = project_queryset.filter(project_name__icontains=project_name)
@@ -5224,8 +5281,11 @@ def search_client(request):
 
 @login_required(login_url='/')
 def get_employee(request):
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     employee_id = request.GET.get('employee_id')
-    employee_detail = employee.objects.filter(id=employee_id).first()
+    employee_detail = employee.objects.filter(id=employee_id,is_external=is_external).first()
     data = {
         'id': employee_detail.id,
         'first_name': employee_detail.first_name,
@@ -5274,7 +5334,12 @@ def update_month(request):
 
 @login_required(login_url='/')
 def get_projects(request, employee_id):
+    logging.info("get_projects called ")
     if request.method == 'GET':
+        is_external=True
+        if request.user.email and is_brickwin_email(request.user.email):
+            is_external=False
+            logging.info("getting project of external employee")
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
@@ -5284,7 +5349,8 @@ def get_projects(request, employee_id):
         # Filter records based on the selected date range
         filtered_records = toggl_user_detail.objects.filter(
             employee_id=employee_id,
-            time_entries_start_date__range=(start_date, end_date)
+            time_entries_start_date__range=(start_date, end_date),
+            is_external=is_external
         )
         print("filete")
         print(filtered_records)
@@ -5305,7 +5371,7 @@ def get_projects(request, employee_id):
             # print(toggl_projectid)
             # print(toggl_client)
             print(toggl_projectname)
-            toggl_client = client.objects.get(toggl_client_id=toggl_client)
+            toggl_client = client.objects.get(toggl_client_id=toggl_client,is_external=is_external)
             toggl_clientname = toggl_client.toggl_client_name
             print(toggl_clientname)
 
@@ -5333,6 +5399,9 @@ def leave_admin(request):
     active[4] = 'active'
     leave_year = datetime.now().year
     result_list =[]
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     if request.method == 'POST':
         request_for = request.POST.get('request_for')
         # return HttpResponse(request_for)
@@ -5483,8 +5552,8 @@ def leave_admin(request):
 
         # return HttpResponse(dict_results)
     # Query all leaves from the 'Leave' model
-    all_leaves = leave.objects.all().order_by('id')  # Use 'Leave' instead of 'leave'
-    employees = employee.objects.filter(status=1).order_by('image_url')  # Use 'Leave' instead of 'leave'
+    all_leaves = leave.objects.filter(is_external=is_external).order_by('id')  # Use 'Leave' instead of 'leave'
+    employees = employee.objects.filter(status=1,is_external=is_external).order_by('image_url')  # Use 'Leave' instead of 'leave'
 
     leave_details = []
     pending_leave_count = 0
@@ -5492,8 +5561,8 @@ def leave_admin(request):
     approved_leave_count = 0
     employee_count = employees.count()
     current_year = datetime.now().year
-    pending_leave_count = leave.objects.filter(status__iexact='pending',start_date__year=current_year).count()
-    approved_leave_count = leave.objects.filter(status__iexact='approved', start_date__year=current_year).count()
+    pending_leave_count = leave.objects.filter(status__iexact='pending',start_date__year=current_year,is_external=is_external).count()
+    approved_leave_count = leave.objects.filter(status__iexact='approved', start_date__year=current_year,is_external=is_external).count()
 
     today_date = datetime.now().date()
 
@@ -5501,18 +5570,20 @@ def leave_admin(request):
         if today_date.weekday() not in [4, 5, 6]:
             planned_leave_ids = leave.objects.filter(
                 start_date__lte=today_date,
-                end_date__gte=today_date
+                end_date__gte=today_date,
+                is_external=is_external
             ).values_list('employee_id', flat=True)
         else:
             planned_leave_ids = []
 
         # Get country IDs for holidays today
-        holiday_country_ids = Holiday.objects.filter(date=today_date).values_list('country_id', flat=True)
+        holiday_country_ids = Holiday.objects.filter(date=today_date,is_external=is_external).values_list('country_id', flat=True)
 
         # Get employee IDs for employees in countries with holidays today
         holiday_employee_ids = employee.objects.filter(
             country_id__in=holiday_country_ids,
-            status=1
+            status=1,
+            is_external=is_external
         ).values_list('id', flat=True)
 
         # Find overlap: Employees on both holiday and planned leave
@@ -5535,7 +5606,8 @@ def leave_admin(request):
     for dict_result in dict_results:
         all_leaves = leave.objects.filter(
             employee_id=dict_result['emp_id'],
-            start_date__year=current_year
+            start_date__year=current_year,
+            is_external=is_external
         ).exclude(
             status='declined'
         )
@@ -5564,7 +5636,7 @@ def leave_admin(request):
         print(dict_result)
 
     # Pass the leave details to the template
-    leaveTypes = LeaveType.objects.all()
+    leaveTypes = LeaveType.objects.filter(is_external=is_external)
     # presents_count = employee_count-planned_leave_count
     context = {
         # 'leave_details': leave_details,
@@ -5588,8 +5660,15 @@ def leave_admin(request):
     return render(request, 'employees/leaves.html', context)
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def leave_employee(request):
+    email=request.user.email
+    is_external=True
+    if email and is_brickwin_email(email):
+        is_external=False
+
+    logging.info(f"External Employee:{is_external} at leave_employee having email:{email}")
     active = [''] * 15
     active[5] = 'active'
 
@@ -5599,8 +5678,8 @@ def leave_employee(request):
     leave_type = None
     search_term = None
     employee_name = None
-    user_id = request.user.id
-    employee_detail = employee.objects.get(user_id=user_id)
+    user_email = request.user.email
+    employee_detail = employee.objects.get(email=user_email)
     print(employee_detail )
     employee_id = employee_detail.id
 
@@ -5639,23 +5718,24 @@ def leave_employee(request):
         entry for entry in dict_results
         if entry['start_date'].year == int(current_year) or entry['end_date'].year == int(current_year)
     ]
-    employees = employee.objects.filter(status=1).order_by('image_url')  # Use 'Leave' instead of 'leave'
+    employees = employee.objects.filter(status=1,is_external=is_external).order_by('image_url')  # Use 'Leave' instead of 'leave'
 
     leave_details = []
     pending_leave_count = 0
     planned_leave_count = 0
     employee_count = employees.count()
-    pending_leave_count = leave.objects.filter(status__iexact='pending').count()
+    pending_leave_count = leave.objects.filter(status__iexact='pending',is_external=is_external).count()
 
     today_date = datetime.now().date()
     planned_leave_count = leave.objects.filter(
         start_date__lte=today_date,
-        end_date__gte=today_date
+        end_date__gte=today_date,
+        is_external=is_external
     ).count()
 
 
     # Pass the leave details to the template
-    leaveTypes = LeaveType.objects.all()
+    leaveTypes = LeaveType.objects.filter(is_external=is_external)
     presents_count = employee_count - planned_leave_count
 
     current_year = datetime.now().year
@@ -5663,7 +5743,8 @@ def leave_employee(request):
     # Filter leaves for the current year only
     all_leaves = leave.objects.filter(
         employee_id=employee_id,
-        start_date__year=current_year  # Ensure start_date falls in the current year
+        start_date__year=current_year,  # Ensure start_date falls in the current year
+        is_external=is_external
     ).exclude(
         status='declined'
     )
@@ -5763,6 +5844,8 @@ def leave_employee(request):
         'current_date':current_date
     }
     return render(request, 'employees/leaves-employee.html', context)
+
+    
 @csrf_exempt  # Use this decorator to temporarily disable CSRF protection for testing purposes
 def search(request):
     if request.method == 'GET':
@@ -6251,11 +6334,15 @@ def search_leave(request):
 @csrf_exempt
 @login_required(login_url='/')
 def add_leave(request):
+    logging.info("add leave called")
     if request.method == 'POST':        
         leave_id = request.POST.get('leave_id')
         leave_type = request.POST.get('leave_type')
         reason = request.POST.get('reason')
         day_type = int(request.POST.get('day_type'))
+        is_external=True
+        if request.user.email and is_brickwin_email(request.user.email):
+            is_external=False
         try:
             if leave_id:
                 from_date = request.POST.get('edit_from_date')
@@ -6298,7 +6385,8 @@ def add_leave(request):
                 existing_entry = leave.objects.filter(
                     employee_id=employee_id,
                     start_date=from_date,
-                    end_date=to_date
+                    end_date=to_date,
+                    is_external=is_external
                 ).exists()
 
                 if not existing_entry:
@@ -6310,7 +6398,8 @@ def add_leave(request):
                         day_type=day_type,
                         leave_days=leave_days,
                         status='pending',
-                        reason=reason
+                        reason=reason,
+                        is_external=is_external
                     )
                     send_leave_approval_email(new_leave)
             # from django.http import HttpResponse
@@ -6583,6 +6672,11 @@ def delete_leave(request):
 def calender(request):
     active = [''] * 15
     active[10] = 'active'
+    logging.info(f"calender view called with email user :{request.user.email}")
+    is_external=True
+
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     if request.method == 'POST':
         start_date_str = request.POST.get('calender_date')
         print(start_date_str)
@@ -6624,7 +6718,7 @@ def calender(request):
             print(other_category)
 
             # Check if other_category already exists
-            existing_category = Work_Category.objects.filter(category__iexact=other_category).first()
+            existing_category = Work_Category.objects.filter(category__iexact=other_category,is_external=is_external).first()
 
             if existing_category:
                 # Use the existing category
@@ -6633,7 +6727,7 @@ def calender(request):
             else:
                 # Create a new Work_Category instance
                 if len(other_category) > 0:
-                    new_category_instance = Work_Category(category=other_category)
+                    new_category_instance = Work_Category(category=other_category,is_external=is_external)
                     new_category_instance.save()
 
                     # Get the ID of the newly created instance
@@ -6741,6 +6835,7 @@ def calender(request):
                 time_entries_stop_date=end_date,
                 time_entries_start_time=start_time,
                 time_entries_stop_time=end_time,
+                is_external=is_external
             )
 
             # Save the entry to the database
@@ -6756,6 +6851,7 @@ def calender(request):
                 time_entries_stop_date=end_date,
                 time_entries_start_time=start_time,
                 time_entries_stop_time=end_time,
+                is_external=is_external
             )
             # Save the entry to the database
             new_entry.save()
@@ -6808,15 +6904,16 @@ def calender(request):
             'eventId': new_entry.id,
             'color':'#303030',
             'projectId': new_entry.project_id,
+            
         }
         print(events, '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
         return JsonResponse(events, safe=False)
 
 
     # projects = project.objects.all()
-    clients = client.objects.exclude(id=227)
+    clients = client.objects.filter(is_external=is_external)
     # category = Work_Category.objects.exclude(id=23)
-    category = Work_Category.objects.exclude(id=23).order_by('category')
+    category = Work_Category.objects.filter(is_external=is_external).order_by('category')
     employee_id = request.session.get('user_id')
     print(clients, '##############################################################')
     print(category)
@@ -6829,7 +6926,7 @@ def calender(request):
     five_months_ago = now().date() - timedelta(days=3 * 30)
 
     # Filter timesheets from the last 5 months
-    timesheets = timeSheet.objects.filter(time_entries_start_date__gte=five_months_ago,employee_id = int(employee_id))
+    timesheets = timeSheet.objects.filter(time_entries_start_date__gte=five_months_ago,employee_id = int(employee_id),is_external=is_external)
 
     # Get the top 3 most frequently used client_id
     top_clients = (
@@ -7738,7 +7835,8 @@ def accept_calender_events(request):
 def edit_calender_events(request):
 
     if request.method == 'POST':
-        print("muskan------------------")
+        logging.info(f"Edit calender event post request by user.email :{request.user.email}")
+
         entry_id = request.POST.get('entry_id')
         start_time_str = request.POST.get('start_time1')
         end_time_str = request.POST.get('end_time1')
@@ -7747,6 +7845,8 @@ def edit_calender_events(request):
         description = request.POST.get('description1')
         project_id = request.POST.get('project_id1')
         description = description.strip()
+
+        logging.info(f"post data at edit celender event :{dict(request.POST)}")
 
         print(start_time_str)
         print(end_time_str)
@@ -8862,11 +8962,17 @@ def old_search_designation(request):
 @csrf_exempt
 @login_required(login_url='/')
 def report(request):
+    logging.info(f"report view called with request.user :{request.user.email}")
+
     active = [''] * 15
     active[12] = 'active'
     # Initialize selected_client_ids
     selected_client_ids = []
     selected_employee_ids = []
+    is_external=True
+
+    if request.user and is_brickwin_email(request.user.email):
+        is_external=False
 
     # Calculate the date range for the last week
     if request.method == 'POST':
@@ -8961,7 +9067,7 @@ def report(request):
         selected_option='0'
 
     all_clients = client.objects.all()
-    all_employees =employee.objects.filter(status__in=[1, 2])
+    all_employees =employee.objects.filter(status__in=[1, 2], is_external=is_external)
 
     if selected_client_ids and selected_employee_ids:
         print("if1111111111")
@@ -8970,7 +9076,8 @@ def report(request):
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     elif selected_client_ids :
@@ -8979,7 +9086,8 @@ def report(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
-            status=None
+            status=None,
+            is_external=is_external
 
         )
     elif selected_employee_ids:
@@ -8988,20 +9096,22 @@ def report(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_External=is_external
         )
     else:
         # print("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     # Fetch the client objects for the selected client IDs
     # Fetch the client objects for the selected client IDs
-    selected_clients = client.objects.filter(id__in=selected_client_ids)
-    selected_employees=employee.objects.filter(id__in=selected_employee_ids)
+    selected_clients = client.objects.filter(id__in=selected_client_ids,is_external=is_external)
+    selected_employees=employee.objects.filter(id__in=selected_employee_ids,is_external=is_external)
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
@@ -9094,7 +9204,7 @@ def report(request):
         for entry in time_entries_last_week:
             import datetime
             # Fetch employee details
-            employee1 = employee.objects.get(id=entry.employee_id)
+            
 
             # Calculate total time spent by the employee
             total_time_employee = sum(e.time_entries_seconds for e in time_entries_last_week if e.employee_id == entry.employee_id)
@@ -9260,7 +9370,7 @@ def report(request):
 
 
         # Query category names from the Work_Category table
-        category_names = Work_Category.objects.in_bulk(pie_chart_data_2.keys())
+        category_names = Work_Category.objects.filter(is_external=is_external).in_bulk(pie_chart_data_2.keys())
 
         # Calculate total time spent across all categories
         total_time_all_categories = sum(pie_chart_data_2.values())
@@ -9530,7 +9640,10 @@ def report(request):
 
 
         # Query category names from the Work_Category table
-        category_names = Work_Category.objects.in_bulk(pie_chart_data_2.keys())
+        category_names = Work_Category.objects.filter(
+            is_external=is_external,
+            id__in=pie_chart_data_2.keys()
+        ).in_bulk()
 
         # Calculate total time spent across all categories
         total_time_all_categories = sum(pie_chart_data_2.values())
@@ -19440,6 +19553,7 @@ def export_employee_data(request):
 
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def export_client_data(request):
     if request.method == 'POST':
@@ -20317,6 +20431,9 @@ def auth_receiver(request):
             user = User.objects.get(email=email)
             # Authenticate and log in the user
             auth.login(request, user)
+            emp = employee.objects.get(email=email)
+            emp.is_email_verified = True
+            emp.save()
             # You can also store user data in the session if needed
             request.session['google_user_data'] = user_data
             employee1 = employee.objects.get(email=user_data['email'])
@@ -20356,7 +20473,7 @@ def test_google_auth(request):
     return JsonResponse(response)
 
 
-
+@log_view_call
 def update_email_view(request):
     try:
         # Update auth_user table
@@ -20367,6 +20484,7 @@ def update_email_view(request):
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)})
 
+@log_view_call
 def get_project_data(request, project_id):
     import ast
     project_data = project.objects.filter(id=project_id).first()
@@ -20405,6 +20523,7 @@ def get_project_data(request, project_id):
     logging.info(f"Project data retrieved for project ID {project_id}: {data}")
     return JsonResponse(data)
 
+
 @login_required(login_url='/')
 def delete_project(request):
     if request.method == 'GET':
@@ -20420,12 +20539,14 @@ def delete_project(request):
 
         return JsonResponse({'status': status})
 
+@log_view_call
 def check_project_name(request):
     project_name = request.GET.get('project_name', '').strip()
     
     exists = project.objects.filter(project_name=project_name).exists()
     return JsonResponse({'exists': exists})
 
+@log_view_call
 def update_project_status(request):
     if request.method == 'GET':
         print("search")
@@ -20459,6 +20580,7 @@ def leave_daterange(start_date, end_date):
         yield start_date + timedelta(n)
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def short_mail(request):
     if request.user.groups.all()[0].name == "admin":
@@ -20719,6 +20841,7 @@ def short_mail(request):
 
 from django.utils.html import strip_tags
 
+
 def send_short_notice_email(employee, total_hours, minimum_hours, message):
     subject = "Short Notice: Insufficient Working Hours"
   
@@ -20740,6 +20863,7 @@ def send_short_notice_email(employee, total_hours, minimum_hours, message):
 
 
 @csrf_exempt
+@log_view_call
 def email_status(request):
     if request.method == 'POST':
         try:
@@ -20799,7 +20923,7 @@ def email_status(request):
 
 
 
-
+@log_view_call
 def test_notice_email(request):
     subject = "Short Notice: Insufficient Working Hours"
     message = f"""
@@ -20830,6 +20954,7 @@ def test_notice_email(request):
     return HttpResponse('OK')
 
 
+@log_view_call
 @login_required(login_url='/')
 def update_gmail_in_timesheets(request):
     try:
@@ -20860,14 +20985,16 @@ def update_gmail_in_timesheets(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
-
+@log_view_call
 def get_event_projects(request):
     client_id = request.GET.get('client_id')
     projects = project.objects.filter(client_id=client_id).values('id', 'project_name')
     print(projects,'TEST HIT')
     return JsonResponse(list(projects), safe=False)
 
+
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def add_client_contract_work(request):
     import csv
@@ -21226,11 +21353,16 @@ def upload_image(request):
         return render(request, 'upload_image.html',{'image_url': image_url})
     return render(request, 'upload_image.html')
 
+
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def add_client(request):
     from django.shortcuts import get_object_or_404
     if request.method == 'POST':
+        is_external=True
+        if request.user.email and is_brickwin_email(request.user.email):
+            is_external=False
         import calendar
 
         client_id = request.POST.get('client_id', '').strip()
@@ -21264,12 +21396,12 @@ def add_client(request):
             return JsonResponse({"error": "Client name and Company are required when adding a new client."}, status=400)
         
         if client_id:
-            existing_client = client.objects.filter(client_name=client_name, company_name=company_name).exclude(id=client_id).first()
+            existing_client = client.objects.filter(client_name=client_name, company_name=company_name,is_external=is_external).exclude(id=client_id).first()
             if existing_client:
                 return JsonResponse({"error": "This client already exists."}, status=400)
             existing_client = get_object_or_404(client, id=client_id)
         else:
-            existing_client = client.objects.filter(client_name=client_name, company_name=company_name).first()
+            existing_client = client.objects.filter(client_name=client_name, company_name=company_name,is_external=is_external).first()
             if existing_client:
                 return JsonResponse({"error": "This client already exists."}, status=400)
 
@@ -21308,7 +21440,7 @@ def add_client(request):
         toggl_client_name = f"{company_name}, {client_name}"
         if existing_client:
             if email:
-                if client.objects.filter(email=email).exclude(id=existing_client.id).exists():
+                if client.objects.filter(email=email,is_external=is_external).exclude(id=existing_client.id).exists():
                     return JsonResponse({"error": f"Client with email {email} already exists."}, status=400)
             
             existing_client.client_name = client_name
@@ -21331,7 +21463,7 @@ def add_client(request):
             client_id = existing_client.id
         else:
             if email:
-                if client.objects.filter(email=email).exists():
+                if client.objects.filter(email=email,is_external=is_external).exists():
                     return JsonResponse({"error": f"Client with email {email} already exists."}, status=400)
             
             new_client = client.objects.create(
@@ -21351,7 +21483,8 @@ def add_client(request):
                 date_of_birth=dob,
                 phone=phone,
                 designation=designation,
-                status=1
+                status=1,
+                is_external=is_external
             )
 
             client_id = new_client.id
@@ -21410,7 +21543,8 @@ def add_client(request):
 
                     client_details = Client_contract_work.objects.filter(
                         client_id=client_id,
-                        date__range=(start_date, end_date)
+                        date__range=(start_date, end_date),
+                        is_external=is_external
                     ).first()
                 except Exception as e:
                     client_details = ''
@@ -21433,23 +21567,25 @@ def add_client(request):
                             working_role = json_working_roles,
                             cost=cost,
                             date=end_date,
-                            status=1
+                            status=1,
+                            is_external=is_external
                         )
                         new_client_details.save()
 
                         for employee_id, role in working_roles.items():
-                            if not Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).exists():
+                            if not Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date),is_external=is_external).exists():
                                 new_employee_details = Client_contract_employee(
                                     employee_id=employee_id,
                                     support=1 if role == 'B' else 0,
                                     advisor=1 if role == 'A' else 0,
                                     account_manager=1 if role == 'C' else 0,
                                     total=1,
-                                    date=end_date
+                                    date=end_date,
+                                    is_external=is_external
                                 )
                                 new_employee_details.save()
                             else:
-                                contract_employee_detail = Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).first()
+                                contract_employee_detail = Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date),is_external=is_external).first()
                                 if contract_employee_detail:
                                     contract_employee_detail.total += 1
 
@@ -21467,32 +21603,7 @@ def add_client(request):
             except Exception as e:
                 print(e)
 
-            # for employee_id, role in working_roles.items():
-            #     if not Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).exists():
-            #         new_employee_details = Client_contract_employee(
-            #             employee_id=employee_id,
-            #             support=1 if role == 'B' else 0,
-            #             advisor=1 if role == 'A' else 0,
-            #             account_manager=1 if role == 'C' else 0,
-            #             total=1,
-            #             date=end_date
-            #         )
-            #         new_employee_details.save()
-            #     else:
-            #         contract_employee_detail = Client_contract_employee.objects.filter(employee_id=employee_id,date__range=(start_date, end_date)).first()
-            #         if contract_employee_detail:
-            #             contract_employee_detail.total += 1
-
-            #             if role == "A":
-            #                 contract_employee_detail.advisor += 1
-            #             elif role == "B":
-            #                 contract_employee_detail.support += 1  # Increment buddy count
-            #             elif role == "C":  # If role is Consultant
-            #                 contract_employee_detail.account_manager += 1  # Increment consultant count
-            #             else:
-            #                 pass
-
-            #             contract_employee_detail.save()
+           
 
             if not working_input:
                 admins_and_managers = [
@@ -21528,7 +21639,9 @@ def add_client(request):
 
         return redirect("client-profile",client_id)
 
+
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def get_client_details(request, client_id):
     try:
@@ -21934,6 +22047,7 @@ def upload_document(request):
 
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def create_category(request):
     if request.method == 'POST':
@@ -22003,6 +22117,7 @@ def delete_document(request, document_id):
 import urllib.parse
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def rename_document(request, document_id):
     if request.method == "POST":
@@ -22080,6 +22195,7 @@ def start_auth(request):
     return redirect(auth_url)
 
 
+@log_view_call
 def gd_callback(request):
     flow = get_flow()
 
@@ -22140,13 +22256,13 @@ from googleapiclient.http import MediaIoBaseDownload
 from io import BytesIO
 
 
-
+@log_view_call
 def extract_folder_id(drive_url):
     if 'folders/' in drive_url:
         return drive_url.split('folders/')[1].split('?')[0]
     return None
 
-
+@log_view_call
 def download_and_save(service, file_id, file_name, local_folder_path, employee_id, client_id, entity_type, description,
                       file_cat_ob_id):
     if not os.path.exists(local_folder_path):
@@ -22213,7 +22329,7 @@ def download_and_save(service, file_id, file_name, local_folder_path, employee_i
         f.write(fh.getbuffer())
     return local_file_path
 
-
+@log_view_call
 def fetch_drive_folder(service, folder_id, local_root_path, employee_id, client_id, entity_type, description,
                        parent_name=''):
     files_to_upload = []
@@ -22254,6 +22370,7 @@ def fetch_drive_folder(service, folder_id, local_root_path, employee_id, client_
 
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def upload_from_drive(request):
     if request.method == 'POST':
@@ -22316,6 +22433,7 @@ def upload_from_drive(request):
 
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def resume_upload_from_drive(request):
     upload_data = request.session.pop('resume_upload', None)
@@ -22350,7 +22468,7 @@ def resume_upload_from_drive(request):
 
 
 
-
+@log_view_call
 def gd_remove(request):
     employee_id = request.session.get('user_id')
     emp_ob = employee.objects.get(id=int(employee_id))
@@ -22368,6 +22486,7 @@ def gd_remove(request):
 
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def delete_category(request):
     import urllib.parse
@@ -22391,6 +22510,7 @@ def delete_category(request):
         return redirect("client-profile", client_id)
 
 @csrf_exempt
+@log_view_call
 @login_required(login_url='/')
 def upload_airtable_sheet(request):
     if request.method == 'POST':
@@ -22531,10 +22651,11 @@ def upload_linkedinpost(request):
             return render(request, "excel/upload_linkedinpost.html")
     return render(request, "excel/upload_linkedinpost.html")
 
-
+@log_view_call
 def safe_subtract(a, b):
     return (a or 0) - (b or 0)
 
+@log_view_call
 def safe_growth_percentage(current, old):
     if old is None:
         return None
@@ -22545,7 +22666,7 @@ def safe_growth_percentage(current, old):
             return 0.0
     return ((current or 0) - (old or 0)) / old * 100
 
-
+@log_view_call
 def get_6_month_follower_growth(client_id):
     airtable_details = Airtable.objects.filter(client_id=client_id).order_by('-id').first()
 
@@ -22641,10 +22762,12 @@ def get_6_month_follower_growth(client_id):
 
 # from dateutil.relativedelta import relativedelta
 
+@log_view_call
 def subtract_months(dt, months):
     y, m = divmod(dt.year * 12 + dt.month - months - 1, 12)
     return dt.replace(year=y, month=m + 1, day=1)
 
+@log_view_call
 def get_monthly_heatmap_data(client_id):
     airtable_details = Airtable.objects.filter(client_id=client_id).order_by('-id').first()
 
@@ -22690,9 +22813,12 @@ def get_monthly_heatmap_data(client_id):
 
     return matrix, month_labels
 
+@log_view_call
 def dashboard(request, linkedin_user):
     # now = datetime.now()
     # six_months_ago = now - relativedelta(months=6)
+
+    
 
     airtable_details = Airtable.objects.filter(linkedin_url__icontains=f'/in/{linkedin_user}').order_by('-id').first()
     client_id = airtable_details.client_id
@@ -23048,6 +23174,7 @@ def dashboard(request, linkedin_user):
 
 
 @csrf_exempt
+@log_view_call
 def submit_post_generate_data(request):
 
     """
@@ -23186,6 +23313,7 @@ def submit_post_generate_data(request):
 
 
 @csrf_exempt
+@log_view_call
 def receive_post_data(request):
     if request.method == "POST":
         try:
@@ -23214,6 +23342,7 @@ def receive_post_data(request):
     else:
         return JsonResponse({"error": "Only POST allowed"}, status=405)
 
+@log_view_call
 def add_holidays_2026(request):
 
     HOLIDAYS_2026 = [
@@ -23267,6 +23396,7 @@ def add_holidays_2026(request):
 
 # Create your views here.
 @csrf_exempt
+@log_view_call
 def login(request):
     # Check if the user is already logged in
     logging.info("Accessed login view")
@@ -23336,29 +23466,38 @@ def login(request):
                         request.session['user_image_url'] = employee1.image_url
                         request.session['user_name'] = employee1.user_name
                         request.session['user_id'] = employee1.id
+                        request.session['email'] = employee1.email
                         return redirect("admin-dashboard")
 
             else:
                 logging.info("User is not in any admin group. Checking for employee record.")
                 logging.info("employee")
-                employee1 = employee.objects.get(user_name=request.user.username)
-                logging.info("sgvfbhjnmk,,,,;l/////////////////////////////////////")
-                logging.info(employee1)
-                if employee1:
-                    request.session['first_name'] = employee1.first_name
-                    request.session['last_name'] = employee1.last_name
-                    request.session['user_image_url'] = employee1.image_url
-                    request.session['user_name'] = employee1.user_name
-                    request.session['user_id'] = employee1.id
-                    logging.info(f"User email: {user.email}")
-                    logging.info(f"Employee image URL: {employee1.image_url}")
-                    logging.info("employee login done")
+                try:
+                    logging.info(f"querying for employee with username: {request.user.username}")
+
+                    employee1 = employee.objects.get(email=request.user.email)
+                    logging.info(f"request.user.email at login :{request.user.email}")
+                    logging.info("employee found in login ")
+                    logging.info(employee1)
+                    if employee1:
+                        request.session['first_name'] = employee1.first_name
+                        request.session['last_name'] = employee1.last_name
+                        request.session['user_image_url'] = employee1.image_url
+                        request.session['user_name'] = employee1.user_name
+                        request.session['user_id'] = employee1.id
+                        request.session['email'] = employee1.email
+                        logging.info(f"User email: {user.email}")
+                        logging.info(f"Employee image URL: {employee1.image_url}")
+                        logging.info("employee login done")
+                except Exception as e:
+                    logging.info(f"{str(e)}")
                 return redirect("admin-dashboard")
 
     # Default return statement if none of the conditions are met
     return render(request, "login.html", {'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,'base_url':base_url})
 
 
+@log_view_call
 def logout(request):
     auth.logout(request)
     return redirect('login')
@@ -23388,11 +23527,12 @@ def register(request):
             return redirect("register")  # Redirect back to the registration page
 
         # Check if the email is already in use
-        if User.objects.filter(username=uname).exists():
+        if User.objects.filter(email=uname).exists():
             messages.error(request, "This email is already in use.")
             return redirect("register")
 
         # Create a new user
+
         try:
             logging.info("trying to register")
             logging.info(f"pass1 is:{pass1}")
@@ -23408,9 +23548,14 @@ def register(request):
                 logging.info("Superuser created")
 
             else:
+                is_external=True
+
+                if uname and is_brickwin_email(uname):
+                    is_external=False
+                first_name=uname.split('@')[0] if uname else ''
                 my_user = User.objects.create_user(username=uname, password=pass1,email=uname)
                 my_user.save()
-                my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname,status=1)
+                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, last_name="", country_id=1, email=uname,status=1,is_external=is_external)
                 # after creating user
                 uid = urlsafe_base64_encode(force_bytes(my_user.pk))
                 token = email_verification_token.make_token(my_user)
@@ -23474,6 +23619,7 @@ def verify_email(request, uidb64, token):
     return render(request, "email_verified.html", {"success": False})
 
 
+@log_view_call
 def resend_email_verification(request):
     if request.method == 'POST':
         email = request.POST.get('email')

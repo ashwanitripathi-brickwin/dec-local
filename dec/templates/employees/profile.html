@@ -279,15 +279,15 @@
                     {% if my_profile_tab == '3' %}
                         <li class="nav-item"><a href="#emp_clients" data-bs-toggle="tab" class="nav-link">Clients</a></li>
                         <li class="nav-item"><a href="#emp_projects" data-bs-toggle="tab" class="nav-link">Work Category</a></li>
-                        {% if request.user.id == 6 or employee.user_id == request.user.id %}
+
                             <li class="nav-item"><a href="#emp_profile" data-bs-toggle="tab" class="nav-link active">Profile</a></li>
-                        {% endif %}
+                       
                     {% else %}
                         <li class="nav-item"><a href="#emp_clients" data-bs-toggle="tab" class="nav-link active">Clients</a></li>
                         <li class="nav-item"><a href="#emp_projects" data-bs-toggle="tab" class="nav-link">Work Category</a></li>
-                        {% if request.user.id == 6 or employee.user_id == request.user.id %}
+           
                             <li class="nav-item"><a href="#emp_profile" data-bs-toggle="tab" class="nav-link">Profile</a></li>
-                        {% endif %}
+                      
                         
                     {% endif %}
                    <li class="nav-item"><a href="#projects" data-bs-toggle="tab" class="nav-link">Projects</a></li>

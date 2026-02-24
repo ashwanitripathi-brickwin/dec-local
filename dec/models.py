@@ -32,7 +32,7 @@ class employee(models.Model):
     gd_gmail = models.CharField(max_length=200, null=True, blank=True)
     gd_token = models.TextField(null=True, blank=True)
     is_special_case = models.BooleanField(default=False)
-    is_external = models.BooleanField(default=False)
+    is_external = models.BooleanField(default=True)
     is_email_verified = models.BooleanField(default=False)
 
 
@@ -72,6 +72,8 @@ class toggl_user_detail(models.Model):
     time_entries_at_date = models.DateField(null=True, blank=True)
     time_entries_at_time = models.TimeField(null=True, blank=True)
     time_entries_at_time_utc = models.CharField(max_length=15, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 
 class user_login(models.Model):
@@ -118,6 +120,8 @@ class client(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     status=models.IntegerField(null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class toggl_client(models.Model):
     client_id = models.IntegerField(null=True, blank=True)
@@ -163,6 +167,8 @@ class project(models.Model):
     uploaded_file = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class toggl_project(models.Model):
     project_id = models.IntegerField(null=True, blank=True)
@@ -229,6 +235,8 @@ class leave(models.Model):
     status = models.CharField(max_length=50,null=True, blank=True)
     approved_by = models.IntegerField(null=True, blank=True)
     apply_by = models.IntegerField(null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class contracted_hours(models.Model):
     client_id=models.IntegerField(null=True, blank=True)
@@ -240,6 +248,9 @@ class contracted_hours(models.Model):
     rate=models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
+
 
 class Attendance(models.Model):
     employee_id = models.CharField(max_length=10,null=True, blank=True)
@@ -258,6 +269,8 @@ class Country(models.Model):
     currency = models.CharField(max_length=100, null=True, blank=True)  # ASHOK ADDED THIS
     region = models.CharField(max_length=200, null=True, blank=True)  # ASHOK ADDED THIS
     paid_leave = models.IntegerField(null=True, blank=True) #Added by Vinod
+    is_external=models.BooleanField(default=True)
+
 
     def __str__(self):
         return self.name
@@ -267,10 +280,14 @@ class Holiday(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
     date = models.DateField(null=True, blank=True)
     description = models.TextField(blank=True, null=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class LeaveType(models.Model):
     name = models.CharField(max_length=100)
     no_of_day = models.IntegerField(null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class calculation(models.Model):
     earning=models.DecimalField(max_digits=20, decimal_places=2,null=True, blank=True)
@@ -297,6 +314,8 @@ class timeSheet(models.Model):
     calender_eid = models.CharField(max_length=500, null=True, blank=True)
     status = models.CharField(max_length=100, null=True, blank=True)
     project_id = models.IntegerField(null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
     
     class Meta:
         unique_together = ('employee_id', 'calender_eid')
@@ -311,11 +330,15 @@ class contracted_employee(models.Model):
     total=models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class Work_Category(models.Model):
     category=models.CharField(max_length=255,null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class Client_contract_work(models.Model):
     client_id=models.IntegerField(null=True, blank=True)
@@ -328,6 +351,8 @@ class Client_contract_work(models.Model):
     status=models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external=models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class Client_contract_employee(models.Model):
     employee_id=models.IntegerField(null=True, blank=True)
@@ -338,6 +363,8 @@ class Client_contract_employee(models.Model):
     total=models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
+    created_by=models.IntegerField(null=True, blank=True)
 
 class SheetRecord(models.Model):
     employee_id = models.IntegerField(null=True, blank=True)
@@ -348,6 +375,7 @@ class SheetRecord(models.Model):
     record_type = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
 
     def __str__(self):
         return self.sheet_name
@@ -361,6 +389,7 @@ class ShortWorkEmail(models.Model):
     end_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_external = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.employee_id} ({self.status})"
@@ -373,6 +402,7 @@ class Buddy_Email(models.Model):
     leave_approved_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    is_external = models.BooleanField(default=True)
 
 # class FileManager(models.Model):
     # ENTITY_CHOICES = [
@@ -429,6 +459,7 @@ class FileManager(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     google_drive_file_url = models.CharField(max_length=1000, blank=True, null=True)
+    is_external = models.BooleanField(default=True)
 
     def __str__(self):
         return f"FileManager for {self.entity_type} with ID {self.get_entity_id()}"
@@ -465,6 +496,7 @@ class File_Category(models.Model):
     entity_type = models.CharField(max_length=10, choices=ENTITY_CHOICES)
     employee_id = models.IntegerField(null=True, blank=True)
     client_id = models.IntegerField(null=True, blank=True)
+    is_external = models.BooleanField(default=True)
 
     def clean(self):
         if self.entity_type == 'employee':
@@ -529,6 +561,7 @@ class Airtable(models.Model):
     linkedin_comment_count = models.IntegerField(blank=True, null=True)
     linkedin_engagement_count = models.IntegerField(blank=True, null=True)
     linkedin_engagement_rate = models.FloatField(blank=True, null=True)
+    is_external = models.BooleanField(default=True)
     
     reporting_month = models.IntegerField(
         choices=[(i, calendar.month_name[i]) for i in range(1, 13)],
@@ -563,6 +596,7 @@ class LinkedinPost(models.Model):
     domain = ArrayField(models.CharField(max_length=200), blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_external = models.BooleanField(default=True)
 
 
 
@@ -580,6 +614,7 @@ class SocialMedia(models.Model):
     date = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True, blank=True, null=True)
+    is_external = models.BooleanField(default=True)
 
     def __str__(self):
         return self.topic_name

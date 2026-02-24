@@ -1,16 +1,20 @@
 from django.contrib import admin
 from .models import *
 # Register your models here.
-admin.site.register(employee)
+
+class ShowAllFieldsAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [field.name for field in self.model._meta.fields]
+admin.site.register(employee,ShowAllFieldsAdmin)
 admin.site.register(employee_detail)
 admin.site.register(employee_salary)
-admin.site.register(client)
-admin.site.register(client_detail)
+admin.site.register(client,ShowAllFieldsAdmin)
+admin.site.register(client_detail,ShowAllFieldsAdmin)
 admin.site.register(client_payment)
-admin.site.register(project)
-admin.site.register(employee_project)
+admin.site.register(project,ShowAllFieldsAdmin)
+admin.site.register(employee_project,ShowAllFieldsAdmin)
 admin.site.register(time_tracking)
-admin.site.register(leave)
+admin.site.register(leave,ShowAllFieldsAdmin)
 admin.site.register(user_login)
 admin.site.register(toggl_user)
 admin.site.register(toggl_user_detail)
