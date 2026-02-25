@@ -110,49 +110,7 @@
         </div>
     </div>
 
-    <!-- <div class="page-header">
-        <div class="row">
-            <div class="col-sm-6">
-                <h3 class="page-title">Profile</h3>
-                <ul class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Profile</li>
-                </ul>
-            </div>
-
-            <div class="container">
-                <div class="row justify-content-end">
-                    <div class="col-md-3">
-                        <form method="post" action="{% url 'client-profile' client.id %}" id="clientForm">
-                            {% csrf_token %}
-                            <div class="filter-filelds" id="filter_inputs">
-                                <div class="row filter-row">
-                                    <div class="col-xl-8 offset-xl-4">
-                                        <div class="input-block mb-3 form-focus focused">
-                                            <input type="text" name="from_to_date" id="from_to_date" class="form-control date-range bookingrange1">
-                                            <label class="focus-label">From - To Date</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-md-2">
-                        {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
-                        <form action="{% url 'export_client_data' %}" method="post" target="_blank" style="width: 100%">
-                            <input type="hidden" name="client_id" value="{{ client.id }}">
-                            <input type="hidden" name="date_range" class="form-control date-range bookingrange1">
-                            <button type="submit" class="btn add-btn">Export Data</button>
-                        </form>
-
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-
-        </div>
-    </div> -->
+ 
 
 
     <div class="card mb-0">
@@ -1658,6 +1616,7 @@
                 </button>
             </div>
             <div class="modal-body">
+
                 <form action="{% url 'create_category' %}" method="post" enctype="multipart/form-data" id="categoryForm">
                     {% csrf_token %}
 

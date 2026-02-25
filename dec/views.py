@@ -489,8 +489,8 @@ def admin_dashboard(request):
         print(group[0] if group else "No groups")
 
         if group[0].name == 'admin' or group[0].name == 'super_user':
-            employee_count = employee.objects.filter(status=1,is_external=is_External).count()
-            client_count = client.objects.filter(is_External=is_external).count()
+            employee_count = employee.objects.filter(status=1,is_external=is_external).count()
+            client_count = client.objects.filter(is_external=is_external).count()
             
             selected_month = request.session.get('month')
 
@@ -2281,7 +2281,7 @@ def profile(request, employee_id,my_profile_tab=None):
         year, month = year_month
         employee1 = employee.objects.get(id=employee_id)
         employee_salary = get_salary_for_date(employee1, datetime(year, month, 1))
-        employee_name = employee1.first_name + " " + employee1.last_name
+        employee_name = employee1.first_name 
         working_days = count_working_days_in_month(month, year)
         for key, info in client_category_info.items():
             client_id, category_id = key
@@ -2863,7 +2863,11 @@ def client_profile(request, client_id):
     from datetime import datetime, timedelta
     from datetime import date
     logging.info("client_profile called")
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     if request.method == 'POST':
+        logging.info("POST request received in client_profile")
 
         from datetime import datetime, timedelta
         from_to_date = request.POST.get('from_to_date', None)
@@ -3011,7 +3015,7 @@ def client_profile(request, client_id):
 
 
     print('YEAR AND MONTH', start_year, end_year, start_month, end_month, query)
-    if Client_contract_work.objects.filter(client_id=client_id).filter(query).exists():
+    if Client_contract_work.objects.filter(client_id=client_id,is_external=is_external).filter(query).exists():
         contracts = Client_contract_work.objects.filter(client_id=client_id).filter(query)
         print(contracts, 'TEST Contract')
         for contract in contracts:
@@ -3107,7 +3111,7 @@ def client_profile(request, client_id):
 
     from datetime import date
     project_start_date = date(2025, 1, 1)
-    project_list2 = project.objects.filter(client_id=client_id, created_at__gte=project_start_date).order_by('-id')[:5]
+    project_list2 = project.objects.filter(client_id=client_id, created_at__gte=project_start_date,is_external=is_external).order_by('-id')[:5]
     print("Vinod project_list2")
     print(project_list2)
 
@@ -3410,7 +3414,7 @@ def client_profile(request, client_id):
         print("No contracted hours found for the specified client.")
 
     unique_category_ids = timeSheet.objects.filter(client_id=client_id,
-                                                   time_entries_start_date__range=(start_date, end_date),
+                                                   time_entries_start_date__range=(start_date, end_date),is_external=is_external,
                                                    status=None).values('category_id').distinct()
 
     # Prepare a list to store client and category information
@@ -3434,7 +3438,7 @@ def client_profile(request, client_id):
     # Get unique timeSheet entries for a specific client
     unique_timesheet_entries = timeSheet.objects.filter(client_id=client_id,
                                                         time_entries_start_date__range=(start_date, end_date),
-                                                        status=None).values('category_id', 'employee_id').distinct()
+                                                        status=None, is_external=is_external).values('category_id', 'employee_id').distinct()
 
     # Prepare a dictionary to store employee information
     employee_info_dict = {}
@@ -3470,7 +3474,7 @@ def client_profile(request, client_id):
     total_time_spent_by_category = timeSheet.objects.filter(client_id=client_id,
                                                             time_entries_start_date__gte=start_date,
                                                             time_entries_stop_date__lte=end_date,
-                                                            status=None) \
+                                                            status=None, is_external=is_external) \
         .values('category_id') \
         .annotate(total_time=Sum('time_entries_seconds'))
 
@@ -3503,7 +3507,7 @@ def client_profile(request, client_id):
         client_id=client_id,
         time_entries_start_date__gte=start_date,  # Filter based on start date
         time_entries_stop_date__lte=end_date,  # Filter based on end date
-        status=None
+        status=None, is_external=is_external
     ).values('client_id', 'employee_id').annotate(total_time=Sum('time_entries_seconds'))
     print(total_time_spent_by_client)
     # Create a dictionary to store category_id and total time spent
@@ -3585,7 +3589,7 @@ def client_profile(request, client_id):
             # 'total_time_seconds': total_time_seconds
         }
 
-    timesheets = timeSheet.objects.filter(client_id=client_id, time_entries_start_date__range=(start_date, end_date),
+    timesheets = timeSheet.objects.filter(client_id=client_id, time_entries_start_date__range=(start_date, end_date),is_external=is_external,
                                           status=None)
 
     # Dictionary to store employee IDs and their total time worked
@@ -3794,7 +3798,7 @@ def client_profile(request, client_id):
     project_user_dict = {}
     employee_rate_per_hour = {}
 
-    employee_list = employee.objects.filter(status=1)
+    employee_list = employee.objects.filter(status=1, is_external=is_external)
     employee_id_list = list(employee_details2.keys())
     monthly_amount = Client_contract_work.objects.filter(client_id=client_id).values('cost').order_by('-id').first()
     print('buddy_ids ', buddy_ids)
@@ -3815,12 +3819,12 @@ def client_profile(request, client_id):
     except Exception as e:
         files = []
 
-    file_category_all = File_Category.objects.distinct('name')
+    file_category_all = File_Category.objects.filter(is_external=is_external).distinct('name')
     file_category = File_Category.objects.filter(client_id=client_id)
     # client_file_category = File_Category.objects.filter(client_id=client_id).all()
-    client_file_category = File_Category.objects.filter(client_id=client_id)
+    client_file_category = File_Category.objects.filter(client_id=client_id, is_external=is_external)
 
-    file_counts = FileManager.objects.filter(client_id=client_id).values('category_id').annotate(count=Count('id'))
+    file_counts = FileManager.objects.filter(client_id=client_id, is_external=is_external).values('category_id').annotate(count=Count('id'))
 
     # Create a lookup dictionary: {category_id: count}
     file_count_dict = {item['category_id']: item['count'] for item in file_counts}
@@ -3844,7 +3848,7 @@ def client_profile(request, client_id):
     employee_dict = {}
     for emp in auth_user_employee:
         try:
-            emp_ob = employee.objects.get(user_id=emp.id)
+            emp_ob = employee.objects.filter(user_id=emp.id,is_external=is_external)
             employee_dict[emp_ob.user_id] = emp_ob.first_name + ' ' + emp_ob.last_name
         except Exception as e:
             pass
@@ -4941,9 +4945,16 @@ def view_project(request, project_id):
 def holidays(request):
     active = [''] * 15
     active[3] = 'active'
+    logging.info(f"holidays api called by request.user.email:{request.user.email}")
+    is_external=True
+
+    if request.user and is_brickwin_email(request.user.email):
+        logging.info("user is internal in holidays api ")
+        is_external=False
+
     country_name = Country.objects.values_list('name', flat=True).distinct()
-    south_africa_holidays = Holiday.objects.filter(country_id=4)
-    philippine_holidays = Holiday.objects.filter(country_id=2)
+    south_africa_holidays = Holiday.objects.filter(country_id=4, is_external=is_external)
+    philippine_holidays = Holiday.objects.filter(country_id=2,  is_external=is_external)
 
     us_id = Country.objects.filter(code='US').first()
     uk_id = Country.objects.filter(code='UK').first()   
@@ -4961,7 +4972,8 @@ def holidays(request):
     from django.db.models.functions import ExtractYear
 
     ind_holidays = Holiday.objects.filter(
-        country_id=in_id
+        country_id=in_id,
+        is_external=is_external
     ).annotate(
         year=ExtractYear('date')
     ).filter(
@@ -4972,7 +4984,7 @@ def holidays(request):
     print(ind_holidays)
     # US Holidays for 2026
     us_holidays = Holiday.objects.filter(
-        country_id=us_id
+        country_id=us_id, is_external=is_external
     ).annotate(
         year=ExtractYear('date')
     ).filter(
@@ -4981,9 +4993,12 @@ def holidays(request):
         country_code=Value('US')
     ).values('id', 'name', 'date', 'country_code')
 
+    logging.info(f"len of us holidays:{len(us_holidays)}")
+
     # UK Holidays for 2026
     uk_holidays = Holiday.objects.filter(
-        country_id=uk_id
+        country_id=uk_id,
+        is_external=is_external
     ).annotate(
         year=ExtractYear('date')
     ).filter(
@@ -8230,6 +8245,11 @@ def upload_client_contract_employee(request):
 @csrf_exempt
 @login_required(login_url='/')
 def excel_sheet(request):
+    logging.info(f"excel_sheet view called with request.user.email:{request.user.email}")
+    is_external=True
+
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
 
     selected_month1 = request.session.get('month_sheet8')
 
@@ -8249,12 +8269,12 @@ def excel_sheet(request):
 
 
     # Fetch data from Client_contract_work model
-    contracts =Client_contract_work.objects.filter(date__year=2026, date__month=selected_month).order_by('-updated_at')
+    contracts =Client_contract_work.objects.filter(date__year=2026, date__month=selected_month,is_external=is_external).order_by('-updated_at')
 
     # Create a list to store the formatted data
     data = []
-    employees_with_status_1 = employee.objects.all()
-    contracted_employees = Client_contract_employee.objects.filter(employee_id__in=employees_with_status_1.values('id'),date__year=2026, date__month=selected_month)
+    employees_with_status_1 = employee.objects.filter(is_external=is_external)
+    contracted_employees = Client_contract_employee.objects.filter(employee_id__in=employees_with_status_1.values('id'),date__year=2026, date__month=selected_month,is_external=is_external)
 
     employee_list_data = []
 
@@ -8341,8 +8361,8 @@ def excel_sheet(request):
 
     # Pass the data to the template
     current_year = 2026
-    client_list = client.objects.filter(status=1).all()
-    employee_list = employee.objects.filter(status=1).all()
+    client_list = client.objects.filter(status=1,is_external=is_external).all()
+    employee_list = employee.objects.filter(status=1,is_external=is_external).all()
     context = {'data': data,
                'month_view':sl,
                'selected_month':selected_month,
@@ -9066,7 +9086,7 @@ def report(request):
 
         selected_option='0'
 
-    all_clients = client.objects.all()
+    all_clients = client.objects.filter(is_external=is_external)
     all_employees =employee.objects.filter(status__in=[1, 2], is_external=is_external)
 
     if selected_client_ids and selected_employee_ids:
@@ -9097,7 +9117,7 @@ def report(request):
             time_entries_stop_date__lte=end_date,
             employee_id__in=selected_employee_ids,
             status=None,
-            is_External=is_external
+            is_external=is_external
         )
     else:
         # print("else")
@@ -22050,7 +22070,12 @@ def upload_document(request):
 @log_view_call
 @login_required(login_url='/')
 def create_category(request):
+    logging.info(f"create_category called by user :{request.user.email}")
+    is_external=True
+    if request.user.email and is_brickwin_email(request.user.email):
+        is_external=False
     if request.method == 'POST':
+        logging.info("post method ")
         entity_type = request.POST.get('entity_type')
         employee_id = request.POST.get('employee_id')
         client_id = request.POST.get('client_id')
@@ -22064,7 +22089,7 @@ def create_category(request):
             file_name = file_category.name
 
         if file_name:
-            File_Category.objects.create(name=file_name,entity_type=entity_type,employee_id=employee_id,client_id=client_id)
+            File_Category.objects.create(name=file_name,entity_type=entity_type,employee_id=employee_id,client_id=client_id, is_external=is_external)
             messages.success(request, 'Category created successfully!')
         else:
             messages.error(request, 'Error in creating category.')
