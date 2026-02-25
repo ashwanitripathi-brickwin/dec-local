@@ -3050,9 +3050,9 @@ def client_profile(request, client_id):
                     hours = float(hours)
                     employee1 = employee.objects.get(id=int(employee_id))
                     if employee1.first_name and employee1.last_name:
-                        employee_name = f"{employee1.first_name} {employee1.last_name}"
+                        employee_name = f"{employee1.first_name}"
                     else:
-                        employee_name = employee1.user_name
+                        employee_name = employee1.first_name
 
                     image_url = employee1.image_url if hasattr(employee1,
                                                                'image_url') else "/static/assets/img/client/default-profile-pic.jpg"
@@ -3134,7 +3134,7 @@ def client_profile(request, client_id):
                 try:
                     employee_data = employee.objects.get(id=employee_id)
                     employee_details_by_role[role].append({
-                        'name': f"{employee_data.first_name} {employee_data.last_name}",
+                        'name': f"{employee_data.first_name}",
                         'id': employee_data.id,
                         'image_url': employee_data.image_url,
                         'role': role
@@ -3169,9 +3169,9 @@ def client_profile(request, client_id):
                     employee1 = employee.objects.get(id=int(employee_id))
 
                     if employee1.first_name and employee1.last_name:
-                        employee_name = f"{employee1.first_name} {employee1.last_name}"
+                        employee_name = f"{employee1.first_name}"
                     else:
-                        employee_name = employee1.user_name
+                        employee_name = employee1.first_name
 
                     image_url = employee1.image_url if hasattr(employee1,
                                                                'image_url') else "/static/assets/img/client/default-profile-pic.jpg"
@@ -3451,7 +3451,7 @@ def client_profile(request, client_id):
         # Fetch the employee from the Employee table
         try:
             employee1 = employee.objects.get(id=employee_id)
-            employee_name = f"{employee1.first_name} {employee1.last_name}"
+            employee_name = f"{employee1.first_name}"
             employee_image_url = employee1.image_url
             # employee_salary = employee1.salary
             employee_salary = get_salary_for_date(employee1, start_date)
@@ -3752,7 +3752,7 @@ def client_profile(request, client_id):
                 # Calculate total salary for the given working hours
 
                 if employee3.first_name and employee3.last_name:
-                    name = employee3.first_name + ' ' + employee3.last_name
+                    name = employee3.first_name 
                 else:
                     name = employee3.user_name
 
@@ -3849,7 +3849,7 @@ def client_profile(request, client_id):
     for emp in auth_user_employee:
         try:
             emp_ob = employee.objects.filter(user_id=emp.id,is_external=is_external)
-            employee_dict[emp_ob.user_id] = emp_ob.first_name + ' ' + emp_ob.last_name
+            employee_dict[emp_ob.user_id] = emp_ob.first_name 
         except Exception as e:
             pass
     

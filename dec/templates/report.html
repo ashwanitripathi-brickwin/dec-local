@@ -282,6 +282,7 @@ table.dataTable th {
                                             <div class="employee-list-container">
                                                 <ul class="employee-list" id="employeeList">
                                                     {% for employee in all_employees %}
+                                                    {% if employee.id != 30 %}
                                                         <li data-status1="{{ employee.status }}">
                                                             <div class="filter-checks">
                                                                 <label class="checkboxs">
@@ -293,6 +294,7 @@ table.dataTable th {
                                                                 <h5>{{ employee.user_name }}</h5>
                                                             </div>
                                                         </li>
+                                                        {% endif %}
                                                     {% endfor %}
                                                 </ul>
 

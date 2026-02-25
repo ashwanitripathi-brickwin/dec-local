@@ -588,7 +588,8 @@
 						            var dummyProfilePic = "{% static 'assets/img/user/dummy-profile-pic.jpg' %}";
 						            var imageContainer = $('<a href="/profile/' + employeeId + '" target="_blank" class="avatar" data-bs-toggle="tooltip" title="' + employeeName + '"></a>');
 						            // var imgTag = $('<img src="' + imageUrl + '" alt="' + employeeName + '">');
-						            if(employeeId ==52){
+									console.log("Employee ID: " + employeeId + ", Image URL: " + imageUrl + ", Type of imageUrl: " + typeof imageUrl); // Debugging line to check values
+						            if(!imageUrl || imageUrl === undefined || imageUrl === "None" || imageUrl === ''){
 						            	var imgTag = $('<img src="' + dummyProfilePic + '" alt="' + employeeName + '">');
 						            }else{
 						            	var imgTag = $('<img src="' + imageUrl + '" alt="' + employeeName + '">');
