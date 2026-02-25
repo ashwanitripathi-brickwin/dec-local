@@ -42,8 +42,10 @@
 				<div class="input-block mb-3 form-focus">
 					<select class="select form-control leaderDropdown hideLabel" id="employee_id" multiple name="employee_id" >
 						{% for employee in employee_list %}
+						{% if employee.id != 30 %}
+		
 							<option value="{{ employee.id }}" {% if employee.id|stringformat:"s" in employee_ids %} selected {% endif %}>{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}</option>
-	
+	                    {%  endif %}
 						{% endfor %}
 					</select>
 					<label class="focus-label">Employee Name</label>
@@ -488,7 +490,9 @@
 								<select class="select form-control leaderDropdown" id="leaderDropdown" onchange="updateTeamMemberImages('leader')" multiple name="leader">
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
+									{% if employee.id != 30 %}
 									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}</option>
+									{% endif %}
 									{% endfor %}
 								</select>
 								<div class="invalid-feedback">Please select at least one leader.</div>
@@ -510,10 +514,13 @@
 								<select class="select form-control supportDropdown" id="supportDropdown" onchange="updateTeamMemberImages('support')" multiple name="support">
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
+									{% if employee.id != 30 %}
+
 									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
 										<!-- {{ employee.first_name }} {{ employee.last_name }} -->
 										{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}
 									</option>
+									{% endif %}
 									{% endfor %}
 								</select>
 							</div>
@@ -535,10 +542,12 @@
 								<select class="select form-control advisorDropdown" id="advisorDropdown" onchange="updateTeamMemberImages('advisor')" multiple name="advisor">
 									<option value="" disabled>Select an Employee</option>
 									{% for employee in employee_list %}
+									{% if employee.id != 30 %}
 									<option value="{{ employee.id }}" data-image="{{ employee.image_url }}" data-id="{{ employee.id }}">
 								
 										{{ employee.first_name }} {% if employee.last_name %}{{ employee.last_name }}{% endif %}
 									</option>
+									{% endif %}
 									{% endfor %}
 								</select>
 							</div>

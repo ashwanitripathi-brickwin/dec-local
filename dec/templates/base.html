@@ -361,7 +361,7 @@
                                     <li><a class="{{ active.3 }}" href="{% url 'holidays' %}">Holidays</a></li>
 
                                     {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' %}
+                                        {% if user.groups.all.0.name == 'admin' or user.groups.all.0.name == 'super_admin'%}
                                             <li><a class="{{ active.4 }}" href="{% url 'leave_admin' %}">Leave (Admin)</a></li>
                                             <li><a class="{{ active.5 }}" href="{% url 'leave_employee' %}">Leave (Employee)</a></li>
                                         {% else %}
@@ -369,7 +369,7 @@
                                         {% endif %}
                                     {% endif %}
                                     {% if user.is_authenticated %}
-                                        {% if user.groups.all.0.name == 'admin' %}
+                                        {% if user.groups.all.0.name == 'admin' or user.groups.all.0.name == 'super_admin' %}
                                     <li><a class="{{ active.7 }}" href="{% url 'monthly_overview' %}">Monthly Overview</a></li>
                                      {% endif %}
                                     {% endif %}
