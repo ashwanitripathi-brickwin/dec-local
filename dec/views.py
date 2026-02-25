@@ -653,7 +653,7 @@ def admin_dashboard(request):
         logged_in_employee_clients = []
 
         user_name = request.session.get('user_name')
-        employee1 = employee.objects.get(user_name=user_name,is_external=is_external)
+        employee1 = employee.objects.get(user_name=user_name)
 
         logged_in_employee_id = employee1.id
         for work in client_contract_work:
@@ -4187,8 +4187,8 @@ def projects(request):
 
     project_list = project_queryset[:100] if isinstance(project_queryset, list) else project_queryset.order_by('id')[:100]
 
-    print("Vinod project_list")
-    print(project_list)
+    logging.info(f"Project list retrieved at projects: {len(project_list)}")
+    
 
     project_data_with_employees = []
     for project_data in project_list:
@@ -4197,6 +4197,7 @@ def projects(request):
             'S': [],
             'A': []
         }
+        logging.info(f"project")
 
         working_roles = ast.literal_eval(project_data.working_role)
 
@@ -20603,7 +20604,7 @@ def leave_daterange(start_date, end_date):
 @log_view_call
 @login_required(login_url='/')
 def short_mail(request):
-    if request.user.groups.all()[0].name == "admin":
+    if request.user.groups.all()[0].name == "admin" or request.user.groups.all()[0].name == "super_admin":    
 
         # Get current week range (Monday to Thursday)
         if request.method == 'POST':

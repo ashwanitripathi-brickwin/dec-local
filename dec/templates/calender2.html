@@ -80,6 +80,7 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title">Add Event</h5>
+
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
@@ -90,13 +91,25 @@
                         <div style="display: flex; gap: 5px; overflow-x: auto; white-space: nowrap;
                             scrollbar-width: thin; scrollbar-color: #ccc transparent;">
                             {% for client_id, details in client_category_map.items %}
+                               {% if request.user.id == 32 %}
+                                 
+                                    {% if client_id == 7 %}
+                                    <button type="button" class="recent-client"
+                                            data-client="{{ client_id }}"
+                                            data-category="{{ details.category_id }}"
+                                            style="background: #f6f8fb; color: #333; font-size: 14px; padding: 6px 10px;
+                                                border: none; border-radius: 6px; flex-shrink: 0;">
+                                        {{ details.client_name }}
+                                    </button>
+                                    {% endif %}
+                                {% else %}
                                 <button type="button" class="recent-client"
                                         data-client="{{ client_id }}"
                                         data-category="{{ details.category_id }}"
                                         style="background: #f6f8fb; color: #333; font-size: 14px; padding: 6px 10px;
                                             border: none; border-radius: 6px; flex-shrink: 0;">
                                     {{ details.client_name }}
-                                </button>
+                                    {% endif %}
                             {% endfor %}
                         </div>
                     </div>
@@ -105,7 +118,14 @@
 						<select id="mySelect2" name="client_id" style="width: 100%" required>
 						<option value="" disabled selected>Select a client</option>
 							{% for client in clients %}
+                                  {% if request.user.id == 32 %}
+                                   
+                                    {% if client.id == 7 %}
+                                    <option value="{{ client.id }}">{{ client.company_name }}, {{ client.client_name }}</option>
+                                    {% endif %}
+                                {% else %}
 									<option value="{{ client.id }}">{{ client.company_name }}, {{ client.client_name }}</option>
+                                {% endif %}
 							{% endfor %}
 						</select>
                         <span id="clientError" class="text-danger" style="display: none;">Please select a client.</span>

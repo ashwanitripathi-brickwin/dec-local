@@ -20,11 +20,9 @@
 				</ul>
 			</div>
 			<div class="col-auto float-end ms-auto">
+				{% if request.user.id != 32 %}
 				<a href="#" class="btn add-btn" data-bs-toggle="modal" data-bs-target="#create_project"><i class="fa-solid fa-plus"></i> Create Project</a>
-				<!-- <div class="view-icons">
-					<a href="#" class="grid-view btn btn-link active"><i class="fa fa-th"></i></a>
-					<a href="#" class="list-view btn btn-link"><i class="fa-solid fa-bars"></i></a>
-				</div> -->
+				{% endif %}
 			</div>
 		</div>
 	</div>
@@ -70,6 +68,103 @@
 
 	<div class="row">
 		{% for project_data in project_data_with_employees %}
+
+		{% if request.user.id == 32 %}
+		
+			{% if project_data.project.client_id == "7" %}
+			
+				<div class="col-lg-4 col-sm-6 col-md-4 col-xl-3 d-flex">
+			<div class="card w-100">
+				<div class="card-body">
+					<div class="dropdown dropdown-action profile-action">
+						<a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown"  aria-expanded="false"><i class="fa-solid fa-ellipsis-vertical" style="margin-right: 10px;"></i></a>
+						<div class="dropdown-menu dropdown-menu-right">
+	                        <a class="dropdown-item" href="javascript:void(0);" onclick="openEditModal({{ project_data.project.id }})">
+	                            <i class="fa-solid fa-pencil m-r-5"></i> Edit
+	                        </a>
+	                        <a class="dropdown-item" href="javascript:void(0)" onclick="deleteProject({{ project_data.project.id }})"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a>
+	                    </div>
+					</div>
+					<h4 class="project-title"><a href="javascript:void(0)">{{ project_data.project.project_name }}</a></h4>
+					<div class="pro-deadline m-b-15">
+						<div class="sub-title">
+							Status:
+						</div>
+						<div class="text-muted">
+							{% if project_data.project.status == 'in_progress' %}
+						        InProgress
+						    {% elif project_data.project.status == 'completed' %}
+						        Completed
+						    {% elif project_data.project.status == 'onboarding' %}
+						        Onboarding
+						    {% else %}
+						        InProgress
+						    {% endif %}
+						</div>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Leader:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.L %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No leaders assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Support:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.S %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No support assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+					<div class="project-members m-b-15">
+						<div>Project Advisor:</div>
+						<ul class="team-members">
+							{% for employee in project_data.employee_details_by_role.A %}
+				                <li>
+				                	<a href="{% url 'profile' employee.id %}" data-bs-toggle="tooltip" title="{{ employee.name }}">
+										{% if employee.image_url %}
+										<img src="{{ employee.image_url }}" alt="{{ employee.name }}">
+										{% else %}
+										<img src="/static/assets/img/client/dummy-profile-pic.jpg" alt="Default Image">
+										{% endif %}
+									</a>
+				                </li>
+				            {% empty %}
+				                <li>No advisor assigned</li>
+				            {% endfor %}
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+			{% endif %}
+		
+		
+		{% else %}
+
+		
 		<div class="col-lg-4 col-sm-6 col-md-4 col-xl-3 d-flex">
 			<div class="card w-100">
 				<div class="card-body">
@@ -156,6 +251,7 @@
 				</div>
 			</div>
 		</div>
+		{% endif %}
 		{% endfor %}
 	</div>
 
@@ -166,12 +262,14 @@
 
 	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		<div class="modal-content">
+			{% if request.user.id != 32 %}
 			<div class="modal-header">
 				<h5 class="modal-title">Create Project</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
+			 {% endif %}
 			<div class="modal-body">
 				<form action="{% url 'projects' %}" method="post" enctype="multipart/form-data" id="projectForm" data-project_name="">
 					{% csrf_token %}

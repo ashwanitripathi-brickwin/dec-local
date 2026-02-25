@@ -148,6 +148,13 @@
 							</thead>
 							<tbody>
 								{% for project_data in project_data_with_employees %}
+					
+								{% if request.user.id == 32 %}
+								
+                                   
+                                    {% if project_data.project.client_id == "7" %}
+									
+
 								<tr>
 									<td>
 										<h2 class="table-avatar">
@@ -198,6 +205,60 @@
 										</div>
 									</td>
 								</tr>
+									{% endif %}
+								{% else %}
+								<tr>
+									<td>
+										<h2 class="table-avatar">
+											<a href="{% url 'projects' %}" class="avatar">
+												{% if project_data.project.uploaded_file %}
+			                                        <!-- <img src="{{ project_data.project.uploaded_file }}" alt="User Image"> -->
+			                                        <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+			                                    {% else %}
+			                                        <img src="{% static 'assets/img/client/project-sample.png' %}" alt="Default Image">
+			                                    {% endif %}
+											</a>
+											<a href="{% url 'projects' %}">{{ project_data.project.project_name }}</a>
+										</h2>
+									</td>
+									<td>
+										{% for employee in project_data.employee_details_by_role.L %}
+										    {{ employee.name }}{% if not forloop.last %}, {% endif %}
+										{% endfor %}
+									</td>
+									<td>
+										<div class="dropdown action-label">
+											{% if project_data.project.status == 'in_progress' %}
+												<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-success"></i> 
+													InProgress
+												</a>
+											{% elif project_data.project.status == 'completed' %}
+										    	<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-danger"></i> 
+													Completed
+												</a>
+											{% elif project_data.project.status == 'onboarding' %}
+												<a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-warning"></i> 
+													Onboarding
+												</a>
+											{% else %}
+										        <a class="btn btn-white btn-sm btn-rounded dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" aria-expanded="false">
+													<i class="fa-regular fa-circle-dot text-success"></i> 
+													InProgress
+												</a>
+										    {% endif %}
+											<div class="dropdown-menu dropdown-menu-right" data-id="{{project_data.project.id}}">
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="in_progress"><i class="fa-regular fa-circle-dot text-success"></i> InProgress</a>
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="onboarding"><i class="fa-regular fa-circle-dot text-warning"></i> Onboarding</a>
+												<a class="dropdown-item confirmChk" href="javascript:void(0)" data-status="completed"><i class="fa-regular fa-circle-dot text-danger"></i> Completed</a>
+											</div>
+										</div>
+									</td>
+								</tr>
+								{% endif %}
+
 								{% endfor %}								
 							</tbody>
 						</table>

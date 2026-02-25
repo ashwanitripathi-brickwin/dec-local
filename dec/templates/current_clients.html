@@ -41,7 +41,14 @@
                     <select class="select floating" id="clientName" multiple="multiple" name="client_id">
                         <!-- <option value="">Select Client</option> -->
                         {% for client in client_list %}
+                        {% if request.user.id == 32 %}
+                                   
+                                    {% if client.id == 7 %}
                             <option value="{{ client.id }}">{{ client.client_name }}</option>
+                                    {% endif %}
+                                {% else %}
+                                    <option value="{{ client.id }}">{{ client.client_name }}</option>
+                                {% endif %}
                         {% endfor %}
                     </select>
                     <label class="focus-label">Select Client</label>
@@ -85,7 +92,47 @@
 
     <div class="row staff-grid-row">
         {% for client in client_list %}
-        <div class="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
+          {% if request.user.id == 32 %}
+             {% if client.id == 7 %}
+
+
+        
+            <div class="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
+                <div class="profile-widget w-100">
+                    <div class="profile-img">
+                        <a href="{% url 'client-profile' client.id %}" class="avatar">
+                            {% if client.image_url|length > 0 %}
+                                <img src="{{ client.image_url }}" alt="User Image">
+                            {% else %}
+                                <img src="{% static 'assets/img/user/dummy-profile-pic.jpg' %}" alt="Close Icon">
+                            {% endif %}
+
+                        </a>
+
+                    </div>
+                    <div class="dropdown profile-action" hidden>
+                        <a href="#" class="action-icon dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="material-icons">more_vert</i></a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item edit-client" href="javascript:void(0)" data-client-id="{{ client.id }}"><i class="fa-solid fa-pencil m-r-5"></i> Edit</a>
+                            <!-- <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#delete_employee"><i class="fa-regular fa-trash-can m-r-5"></i> Delete</a> -->
+                                {% if request.user.username == 'Sbhutra' and request.user.id == 6 %}
+                            <a class="dropdown-item export-to-excel" href="#" data-client-id="{{ client.id }}"><i class="fa-solid fa-arrow-alt-circle-right m-r-5"></i> Export to Excel</a>
+                                    {% endif %}
+
+                        </div>
+                    </div>
+                    <h4 class="user-name m-t-10 mb-0 text-ellipsis"><a href="{% url 'client-profile' client.id %}">{{ client.client_name }} </a></h4>
+                    <!--            <h5 class="user-name m-t-10 mb-0 text-ellipsis"><a href="client-profile.html">{{ client.first_name }} {{ client.last_name }}</a></h5>-->
+                    <div class="small text-muted">{{ client.company_name }} </div>
+                    <!-- <a href="{% url 'client-profile' client.id %}" class="btn btn-white btn-sm m-t-10">Message</a> -->
+                    <a href="{% url 'client-profile' client.id %}" class="btn btn-white btn-sm m-t-10">View Profile</a>
+
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+          <div class="col-md-4 col-sm-6 col-12 col-lg-4 col-xl-3 d-flex">
             <div class="profile-widget w-100">
                 <div class="profile-img">
                     <a href="{% url 'client-profile' client.id %}" class="avatar">
@@ -117,6 +164,7 @@
 
             </div>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
 

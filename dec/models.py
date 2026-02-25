@@ -15,7 +15,7 @@ class employee(models.Model):
     email = models.EmailField(unique=True, blank=True, null=True)
     personal_email = models.EmailField(unique=True, blank=True, null=True)
     gender = models.CharField(max_length=50, null=True, blank=True)
-    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=1000.00)
     image_url = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
