@@ -12516,7 +12516,11 @@ def summary(request):
 @csrf_exempt
 @login_required(login_url='/')
 def weekly(request):
-    print("weekly")
+
+    logging.info("weekly api called")
+    is_external=True
+    if request.user and is_brickwin_email(request.user.email):
+        is_external=False
         # Initialize selected_client_ids
     selected_client_ids = []
     selected_employee_ids=[]
@@ -12594,8 +12598,8 @@ def weekly(request):
     print(start_date)
     print(end_date)
 
-    all_clients = client.objects.all()
-    all_employees =employee.objects.filter(status__in=[1, 2])
+    all_clients = client.objects.filter(is_external=is_external)
+    all_employees =employee.objects.filter(status__in=[1, 2], is_external=is_external)
 
     if selected_client_ids and selected_employee_ids:
         print("if")
@@ -12604,7 +12608,8 @@ def weekly(request):
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     elif selected_client_ids :
@@ -12613,7 +12618,8 @@ def weekly(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
-            status=None
+            status=None,
+            is_external=is_external
 
         )
     elif selected_employee_ids:
@@ -12622,20 +12628,22 @@ def weekly(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_external=is_external
         )
     else:
         print("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     # Fetch the client objects for the selected client IDs
     # Fetch the client objects for the selected client IDs
-    selected_clients = client.objects.filter(id__in=selected_client_ids)
-    selected_employees=employee.objects.filter(id__in=selected_employee_ids)
+    selected_clients = client.objects.filter(id__in=selected_client_ids,is_external=is_external)
+    selected_employees=employee.objects.filter(id__in=selected_employee_ids,is_external=is_external)
 
     # Create a list of tuples containing client ID and name for selected clients
     selected_client_names = [(client.id, client.toggl_client_name) for client in selected_clients]
@@ -13275,6 +13283,10 @@ def detailed(request):
     selected_client_ids = []
     selected_employee_ids = []
 
+    is_external=True
+    if request.user and is_brickwin_email(request.user.email):
+        is_external=False
+
     # Calculate the date range for the last week
     if request.method == 'POST':
         from datetime import datetime, timedelta
@@ -13348,8 +13360,8 @@ def detailed(request):
         print("elsedatw")
         print(from_to_date)
 
-    all_clients = client.objects.all()
-    all_employees =employee.objects.filter(status__in=[1, 2])
+    all_clients = client.objects.filter(is_external=is_external)
+    all_employees =employee.objects.filter(status__in=[1, 2],is_external=is_external)
 
     if selected_client_ids and selected_employee_ids:
         print("if")
@@ -13358,7 +13370,8 @@ def detailed(request):
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     elif selected_client_ids :
@@ -13367,7 +13380,8 @@ def detailed(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             client_id__in=selected_client_ids,
-            status=None
+            status=None,
+            is_external=is_external
 
         )
     elif selected_employee_ids:
@@ -13376,19 +13390,21 @@ def detailed(request):
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
             employee_id__in=selected_employee_ids,
-            status=None
+            status=None,
+            is_external=is_external
         )
     else:
         print("else")
         time_entries_last_week = timeSheet.objects.filter(
             time_entries_start_date__gte=start_date,
             time_entries_stop_date__lte=end_date,
-            status=None
+            status=None,
+            is_external=is_external
         )
 
     # Fetch the client objects for the selected client IDs
     # Fetch the client objects for the selected client IDs
-    selected_clients = client.objects.filter(id__in=selected_client_ids)
+    selected_clients = client.objects.filter(id__in=selected_client_ids,is_external=is_external)
     selected_employees=employee.objects.filter(id__in=selected_employee_ids)
 
     # Create a list of tuples containing client ID and name for selected clients
@@ -13410,6 +13426,7 @@ def detailed(request):
     # Iterate through each entry in the queryset
     for entry in time_entries_last_week:
         # Fetch employee details
+        logging.info(f"entry employee id :{entry.employee_id}")
         employee1 = employee.objects.get(id=entry.employee_id)
 
         # Fetch client details
