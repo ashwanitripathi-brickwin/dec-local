@@ -53,7 +53,7 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        <form action="{% url 'register' %}" method="post">
+                        <form action="{% url 'register' %}" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="row">
                             <div class="col-md-6">
@@ -73,6 +73,12 @@
                                     <input class="form-control" type="text" name="last_name" required>
                                 </div>
                             </div>
+                        </div>
+                        <div class="input-block mb-4">
+                            <label class="col-form-label">
+                                Profile Picture
+                            </label>
+                            <input class="form-control" type="file" name="profile_pic" accept="image/*">
                         </div>
                             <div class="input-block mb-4">
                                 <label class="col-form-label">Email<span class="mandatory">*</span></label>

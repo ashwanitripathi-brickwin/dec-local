@@ -23547,6 +23547,7 @@ def register(request):
         uname = request.POST.get("username", "").strip()
         first_name=request.POST.get("first_name", "").strip()
         last_name=request.POST.get("last_name", "").strip()
+        uploaded_file = request.FILES.get('profile_pic')
 
         logging.info(f"Received registration data: username={uname}, pass1={pass1 }, pass2={pass2}")
 
@@ -23556,6 +23557,10 @@ def register(request):
 
         # Check if the email is already in use
         if User.objects.filter(email=uname).exists():
+            messages.error(request, "This email is already in use.")
+            return redirect("register")
+        
+        if employee.objects.filter(email=uname).exists():
             messages.error(request, "This email is already in use.")
             return redirect("register")
 
@@ -23583,7 +23588,30 @@ def register(request):
                 
                 my_user = User.objects.create_user(username=uname, password=pass1,email=uname)
                 my_user.save()
-                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, last_name=last_name, country_id=1, email=uname,status=1,is_external=is_external)
+                if uploaded_file:
+                    logging.info("user has uploaded profile pic")
+                    base_filename = os.path.basename(uploaded_file.name)
+                    logging.info(f"basse_filename :{base_filename}")
+
+                    base_filename = base_filename.replace('/', '_')
+
+                    filename = f'{first_name}{last_name}_{base_filename}'
+                    filename = filename.replace('/', '_')
+
+                    destination_path = os.path.join(settings.STATICFILES_DIRS[0], 'img', 'profiles', filename)
+
+                    try:
+                        with open(destination_path, 'wb+') as destination:
+                            for chunk in uploaded_file.chunks():
+                                destination.write(chunk)
+                    except Exception as e:
+                        print(e)
+
+                if uploaded_file:
+                    uploaded_file_path = os.path.join(settings.STATIC_URL, 'assets', 'img', 'profiles', filename)
+                else:
+                    uploaded_file_path =''
+                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, last_name=last_name, country_id=1, email=uname,status=1,is_external=is_external,image_url=uploaded_file_path)
                 # after creating user
                 uid = urlsafe_base64_encode(force_bytes(my_user.pk))
                 token = email_verification_token.make_token(my_user)
@@ -23605,11 +23633,11 @@ def register(request):
                 Brickwin Team
                 """
 
-                send_email_modified(
-                    to_email=uname,
-                    subject="Verify your Brickwin account",
-                    body=body
-                )
+                # send_email_modified(
+                #     to_email=uname,
+                #     subject="Verify your Brickwin account",
+                #     body=body
+                # )
                 messages.error(request, "Registration successful. Please check your email to verify your account.")
                 logging.info(f"Created user: {my_user}, employee record: {my_employee}")
                 return redirect("register")
