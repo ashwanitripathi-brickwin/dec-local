@@ -19,18 +19,18 @@ dist/
 
 
 
-dec-local/dec/dec/static/assets/img/client/
+# dec-local/dec/dec/static/assets/img/client/*jpg
 
 
-/dec-local/dec/dec/static/assets/img/client/
+# /dec-local/dec/dec/static/assets/img/client/
 
-static/assets/img/client/
-**/img/client/
-**/img/profiles/
-**/img/user/
+# static/assets/img/client/
+# **/img/client/
+# **/img/profiles/
+# **/img/user/
 
 
-**/assets2/img/
+# **/assets2/img/
 
 
 **/assets/plugins/icons/flags/flags/

@@ -55,6 +55,25 @@
                         {% endif %}
                         <form action="{% url 'register' %}" method="post">
                             {% csrf_token %}
+                            <div class="row">
+                            <div class="col-md-6">
+                                <div class="input-block mb-4">
+                                    <label class="col-form-label">
+                                        First Name <span class="mandatory">*</span>
+                                    </label>
+                                    <input class="form-control" type="text" name="first_name" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="input-block mb-4">
+                                    <label class="col-form-label">
+                                        Last Name <span class="mandatory">*</span>
+                                    </label>
+                                    <input class="form-control" type="text" name="last_name" required>
+                                </div>
+                            </div>
+                        </div>
                             <div class="input-block mb-4">
                                 <label class="col-form-label">Email<span class="mandatory">*</span></label>
                                 <input class="form-control" type="email" name="username" required>
