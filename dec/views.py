@@ -23545,6 +23545,8 @@ def register(request):
         pass1 = request.POST.get("password", "").strip()
         pass2 = request.POST.get("repeat_password", "").strip()
         uname = request.POST.get("username", "").strip()
+        first_name=request.POST.get("first_name", "").strip()
+        last_name=request.POST.get("last_name", "").strip()
 
         logging.info(f"Received registration data: username={uname}, pass1={pass1 }, pass2={pass2}")
 
@@ -23570,7 +23572,7 @@ def register(request):
                     password=pass1,
                     email=uname
                 )
-                my_employee=employee.objects.create(user_name=uname, first_name=uname,user_id=my_user.id, country_id=1, email=uname,status=1)
+                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, country_id=1, email=uname,status=1,last_name=last_name)
                 logging.info("Superuser created")
 
             else:
@@ -23578,10 +23580,10 @@ def register(request):
 
                 if uname and is_brickwin_email(uname):
                     is_external=False
-                first_name=uname.split('@')[0] if uname else ''
+                
                 my_user = User.objects.create_user(username=uname, password=pass1,email=uname)
                 my_user.save()
-                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, last_name="", country_id=1, email=uname,status=1,is_external=is_external)
+                my_employee=employee.objects.create(user_name=uname, first_name=first_name,user_id=my_user.id, last_name=last_name, country_id=1, email=uname,status=1,is_external=is_external)
                 # after creating user
                 uid = urlsafe_base64_encode(force_bytes(my_user.pk))
                 token = email_verification_token.make_token(my_user)
