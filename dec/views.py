@@ -23650,11 +23650,11 @@ def register(request):
                 Brickwin Team
                 """
 
-                # send_email_modified(
-                #     to_email=uname,
-                #     subject="Verify your Brickwin account",
-                #     body=body
-                # )
+                send_email_modified(
+                    to_email=uname,
+                    subject="Verify your Brickwin account",
+                    body=body
+                )
                 messages.error(request, "Registration successful. Please check your email to verify your account.")
                 logging.info(f"Created user: {my_user}, employee record: {my_employee}")
                 return redirect("register")
